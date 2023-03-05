@@ -1,0 +1,36 @@
+{
+  "name": "@topcli/prompts",
+  "version": "0.0.1",
+  "description": "Node.js user input library for command-line interfaces.",
+  "scripts": {
+    "test": "node --test ./test/**.test.js",
+    "lint": "standard --fix | snazzy"
+  },
+  "main": "./index.js",
+  "keywords": [
+    "node.js",
+    "cli",
+    "prompt"
+  ],
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "author": "PierreDemailly <pierredemailly.pro@gmail.com>",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "snazzy": "^9.0.0",
+    "standard": "^17.0.0"
+  },
+  "dependencies": {
+    "ansi-styles": "^6.2.1"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "bugs": {
+    "url": "https://github.com/TopCli/prompts/issues"
+  },
+  "homepage": "https://github.com/TopCli/prompts#readme"
+}
