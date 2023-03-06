@@ -1,4 +1,5 @@
-import { createInterface } from 'node:readline/promises'
+import { createInterface } from 'node:readline'
+import { promisify } from 'node:util'
 
 import ansi from 'ansi-styles'
 
@@ -26,7 +27,7 @@ export async function prompt (message) {
   const { stdin: input, stdout: output } = process
   const rl = createInterface({ input, output })
 
-  const answer = await rl.question(`${ansi.bold.open} ${kPointer} ${message} ${ansi.bold.close}`)
+  const answer = await promisify(rl.question)(`${ansi.bold.open}${kQuestionMark} ${message}${ansi.bold.close} `)
 
   clearLastLine()
   console.log(`${ansi.bold.open}${answer ? kTick : kCross} ${message} ${kPointer} ${ansi.yellow.open}${answer}${ansi.yellow.close}${ansi.bold.close}`)
@@ -45,7 +46,7 @@ export async function select (message, options) {
     throw new TypeError('Missing required options')
   }
 
-  const { choices } = options
+  const { choices, ignoreValues } = options
 
   if (!choices?.length) {
     throw new TypeError('Missing required param: choices')
@@ -94,14 +95,14 @@ export async function select (message, options) {
 
     if (!initialRender) {
       const linesToClear = lastRender.endIndex - lastRender.startIndex
-      process.stdout.clearLine(1)
       process.stdout.moveCursor(0, -linesToClear)
-      process.stdout.clearLine(1)
+      process.stdout.clearScreenDown()
     }
 
     if (reset) {
       clearLastLine()
       clearLastLine()
+
       return
     }
 
@@ -127,14 +128,17 @@ export async function select (message, options) {
         render()
       } else if (key.name === 'return') {
         process.stdin.off('keypress', onKeypress)
+
         render(false, { reset: true })
 
-        console.log(`${ansi.bold.open}${kTick} ${message} ${kPointer} ${ansi.yellow.open}${choices[activeIndex].value}${ansi.reset.open}`)
+        if (!ignoreValues?.includes(choices[activeIndex].value)) {
+          console.log(`${ansi.bold.open}${kTick} ${message} ${kPointer} ${ansi.yellow.open}${choices[activeIndex].label ?? choices[activeIndex]}${ansi.reset.open}`)
+        }
 
         process.stderr.write(kShowCursor)
         rl.close()
 
-        resolve(choices[activeIndex].value)
+        resolve(choices[activeIndex].value ?? choices[activeIndex])
       }
     }
 
@@ -156,7 +160,7 @@ export async function confirm (message, options = kDefaultConfirmOptions) {
 
   const tip = initial ? `${ansi.bold.open}Yes${ansi.bold.close}/no` : `yes/${ansi.bold.open}No${ansi.bold.close}`
   const answer = await rl.question(`${kQuestionMark} ${message} ${ansi.grey.open}(${tip})${ansi.grey.close} ${kPointer} `)
-  const result = (!answer && initial) || ['y', 'yes'].includes(answer.toLocaleLowerCase())
+  const result = answer ? ['y', 'yes'].includes(answer.toLocaleLowerCase()) : initial
 
   clearLastLine()
   console.log(`${result ? kTick : kCross} ${message}`)

@@ -45,17 +45,30 @@ const isAdult = await confirm('Are you over 18 ?', { initial: true })
 
 ## API
 
-### `prompt(message: string): Promise<string>`
+### `prompt()`
+
+```ts
+prompt(message: string): Promise<string>
+```
 
 Simple prompt, similar to `rl.question()` with an improved UI.
 
-### `select(message: string, options: { choices: (Choice | string)[], maxVisible?: number }): Promise<string>`
+### `select()`
+
+```ts
+select(message: string, options: { choices: (Choice | string)[], maxVisible?: number, ignoreValues?: (string | number | boolean)[] }): Promise<string>
+```
 
 Scrollable select depending `maxVisible` (default `8`).
+Use `ignoreValues` to skip result render & clear lines after a selected one.
 
-### `confirm(message: string, options?: { initial: boolean }): Promise<string>`
+### `confirm()`
 
-Boolean prompt.
+```ts
+confirm(message: string, options?: { initial: boolean }): Promise<string>
+```
+
+Boolean prompt, return `options.initial` if user input is different from "y"/"yes"/"n"/"no", (default `false`).
 
 ## Interfaces
 
