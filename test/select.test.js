@@ -220,7 +220,7 @@ describe('select', () => {
     assert.deepEqual(value, 'choice1')
   })
 
-  it('should ignore choice2', async () => {
+  it('should ignore choice1', async () => {
     const logs = []
     const mockStdout = {
       write: (msg) => {
