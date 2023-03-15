@@ -1,6 +1,6 @@
 import { createInterface } from 'node:readline'
 import { promisify } from 'node:util'
-
+import { EOL } from 'node:os'
 import ansi from 'ansi-styles'
 
 const kQuestionMark = `${ansi.blue.open}?${ansi.blue.close}`
@@ -14,9 +14,9 @@ const kNext = '⭣'
 const kShowCursor = '\x1B[?25h'
 const kHideCursor = '\x1B[?25l'
 
-function clearLastLine () {
-  process.stdout.moveCursor(0, -1)
-  process.stdout.clearLine()
+function clearLastLine (stdout = process.stdout) {
+  stdout.moveCursor(0, -1)
+  stdout.clearLine()
 }
 
 export async function prompt (message) {
@@ -45,8 +45,7 @@ export async function select (message, options) {
   if (!options) {
     throw new TypeError('Missing required options')
   }
-
-  const { choices, ignoreValues } = options
+  const { choices, ignoreValues, stdout = process.stdout, stdin = process.stdin } = options
 
   if (!choices?.length) {
     throw new TypeError('Missing required param: choices')
@@ -68,13 +67,12 @@ export async function select (message, options) {
     return choice.label.length
   }))
 
-  process.stdout.write(kHideCursor)
-  const { stdin: input, stdout: output } = process
-  const rl = createInterface({ input, output })
+  stdout.write(kHideCursor)
+  const rl = options.stdin && options.stdout ? null : createInterface({ input: stdin, output: stdout })
 
   let activeIndex = 0
 
-  console.log(`${ansi.bold.open}${kQuestionMark} ${message}${ansi.bold.close}`)
+  stdout.write(`${ansi.bold.open}${kQuestionMark} ${message}${ansi.bold.close}${EOL}`)
 
   let lastRender = null
   const render = (initialRender = false, { reset } = {}) => {
@@ -95,13 +93,13 @@ export async function select (message, options) {
 
     if (!initialRender) {
       const linesToClear = lastRender.endIndex - lastRender.startIndex
-      process.stdout.moveCursor(0, -linesToClear)
-      process.stdout.clearScreenDown()
+      stdout.moveCursor(0, -linesToClear)
+      stdout.clearScreenDown()
     }
 
     if (reset) {
-      clearLastLine()
-      clearLastLine()
+      clearLastLine(stdout)
+      clearLastLine(stdout)
 
       return
     }
@@ -111,8 +109,8 @@ export async function select (message, options) {
     for (let i = startIndex; i < endIndex; i++) {
       const choice = typeof choices[i] === 'string' ? { value: choices[i], label: choices[i] } : choices[i]
       const prefix = `${startIndex > 0 && i === startIndex ? kPrevious : endIndex < choices.length && i === endIndex - 1 ? kNext : ' '}${i === activeIndex ? kActive : kInactive}`
-      const str = `${prefix}${choice.label.padEnd(longestChoice < 10 ? longestChoice : 0)}${choice.description ? ` - ${choice.description}` : ''}${ansi.reset.open}`
-      console.log(str)
+      const str = `${prefix}${choice.label.padEnd(longestChoice < 10 ? longestChoice : 0)}${choice.description ? ` - ${choice.description}` : ''}${ansi.reset.open}${EOL}`
+      stdout.write(str)
     }
   }
 
@@ -127,22 +125,23 @@ export async function select (message, options) {
         activeIndex = activeIndex === choices.length - 1 ? 0 : activeIndex + 1
         render()
       } else if (key.name === 'return') {
-        process.stdin.off('keypress', onKeypress)
+        stdin.off('keypress', onKeypress)
 
         render(false, { reset: true })
 
-        if (!ignoreValues?.includes(choices[activeIndex].value)) {
-          console.log(`${ansi.bold.open}${kTick} ${message} ${kPointer} ${ansi.yellow.open}${choices[activeIndex].label ?? choices[activeIndex]}${ansi.reset.open}`)
+        const value = choices[activeIndex].value ?? choices[activeIndex]
+        if (!ignoreValues?.includes(value)) {
+          stdout.write(`${ansi.bold.open}${kTick} ${message} ${kPointer} ${ansi.yellow.open}${choices[activeIndex].label ?? choices[activeIndex]}${ansi.reset.open}${EOL}`)
         }
 
-        process.stderr.write(kShowCursor)
-        rl.close()
+        stdout.write(kShowCursor)
+        rl?.close()
 
-        resolve(choices[activeIndex].value ?? choices[activeIndex])
+        resolve(value)
       }
     }
 
-    process.stdin.on('keypress', onKeypress)
+    stdin.on('keypress', onKeypress)
   })
 }
 
