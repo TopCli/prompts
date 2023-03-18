@@ -21,7 +21,8 @@
   "type": "module",
   "devDependencies": {
     "snazzy": "^9.0.0",
-    "standard": "^17.0.0"
+    "standard": "^17.0.0",
+    "strip-ansi": "^7.0.1"
   },
   "dependencies": {
     "ansi-styles": "^6.2.1"
