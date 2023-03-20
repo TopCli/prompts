@@ -3,7 +3,8 @@
   "version": "0.0.2",
   "description": "Node.js user input library for command-line interfaces.",
   "scripts": {
-    "test": "node --test ./test/**.test.js",
+    "test": "node --loader=esmock --test ./test/**.test.js",
+    "coverage": "c8 -r html npm run test",
     "lint": "standard --fix | snazzy"
   },
   "main": "./index.js",
@@ -14,12 +15,15 @@
   ],
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "src"
   ],
   "author": "PierreDemailly <pierredemailly.pro@gmail.com>",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "c8": "^7.13.0",
+    "esmock": "^2.1.0",
     "snazzy": "^9.0.0",
     "standard": "^17.0.0",
     "strip-ansi": "^7.0.1"
@@ -33,5 +37,10 @@
   "bugs": {
     "url": "https://github.com/TopCli/prompts/issues"
   },
-  "homepage": "https://github.com/TopCli/prompts#readme"
+  "homepage": "https://github.com/TopCli/prompts#readme",
+  "standard": {
+    "ignore": [
+      "index.d.ts"
+    ]
+  }
 }
