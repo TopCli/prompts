@@ -23,7 +23,7 @@ export class ConfirmPrompt extends AbstractPrompt {
 
     this.initial = initial
     this.#question = new Promise((resolve) => {
-      this.rl.question(`${ansi.bold.open}${SYMBOLS.QuestionMark} ${message}${ansi.bold.close}  ${ansi.grey.open}(${tip})${ansi.grey.close} `, (answer) => {
+      this.rl.question.bind(this.rl)(`${ansi.bold.open}${SYMBOLS.QuestionMark} ${message}${ansi.bold.close}  ${ansi.grey.open}(${tip})${ansi.grey.close} `, (answer) => {
         resolve(answer)
       })
     })

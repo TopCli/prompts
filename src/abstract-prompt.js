@@ -15,6 +15,9 @@ export class AbstractPrompt {
     this.stdout = output
     this.message = message
 
+    if (this.stdout.isTTY) {
+      this.stdin.setRawMode(true)
+    }
     this.rl = createInterface({ input, output })
   }
 
