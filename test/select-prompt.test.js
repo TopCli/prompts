@@ -253,26 +253,32 @@ describe('SelectPrompt', () => {
 
     assert.deepEqual(logs, [
       '? Choose option',
+      // Firstly, it renders the first 5 choices. (as maxVisible is 5)
       ' › Option 1 ',
       '   Option 2 ',
       '   Option 3 ',
       '   Option 4 ',
-      '⭣  Option 5 ',
+      '⭣  Option 5 ', // ⭣ because there are next choices to be displayed (scroll)
+      // Once the user presses the down arrow, it renders the same choices
+      // but the selected option is now "Option 2".
       '   Option 1 ',
       ' › Option 2 ',
       '   Option 3 ',
       '   Option 4 ',
       '⭣  Option 5 ',
+      // On down arrow again, now Option 3 is selected.
       '   Option 1 ',
       '   Option 2 ',
       ' › Option 3 ',
       '   Option 4 ',
       '⭣  Option 5 ',
-      '⭡  Option 2 ',
+      // Still on down arrow, now Option 4 is selected and it has scrolled down
+      '⭡  Option 2 ', // ⭡ because there are previosu choices to be displayed (scroll)
       '   Option 3 ',
       ' › Option 4 ',
       '   Option 5 ',
       '⭣  Option 6 ',
+      // Finally, the user presses the return key and the selected option is returned & displayed.
       '✔ Choose option › Option 4'
     ])
     assert.deepEqual(input, 'option4')

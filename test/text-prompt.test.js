@@ -7,11 +7,11 @@ import { TextPrompt } from '../src/text-prompt.js'
 import { TestingPrompt } from './helpers/testing-prompt.js'
 
 describe('TextPrompt', () => {
-  it('message should be required', async () => {
+  it('message should be string', async () => {
     assert.throws(() => new TextPrompt(12), { name: 'TypeError', message: 'message must be string, number given.' })
   })
 
-  it('value should be OK', async () => {
+  it('should render with tick on valid input', async () => {
     const logs = []
     const textPrompt = await TestingPrompt.TextPrompt('What\'s your name?', 'Joe', (log) => logs.push(log))
     const input = await textPrompt.question()
@@ -22,7 +22,7 @@ describe('TextPrompt', () => {
     ])
   })
 
-  it('value should be KO', async () => {
+  it('should render cross on invalid input', async () => {
     const logs = []
     const textPrompt = await TestingPrompt.TextPrompt('What\'s your name?', undefined, (log) => logs.push(log))
     const input = await textPrompt.question()
