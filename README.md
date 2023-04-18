@@ -24,23 +24,18 @@ $ yarn add @topcli/prompts
 
 ## Usage exemple
 
-```js
-import { prompt, select, confirm } from '@topcli/prompts'
+You can locally run `node ./demo.js`
 
-const name = await prompt('What\'s your name ?')
-const gender = await select('What\'s your gender ?', {
-  choices: [
-    {
-      value: 'M',
-      label: 'Male'
-    },
-    {
-      value: 'F',
-      label: 'Female'
-    },
-  ]
-})
-const isAdult = await confirm('Are you over 18 ?', { initial: true })
+```js
+import { prompt, confirm, select } from '@topcli/prompts'
+
+const kTestRunner = ['node', 'tap', 'tape', 'vitest', 'mocha', 'ava']
+
+const name = await prompt('Project name ?')
+const runner = await select('Choose a test runner', { choices: kTestRunner, maxVisible: 5 })
+const isCLI = await confirm('Your project is a CLI ?', { initial: true })
+
+console.log(name, runner, isCLI)
 ```
 
 ## API
@@ -56,7 +51,7 @@ Simple prompt, similar to `rl.question()` with an improved UI.
 ### `select()`
 
 ```ts
-select(message: string, options: { choices: (Choice | string)[], maxVisible?: number, ignoreValues?: (string | number | boolean)[] }): Promise<string>
+select(message: string, options: SelectOptions): Promise<string>
 ```
 
 Scrollable select depending `maxVisible` (default `8`).
@@ -65,7 +60,7 @@ Use `ignoreValues` to skip result render & clear lines after a selected one.
 ### `confirm()`
 
 ```ts
-confirm(message: string, options?: { initial: boolean }): Promise<string>
+confirm(message: string, options?: ConfirmOptions): Promise<string>
 ```
 
 Boolean prompt, return `options.initial` if user input is different from "y"/"yes"/"n"/"no", (default `false`).
@@ -74,8 +69,22 @@ Boolean prompt, return `options.initial` if user input is different from "y"/"ye
 
 ```ts
 export interface Choice {
-  value: any,
-  label: string,
-  description?: string,
+  value: any;
+  label: string;
+  description?: string;
+}
+```
+
+```ts
+export interface SelectOptions {
+  choices: (Choice | string)[];
+  maxVisible?: number = 8;
+  ignoreValues?: (string | number | boolean)[];
+}
+```
+
+```ts
+export interface ConfirmOptions {
+  initial?: boolean = false;
 }
 ```

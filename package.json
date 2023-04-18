@@ -3,8 +3,10 @@
   "version": "0.0.2",
   "description": "Node.js user input library for command-line interfaces.",
   "scripts": {
-    "test": "node --test ./test/**.test.js",
-    "lint": "standard --fix | snazzy"
+    "test": "node --loader=esmock --test ./test/**.test.js",
+    "coverage": "c8 -r html npm run test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "main": "./index.js",
   "keywords": [
@@ -14,14 +16,18 @@
   ],
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "src"
   ],
   "author": "PierreDemailly <pierredemailly.pro@gmail.com>",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@nodesecure/eslint-config": "^1.7.0",
+    "c8": "^7.13.0",
+    "eslint": "^8.38.0",
+    "esmock": "^2.1.0",
     "snazzy": "^9.0.0",
-    "standard": "^17.0.0",
     "strip-ansi": "^7.0.1"
   },
   "dependencies": {
