@@ -1,29 +1,29 @@
 // Import Node.js Dependencies
-import { EOL } from 'node:os'
+import { EOL } from "node:os";
 
 // Import Third-party Dependencies
-import stripAnsi from 'strip-ansi'
+import stripAnsi from "strip-ansi";
 
-export function mockProcess (inputs, writeCb) {
+export function mockProcess(inputs, writeCb) {
   const stdout = {
     write: (msg) => {
-      const noAnsiMsg = stripAnsi(msg)
+      const noAnsiMsg = stripAnsi(msg);
       if (noAnsiMsg) {
-        writeCb(noAnsiMsg.replace(EOL, ''))
+        writeCb(noAnsiMsg.replace(EOL, ""));
       }
     },
-    moveCursor: () => {},
-    clearScreenDown: () => {},
-    clearLine: () => {}
-  }
+    moveCursor: () => true,
+    clearScreenDown: () => true,
+    clearLine: () => true
+  };
   const stdin = {
     on: (event, cb) => {
       for (const input of inputs) {
-        cb(null, input)
+        cb(null, input);
       }
     },
-    off: () => {}
-  }
+    off: () => true
+  };
 
-  return { stdout, stdin }
+  return { stdout, stdin };
 }
