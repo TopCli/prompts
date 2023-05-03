@@ -48,8 +48,8 @@ export class SelectPrompt extends AbstractPrompt {
   }
 
   async select() {
-    this.stdout.write(SYMBOLS.HideCursor);
-    this.stdout.write(`${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}${EOL}`);
+    this.write(SYMBOLS.HideCursor);
+    this.write(`${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}${EOL}`);
 
     let lastRender = null;
     const render = (initialRender = false, { reset } = {}) => {
@@ -67,14 +67,16 @@ export class SelectPrompt extends AbstractPrompt {
       const { startIndex, endIndex } = getVisibleChoices(this.activeIndex, this.choices.length, this.options.maxVisible || 8);
 
       if (!initialRender) {
-        const linesToClear = lastRender.endIndex - lastRender.startIndex;
-        this.stdout.moveCursor(0, -linesToClear);
-        this.stdout.clearScreenDown();
+        let linesToClear = lastRender.endIndex - lastRender.startIndex;
+        while (linesToClear > 0) {
+          this.clearLastLine();
+          linesToClear--;
+        }
       }
 
       if (reset) {
-        this.clearLastLine(this.stdout);
-        this.clearLastLine(this.stdout);
+        this.stdout.moveCursor(0, -2);
+        this.stdout.clearScreenDown();
 
         return;
       }
@@ -96,7 +98,9 @@ export class SelectPrompt extends AbstractPrompt {
         const str = `${prefix}${choice.label.padEnd(
           this.longestChoice < 10 ? this.longestChoice : 0
         )}${choice.description ? ` - ${choice.description}` : ""}${ansi.reset.open}${EOL}`;
-        this.stdout.write(str);
+        if (!reset) {
+          this.write(str);
+        }
       }
     };
 
@@ -118,13 +122,14 @@ export class SelectPrompt extends AbstractPrompt {
           render(false, { reset: true });
           const currentChoice = this.choices[this.activeIndex];
           const value = currentChoice.value ?? currentChoice;
+
           if (!this.options.ignoreValues?.includes(value)) {
             const prefix = `${ansi.bold.open}${SYMBOLS.Tick} ${this.message} ${SYMBOLS.Pointer}`;
             const choice = `${ansi.yellow.open}${currentChoice.label ?? currentChoice}${ansi.reset.open}`;
-            this.stdout.write(`${prefix} ${choice}${EOL}`);
+            this.write(`${prefix} ${choice}${EOL}`);
           }
 
-          this.stdout.write(SYMBOLS.ShowCursor);
+          this.write(SYMBOLS.ShowCursor);
           this.destroy();
           resolve(value);
         }

@@ -6,13 +6,16 @@ import esmock from "esmock";
 import { mockProcess } from "./mock-process.js";
 
 export class TestingPrompt {
-  static async TextPrompt(message, input, onStdoutWriteCallback) {
+  // eslint-disable-next-line max-params
+  static async TextPrompt(message, input, onStdoutWriteCallback, validators) {
+    const inputs = Array.isArray(input) ? input : [input];
+
     const { TextPrompt } = await esmock("../../src/text-prompt", { }, {
       readline: {
         createInterface: () => {
           return {
             question: (query, onInput) => {
-              onInput(input);
+              onInput(inputs.shift());
               onStdoutWriteCallback(stripAnsi(query).trim());
             },
             close: () => true
@@ -22,7 +25,7 @@ export class TestingPrompt {
     });
     const { stdin, stdout } = mockProcess([], (data) => onStdoutWriteCallback(data));
 
-    return new TextPrompt(message, stdin, stdout);
+    return new TextPrompt(message, { stdin, stdout, validators });
   }
 
   // eslint-disable-next-line max-params

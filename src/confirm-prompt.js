@@ -11,8 +11,6 @@ import { SYMBOLS } from "./constants.js";
 const kDefaultConfirmOptions = { initial: false };
 
 export class ConfirmPrompt extends AbstractPrompt {
-  #question;
-
   // eslint-disable-next-line max-params
   constructor(message, options = {}, stdin = process.stdin, stdout = process.stdout) {
     super(message, stdin, stdout);
@@ -23,11 +21,15 @@ export class ConfirmPrompt extends AbstractPrompt {
     const tip = initial ? `${Yes}/no` : `yes/${No}`;
 
     this.initial = initial;
-    this.#question = new Promise((resolve) => {
-      const question = `\
-      ${ansi.bold.open}${SYMBOLS.QuestionMark} ${message}${ansi.bold.close}  ${ansi.grey.open}(${tip})${ansi.grey.close} `;
-      this.rl.question.bind(this.rl)(question,
+  }
+
+  #question() {
+    return new Promise((resolve) => {
+      const label = `${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}`;
+      const question = `${label} ${ansi.grey.open}(${this.initial ? "Yes/no" : "yes/No"})${ansi.grey.close} `;
+      this.rl.question(question,
         (answer) => {
+          this.history.push(question + answer);
           resolve(answer);
         }
       );
@@ -36,7 +38,7 @@ export class ConfirmPrompt extends AbstractPrompt {
 
   #onQuestionAnswer() {
     this.clearLastLine();
-    this.stdout.write(`${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross} ${this.message}${EOL}`);
+    this.write(`${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross} ${this.message}${EOL}`);
   }
 
   #validateResult(result) {
@@ -49,7 +51,7 @@ export class ConfirmPrompt extends AbstractPrompt {
 
   async confirm() {
     try {
-      const result = await this.#question;
+      const result = await this.#question();
       this.answer = this.#validateResult(result) ? ["y", "yes"].includes(result.toLocaleLowerCase()) : this.initial;
       this.#onQuestionAnswer();
 

@@ -43,10 +43,24 @@ console.log(name, runner, isCLI)
 ### `prompt()`
 
 ```ts
-prompt(message: string): Promise<string>
+prompt(message: string, options?: PromptOptions): Promise<string>
 ```
 
 Simple prompt, similar to `rl.question()` with an improved UI.
+Use `options.validators` to handle user input.
+
+**Example**
+
+```js
+const packageName = await prompt('Package name', {
+  validators: [
+    {
+      validate: (value) => !existsSync(join(process.cwd(), value)),
+      error: (value) => `Folder ${value} already exists`
+    }
+  ]
+})
+```
 
 ### `select()`
 
@@ -67,6 +81,14 @@ Boolean prompt, return `options.initial` if user input is different from "y"/"ye
 
 ## Interfaces
 
+```ts
+export interface PromptOptions {
+  validators?: {
+    validate: (input: string) => boolean;
+    error: (input: string) => string;
+  }[];
+}
+```
 ```ts
 export interface Choice {
   value: any;

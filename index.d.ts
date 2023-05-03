@@ -1,3 +1,10 @@
+export interface PromptOptions {
+  validators?: {
+    validate: (input: string) => boolean;
+    error: (input: string) => string;
+  }[];
+}
+
 export interface Choice {
   value: any;
   label: string;
@@ -14,6 +21,6 @@ export interface ConfirmOptions {
   initial?: boolean;
 }
 
-export function prompt(message: string): Promise<string>;
+export function prompt(message: string, options?: PromptOptions): Promise<string>;
 export function select(message: string, options: SelectOptions): Promise<string>;
 export function confirm(message: string, options?: ConfirmOptions): Promise<string>;

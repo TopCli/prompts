@@ -18,7 +18,7 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, false);
     assert.deepEqual(logs, [
-      "? Foo  (yes/No)",
+      "? Foo (yes/No)",
       "✖ Foo"
     ]);
   });
@@ -30,7 +30,7 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, true);
     assert.deepEqual(logs, [
-      "? Foo  (yes/No)",
+      "? Foo (yes/No)",
       "✔ Foo"
     ]);
   });
@@ -42,7 +42,7 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, true);
     assert.deepEqual(logs, [
-      "? Foo  (yes/No)",
+      "? Foo (yes/No)",
       "✔ Foo"
     ]);
   });
@@ -54,7 +54,7 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, false);
     assert.deepEqual(logs, [
-      "? Foo  (yes/No)",
+      "? Foo (yes/No)",
       "✖ Foo"
     ]);
   });
@@ -66,7 +66,7 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, false);
     assert.deepEqual(logs, [
-      "? Foo  (yes/No)",
+      "? Foo (yes/No)",
       "✖ Foo"
     ]);
   });
@@ -78,7 +78,7 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, true);
     assert.deepEqual(logs, [
-      "? Foo  (yes/No)",
+      "? Foo (yes/No)",
       "✔ Foo"
     ]);
   });
@@ -90,7 +90,7 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, true);
     assert.deepEqual(logs, [
-      "? Foo  (Yes/no)",
+      "? Foo (Yes/no)",
       "✔ Foo"
     ]);
   });
