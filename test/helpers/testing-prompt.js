@@ -41,7 +41,7 @@ export class TestingPrompt {
     });
     const { stdin, stdout } = mockProcess(input, (data) => onStdoutWriteCallback(data));
 
-    return new SelectPrompt(message, options, stdin, stdout);
+    return new SelectPrompt(message, { ...options, stdin, stdout });
   }
 
   // eslint-disable-next-line max-params
@@ -62,6 +62,6 @@ export class TestingPrompt {
     const { stdin, stdout } = mockProcess(input, (data) => onStdoutWriteCallback(data));
     const options = typeof initial === "boolean" ? { initial } : {};
 
-    return new ConfirmPrompt(message, options, stdin, stdout);
+    return new ConfirmPrompt(message, { ...options, stdin, stdout });
   }
 }

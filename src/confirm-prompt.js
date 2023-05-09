@@ -8,14 +8,15 @@ import ansi from "ansi-styles";
 import { AbstractPrompt } from "./abstract-prompt.js";
 import { SYMBOLS } from "./constants.js";
 
-const kDefaultConfirmOptions = { initial: false };
-
 export class ConfirmPrompt extends AbstractPrompt {
-  // eslint-disable-next-line max-params
-  constructor(message, options = {}, stdin = process.stdin, stdout = process.stdout) {
+  constructor(message, options = {}) {
+    const {
+      stdin = process.stdin,
+      stdout = process.stdout,
+      initial = false
+    } = options;
     super(message, stdin, stdout);
 
-    const { initial } = { ...kDefaultConfirmOptions, ...options };
     const Yes = `${ansi.bold.open}Yes${ansi.bold.close}`;
     const No = `${ansi.bold.open}No${ansi.bold.close}`;
     const tip = initial ? `${Yes}/no` : `yes/${No}`;
@@ -25,15 +26,22 @@ export class ConfirmPrompt extends AbstractPrompt {
 
   #question() {
     return new Promise((resolve) => {
-      const label = `${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}`;
-      const question = `${label} ${ansi.grey.open}(${this.initial ? "Yes/no" : "yes/No"})${ansi.grey.close} `;
-      this.rl.question(question,
+      const questionQuery = this.#getQuestionQuery();
+
+      this.rl.question(questionQuery,
         (answer) => {
-          this.history.push(question + answer);
+          this.history.push(questionQuery + answer);
+
           resolve(answer);
         }
       );
     });
+  }
+
+  #getQuestionQuery() {
+    const query = `${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}`;
+
+    return `${query} ${ansi.grey.open}(${this.initial ? "Yes/no" : "yes/No"})${ansi.grey.close} `;
   }
 
   #onQuestionAnswer() {

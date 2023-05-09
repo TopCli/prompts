@@ -24,39 +24,56 @@ export class TextPrompt extends AbstractPrompt {
 
   #question() {
     return new Promise((resolve) => {
-      const question = `${this.questionPrefix}${this.message}${this.questionSuffix}${this.questionSuffixError}`;
-      this.rl.question(question, (answer) => {
-        this.history.push(question + answer);
+      const questionQuery = this.#getQuestionQuery();
+
+      this.rl.question(questionQuery, (answer) => {
+        this.history.push(questionQuery + answer);
+
         resolve(answer);
       });
     });
   }
 
-  async #onQuestionAnswer() {
+  #getQuestionQuery() {
+    return `${this.questionPrefix}${this.message}${this.questionSuffix}${this.questionSuffixError}`;
+  }
+
+  #setQuestionSuffixError(error) {
+    const suffix = `${ansi.red.open}[${error}]${ansi.red.close} `;
+    this.questionSuffixError = suffix;
+  }
+
+  #writeAnswer() {
+    const prefix = `${ansi.bold.open}${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross}`;
+    const suffix = `${ansi.yellow.close}${ansi.bold.close}${EOL}`;
+
+    this.write(`${prefix} ${this.message} ${SYMBOLS.Pointer} ${ansi.yellow.open}${this.answer ?? ""}${suffix}`);
+  }
+
+  #onQuestionAnswer() {
     this.clearLastLine();
 
     for (const validator of this.#validators) {
       if (!validator.validate(this.answer)) {
-        this.questionSuffixError = `${ansi.red.open}[${validator.error(this.answer)}]${ansi.red.close}${ansi.bold.close} `;
+        const error = validator.error(this.answer);
+        this.#setQuestionSuffixError(error);
         this.answer = this.#question();
 
         return;
       }
     }
 
-    const prefix = `${ansi.bold.open}${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross}`;
-    const suffix = `${ansi.yellow.close}${ansi.bold.close}${EOL}`;
-    this.write(`${prefix} ${this.message} ${SYMBOLS.Pointer} ${ansi.yellow.open}${this.answer ?? ""}${suffix}`);
+    this.#writeAnswer();
   }
 
   async question() {
     this.answer = await this.#question();
 
-    await this.#onQuestionAnswer();
+    this.#onQuestionAnswer();
 
     while (this.answer?.constructor.name === "Promise") {
       this.answer = await this.answer;
-      await this.#onQuestionAnswer();
+      this.#onQuestionAnswer();
     }
 
     this.destroy();
