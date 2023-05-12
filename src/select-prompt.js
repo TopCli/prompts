@@ -11,8 +11,17 @@ import { SYMBOLS } from "./constants.js";
 export class SelectPrompt extends AbstractPrompt {
   activeIndex = 0;
 
-  // eslint-disable-next-line max-params
-  constructor(message, options, stdin = process.stdin, stdout = process.stdout) {
+  get choices() {
+    return this.options.choices;
+  }
+
+  constructor(message, options) {
+    const {
+      stdin = process.stdin,
+      stdout = process.stdout,
+      choices
+    } = options ?? {};
+
     super(message, stdin, stdout);
 
     if (!options) {
@@ -21,14 +30,12 @@ export class SelectPrompt extends AbstractPrompt {
     }
 
     this.options = options;
-    const { choices } = options;
 
     if (!choices?.length) {
       this.destroy();
       throw new TypeError("Missing required param: choices");
     }
 
-    this.choices = choices;
     this.longestChoice = Math.max(...choices.map((choice) => {
       if (typeof choice === "string") {
         return choice.length;
@@ -47,60 +54,92 @@ export class SelectPrompt extends AbstractPrompt {
     }));
   }
 
-  async select() {
-    this.stdout.write(SYMBOLS.HideCursor);
-    this.stdout.write(`${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}${EOL}`);
+  #getFormattedChoice(choiceIndex) {
+    const choice = this.choices[choiceIndex];
 
-    let lastRender = null;
-    const render = (initialRender = false, { reset } = {}) => {
-      function getVisibleChoices(currentIndex, total, maxVisible) {
-        let startIndex = Math.min(total - maxVisible, currentIndex - Math.floor(maxVisible / 2));
-        if (startIndex < 0) {
-          startIndex = 0;
-        }
+    if (typeof choice === "string") {
+      return { value: choice, label: choice };
+    }
 
-        const endIndex = Math.min(startIndex + maxVisible, total);
+    return choice;
+  }
 
-        return { startIndex, endIndex };
+  #getVisibleChoices() {
+    const maxVisible = this.options.maxVisible || 8;
+    let startIndex = Math.min(this.choices.length - maxVisible, this.activeIndex - Math.floor(maxVisible / 2));
+    if (startIndex < 0) {
+      startIndex = 0;
+    }
+
+    const endIndex = Math.min(startIndex + maxVisible, this.choices.length);
+
+    return { startIndex, endIndex };
+  }
+
+  #showChoices() {
+    const { startIndex, endIndex } = this.#getVisibleChoices();
+    this.lastRender = { startIndex, endIndex };
+
+    for (let choiceIndex = startIndex; choiceIndex < endIndex; choiceIndex++) {
+      const choice = this.#getFormattedChoice(choiceIndex);
+      const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
+      const showNextChoicesArrow = endIndex < this.choices.length && choiceIndex === endIndex - 1;
+
+      let prefixArrow = " ";
+      if (showPreviousChoicesArrow) {
+        prefixArrow = SYMBOLS.Previous;
+      }
+      else if (showNextChoicesArrow) {
+        prefixArrow = SYMBOLS.Next;
       }
 
-      const { startIndex, endIndex } = getVisibleChoices(this.activeIndex, this.choices.length, this.options.maxVisible || 8);
+      const prefix = `${prefixArrow}${choiceIndex === this.activeIndex ? `${SYMBOLS.Active} ` : `${SYMBOLS.Inactive}  `}`;
+      const formattedLabel = choice.label.padEnd(
+        this.longestChoice < 10 ? this.longestChoice : 0
+      );
+      const formattedDescription = choice.description ? ` - ${choice.description}` : "";
+      const str = `${prefix}${formattedLabel}${formattedDescription}${ansi.reset.open}${EOL}`;
+
+      this.write(str);
+    }
+  }
+
+  #showAnsweredQuestion(choice) {
+    const prefix = `${ansi.bold.open}${SYMBOLS.Tick} ${this.message} ${SYMBOLS.Pointer}`;
+    const formattedChoice = `${ansi.yellow.open}${choice.label ?? choice}${ansi.reset.open}`;
+
+    this.write(`${prefix} ${formattedChoice}${EOL}`);
+  }
+
+  async select() {
+    this.write(SYMBOLS.HideCursor);
+    this.#showQuestion();
+
+    const render = (options = {}) => {
+      const {
+        initialRender = false,
+        clearRender = false
+      } = options;
 
       if (!initialRender) {
-        const linesToClear = lastRender.endIndex - lastRender.startIndex;
-        this.stdout.moveCursor(0, -linesToClear);
-        this.stdout.clearScreenDown();
+        let linesToClear = this.lastRender.endIndex - this.lastRender.startIndex;
+        while (linesToClear > 0) {
+          this.clearLastLine();
+          linesToClear--;
+        }
       }
 
-      if (reset) {
-        this.clearLastLine(this.stdout);
-        this.clearLastLine(this.stdout);
+      if (clearRender) {
+        this.stdout.moveCursor(0, -2);
+        this.stdout.clearScreenDown();
 
         return;
       }
 
-      lastRender = { startIndex, endIndex };
-
-      for (let i = startIndex; i < endIndex; i++) {
-        const choice = typeof this.choices[i] === "string" ? { value: this.choices[i], label: this.choices[i] } : this.choices[i];
-        const showPreviousChoicesArrow = startIndex > 0 && i === startIndex;
-        const showNextChoicesArrow = endIndex < this.choices.length && i === endIndex - 1;
-        let prefixArrow = " ";
-        if (showPreviousChoicesArrow) {
-          prefixArrow = SYMBOLS.Previous;
-        }
-        else if (showNextChoicesArrow) {
-          prefixArrow = SYMBOLS.Next;
-        }
-        const prefix = `${prefixArrow}${i === this.activeIndex ? `${SYMBOLS.Active} ` : `${SYMBOLS.Inactive}  `}`;
-        const str = `${prefix}${choice.label.padEnd(
-          this.longestChoice < 10 ? this.longestChoice : 0
-        )}${choice.description ? ` - ${choice.description}` : ""}${ansi.reset.open}${EOL}`;
-        this.stdout.write(str);
-      }
+      this.#showChoices();
     };
 
-    render(true);
+    render({ initialRender: true });
 
     return new Promise((resolve) => {
       const onKeypress = (value, key) => {
@@ -115,22 +154,27 @@ export class SelectPrompt extends AbstractPrompt {
         else if (key.name === "return") {
           this.stdin.off("keypress", onKeypress);
 
-          render(false, { reset: true });
+          render({ clearRender: true });
+
           const currentChoice = this.choices[this.activeIndex];
           const value = currentChoice.value ?? currentChoice;
+
           if (!this.options.ignoreValues?.includes(value)) {
-            const prefix = `${ansi.bold.open}${SYMBOLS.Tick} ${this.message} ${SYMBOLS.Pointer}`;
-            const choice = `${ansi.yellow.open}${currentChoice.label ?? currentChoice}${ansi.reset.open}`;
-            this.stdout.write(`${prefix} ${choice}${EOL}`);
+            this.#showAnsweredQuestion(currentChoice);
           }
 
-          this.stdout.write(SYMBOLS.ShowCursor);
+          this.write(SYMBOLS.ShowCursor);
           this.destroy();
+
           resolve(value);
         }
       };
 
       this.stdin.on("keypress", onKeypress);
     });
+  }
+
+  #showQuestion() {
+    this.write(`${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}${EOL}`);
   }
 }

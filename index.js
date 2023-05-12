@@ -3,8 +3,8 @@ import { ConfirmPrompt } from "./src/confirm-prompt.js";
 import { SelectPrompt } from "./src/select-prompt.js";
 import { TextPrompt } from "./src/text-prompt.js";
 
-export async function prompt(message) {
-  const textPrompt = new TextPrompt(message);
+export async function prompt(message, options = {}) {
+  const textPrompt = new TextPrompt(message, options);
 
   return textPrompt.question();
 }

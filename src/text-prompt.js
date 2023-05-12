@@ -3,41 +3,81 @@ import { EOL } from "node:os";
 
 // Import Third-party Dependencies
 import ansi from "ansi-styles";
+import stripAnsi from "strip-ansi";
 
 // Import Internal Dependencies
 import { AbstractPrompt } from "./abstract-prompt.js";
 import { SYMBOLS } from "./constants.js";
 
 export class TextPrompt extends AbstractPrompt {
-  #question;
+  #validators;
 
-  constructor(message, stdin = process.stdin, stdout = process.stdout) {
+  constructor(message, options = {}) {
+    const { stdin = process.stdin, stdout = process.stdout, validators = [] } = options;
     super(message, stdin, stdout);
 
-    this.#question = new Promise((resolve) => {
-      this.rl.question(`${ansi.bold.open}${SYMBOLS.QuestionMark} ${message}${ansi.bold.close} `, (answer) => {
+    this.#validators = validators;
+    this.questionPrefix = `${ansi.bold.open}${SYMBOLS.QuestionMark} `;
+    this.questionSuffix = `${ansi.bold.close} `;
+    this.questionSuffixError = "";
+  }
+
+  #question() {
+    return new Promise((resolve) => {
+      const questionQuery = this.#getQuestionQuery();
+
+      this.rl.question(questionQuery, (answer) => {
+        this.history.push(questionQuery + answer);
+
         resolve(answer);
       });
     });
   }
 
-  #onQuestionAnswer() {
-    this.clearLastLine();
+  #getQuestionQuery() {
+    return `${this.questionPrefix}${this.message}${this.questionSuffix}${this.questionSuffixError}`;
+  }
+
+  #setQuestionSuffixError(error) {
+    const suffix = `${ansi.red.open}[${error}]${ansi.red.close} `;
+    this.questionSuffixError = suffix;
+  }
+
+  #writeAnswer() {
     const prefix = `${ansi.bold.open}${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross}`;
     const suffix = `${ansi.yellow.close}${ansi.bold.close}${EOL}`;
-    this.stdout.write(`${prefix} ${this.message} ${SYMBOLS.Pointer} ${ansi.yellow.open}${this.answer ?? ""}${suffix}`);
+
+    this.write(`${prefix} ${this.message} ${SYMBOLS.Pointer} ${ansi.yellow.open}${this.answer ?? ""}${suffix}`);
+  }
+
+  #onQuestionAnswer() {
+    this.clearLastLine();
+
+    for (const validator of this.#validators) {
+      if (!validator.validate(this.answer)) {
+        const error = validator.error(this.answer);
+        this.#setQuestionSuffixError(error);
+        this.answer = this.#question();
+
+        return;
+      }
+    }
+
+    this.#writeAnswer();
   }
 
   async question() {
-    try {
-      this.answer = await this.#question;
+    this.answer = await this.#question();
 
+    this.#onQuestionAnswer();
+
+    while (this.answer?.constructor.name === "Promise") {
+      this.answer = await this.answer;
       this.#onQuestionAnswer();
+    }
 
-      return this.answer;
-    }
-    finally {
-      this.destroy();
-    }
+    this.destroy();
+
+    return this.answer;
   }
 }

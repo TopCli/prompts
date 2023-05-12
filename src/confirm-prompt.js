@@ -8,35 +8,45 @@ import ansi from "ansi-styles";
 import { AbstractPrompt } from "./abstract-prompt.js";
 import { SYMBOLS } from "./constants.js";
 
-const kDefaultConfirmOptions = { initial: false };
-
 export class ConfirmPrompt extends AbstractPrompt {
-  #question;
-
-  // eslint-disable-next-line max-params
-  constructor(message, options = {}, stdin = process.stdin, stdout = process.stdout) {
+  constructor(message, options = {}) {
+    const {
+      stdin = process.stdin,
+      stdout = process.stdout,
+      initial = false
+    } = options;
     super(message, stdin, stdout);
 
-    const { initial } = { ...kDefaultConfirmOptions, ...options };
     const Yes = `${ansi.bold.open}Yes${ansi.bold.close}`;
     const No = `${ansi.bold.open}No${ansi.bold.close}`;
     const tip = initial ? `${Yes}/no` : `yes/${No}`;
 
     this.initial = initial;
-    this.#question = new Promise((resolve) => {
-      const question = `\
-      ${ansi.bold.open}${SYMBOLS.QuestionMark} ${message}${ansi.bold.close}  ${ansi.grey.open}(${tip})${ansi.grey.close} `;
-      this.rl.question.bind(this.rl)(question,
+  }
+
+  #question() {
+    return new Promise((resolve) => {
+      const questionQuery = this.#getQuestionQuery();
+
+      this.rl.question(questionQuery,
         (answer) => {
+          this.history.push(questionQuery + answer);
+
           resolve(answer);
         }
       );
     });
   }
 
+  #getQuestionQuery() {
+    const query = `${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}`;
+
+    return `${query} ${ansi.grey.open}(${this.initial ? "Yes/no" : "yes/No"})${ansi.grey.close} `;
+  }
+
   #onQuestionAnswer() {
     this.clearLastLine();
-    this.stdout.write(`${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross} ${this.message}${EOL}`);
+    this.write(`${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross} ${this.message}${EOL}`);
   }
 
   #validateResult(result) {
@@ -49,7 +59,7 @@ export class ConfirmPrompt extends AbstractPrompt {
 
   async confirm() {
     try {
-      const result = await this.#question;
+      const result = await this.#question();
       this.answer = this.#validateResult(result) ? ["y", "yes"].includes(result.toLocaleLowerCase()) : this.initial;
       this.#onQuestionAnswer();
 

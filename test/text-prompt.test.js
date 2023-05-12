@@ -32,4 +32,25 @@ describe("TextPrompt", () => {
       "✖ What's your name? › "
     ]);
   });
+
+  it("validator should not pass", async() => {
+    const logs = [];
+    const textPrompt = await TestingPrompt.TextPrompt(
+      "What's your name?",
+      ["test1", "test10", "test2"],
+      (log) => logs.push(log),
+      [{
+        validate: (input) => !input.startsWith("test1"),
+        error: (input) => `Value cannot start with 'test1', given ${input}.`
+      }]
+    );
+    const input = await textPrompt.question();
+    assert.deepEqual(input, "test2");
+    assert.deepEqual(logs, [
+      "? What's your name?",
+      "? What's your name? [Value cannot start with 'test1', given test1.]",
+      "? What's your name? [Value cannot start with 'test1', given test10.]",
+      "✔ What's your name? › test2"
+    ]);
+  });
 });

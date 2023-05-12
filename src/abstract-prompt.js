@@ -1,5 +1,9 @@
 // Import Node.js Dependencies
+import { EOL } from "node:os";
 import { createInterface } from "node:readline";
+
+// Import Third-party Dependencies
+import stripAnsi from "strip-ansi";
 
 export class AbstractPrompt {
   constructor(message, input = process.stdin, output = process.stdout) {
@@ -14,6 +18,7 @@ export class AbstractPrompt {
     this.stdin = input;
     this.stdout = output;
     this.message = message;
+    this.history = [];
 
     if (this.stdout.isTTY) {
       this.stdin.setRawMode(true);
@@ -21,9 +26,25 @@ export class AbstractPrompt {
     this.rl = createInterface({ input, output });
   }
 
+  write(data) {
+    const formattedData = stripAnsi(data).replace(EOL, "");
+    if (formattedData) {
+      this.history.push(formattedData);
+    }
+
+    return this.stdout.write(data);
+  }
+
   clearLastLine() {
-    this.stdout.moveCursor(0, -1);
-    this.stdout.clearLine();
+    const lastLine = this.history.pop();
+    if (!lastLine) {
+      return;
+    }
+
+    const lastLineRows = Math.ceil(stripAnsi(lastLine).length / this.stdout.columns);
+
+    this.stdout.moveCursor(0, -lastLineRows);
+    this.stdout.clearScreenDown();
   }
 
   destroy() {
