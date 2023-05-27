@@ -9,7 +9,7 @@ import stripAnsi from "strip-ansi";
 import { AbstractPrompt } from "./abstract-prompt.js";
 import { SYMBOLS } from "./constants.js";
 
-export class TextPrompt extends AbstractPrompt {
+export class QuestionPrompt extends AbstractPrompt {
   #validators;
 
   constructor(message, options = {}) {

@@ -45,10 +45,10 @@ console.log(name, runner, isCLI);^
 
 ## API
 
-### `prompt()`
+### `question()`
 
 ```ts
-prompt(message: string, options?: PromptOptions): Promise<string>
+question(message: string, options?: PromptOptions): Promise<string>
 ```
 
 Simple prompt, similar to `rl.question()` with an improved UI.
@@ -57,7 +57,7 @@ Use `options.validators` to handle user input.
 **Example**
 
 ```js
-const packageName = await prompt('Package name', {
+const packageName = await question('Package name', {
   validators: [
     {
       validate: (value) => !existsSync(join(process.cwd(), value)),
