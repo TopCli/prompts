@@ -2,6 +2,7 @@
 import { ConfirmPrompt } from "./src/confirm-prompt.js";
 import { SelectPrompt } from "./src/select-prompt.js";
 import { TextPrompt } from "./src/text-prompt.js";
+import { required } from "./src/validators.js";
 
 export async function prompt(message, options = {}) {
   const textPrompt = new TextPrompt(message, options);
@@ -20,3 +21,5 @@ export async function confirm(message, options) {
 
   return confirmPrompt.confirm();
 }
+
+export { required };

@@ -1,8 +1,10 @@
 export interface PromptOptions {
-  validators?: {
-    validate: (input: string) => boolean;
-    error: (input: string) => string;
-  }[];
+  validators?: Validator[];
+}
+
+export interface Validator {
+  validate: (input: string) => boolean;
+  error: (input?: string) => string;
 }
 
 export interface Choice {
@@ -24,3 +26,5 @@ export interface ConfirmOptions {
 export function prompt(message: string, options?: PromptOptions): Promise<string>;
 export function select(message: string, options: SelectOptions): Promise<string>;
 export function confirm(message: string, options?: ConfirmOptions): Promise<string>;
+
+export function required(): Validator;

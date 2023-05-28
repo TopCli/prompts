@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 // Import Internal Dependencies
 import { TextPrompt } from "../src/text-prompt.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
+import { required } from "../src/validators.js";
 
 describe("TextPrompt", () => {
   it("message should be string", async() => {
@@ -15,8 +16,8 @@ describe("TextPrompt", () => {
     const logs = [];
     const textPrompt = await TestingPrompt.TextPrompt("What's your name?", "Joe", (log) => logs.push(log));
     const input = await textPrompt.question();
-    assert.deepEqual(input, "Joe");
-    assert.deepEqual(logs, [
+    assert.equal(input, "Joe");
+    assert.deepStrictEqual(logs, [
       "? What's your name?",
       "✔ What's your name? › Joe"
     ]);
@@ -26,8 +27,8 @@ describe("TextPrompt", () => {
     const logs = [];
     const textPrompt = await TestingPrompt.TextPrompt("What's your name?", undefined, (log) => logs.push(log));
     const input = await textPrompt.question();
-    assert.deepEqual(input, undefined);
-    assert.deepEqual(logs, [
+    assert.strictEqual(input, undefined);
+    assert.deepStrictEqual(logs, [
       "? What's your name?",
       "✖ What's your name? › "
     ]);
@@ -45,12 +46,30 @@ describe("TextPrompt", () => {
       }]
     );
     const input = await textPrompt.question();
-    assert.deepEqual(input, "test2");
-    assert.deepEqual(logs, [
+    assert.equal(input, "test2");
+    assert.deepStrictEqual(logs, [
       "? What's your name?",
       "? What's your name? [Value cannot start with 'test1', given test1.]",
       "? What's your name? [Value cannot start with 'test1', given test10.]",
       "✔ What's your name? › test2"
+    ]);
+  });
+
+  it("input should be required", async() => {
+    const logs = [];
+    const textPrompt = await TestingPrompt.TextPrompt(
+      "What's your name?",
+      ["", "toto"],
+      (log) => logs.push(log),
+      [required()]
+    );
+    const input = await textPrompt.question();
+
+    assert.equal(input, "toto");
+    assert.deepStrictEqual(logs, [
+      "? What's your name?",
+      "? What's your name? [required]",
+      "✔ What's your name? › toto"
     ]);
   });
 });
