@@ -27,15 +27,20 @@ $ yarn add @topcli/prompts
 You can locally run `node ./demo.js`
 
 ```js
-import { prompt, confirm, select } from '@topcli/prompts'
+import { prompt, confirm, select } from '@topcli/prompts';
 
-const kTestRunner = ['node', 'tap', 'tape', 'vitest', 'mocha', 'ava']
+const kTestRunner = ['node', 'tap', 'tape', 'vitest', 'mocha', 'ava'];
 
-const name = await prompt('Project name ?')
-const runner = await select('Choose a test runner', { choices: kTestRunner, maxVisible: 5 })
-const isCLI = await confirm('Your project is a CLI ?', { initial: true })
+const name = await prompt('Project name ?');
+const runner = await select('Choose a test runner', {
+  choices: kTestRunner,
+  maxVisible: 5
+});
+const isCLI = await confirm('Your project is a CLI ?', {
+  initial: true
+});
 
-console.log(name, runner, isCLI)
+console.log(name, runner, isCLI);^
 ```
 
 ## API
@@ -59,7 +64,19 @@ const packageName = await prompt('Package name', {
       error: (value) => `Folder ${value} already exists`
     }
   ]
-})
+});
+```
+
+**This package provide some validators for common usage**
+
+- required
+
+```js
+import { prompt, required } from "@topcli/prompts";
+
+const name = await prompt("What's your name ?", {
+  validators: [required()]
+});
 ```
 
 ### `select()`
