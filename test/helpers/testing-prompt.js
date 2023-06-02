@@ -7,10 +7,10 @@ import { mockProcess } from "./mock-process.js";
 
 export class TestingPrompt {
   // eslint-disable-next-line max-params
-  static async TextPrompt(message, input, onStdoutWriteCallback, validators) {
+  static async QuestionPrompt(message, input, onStdoutWriteCallback, validators) {
     const inputs = Array.isArray(input) ? input : [input];
 
-    const { TextPrompt } = await esmock("../../src/text-prompt", { }, {
+    const { QuestionPrompt } = await esmock("../../src/question-prompt", { }, {
       readline: {
         createInterface: () => {
           return {
@@ -25,7 +25,7 @@ export class TestingPrompt {
     });
     const { stdin, stdout } = mockProcess([], (data) => onStdoutWriteCallback(data));
 
-    return new TextPrompt(message, { stdin, stdout, validators });
+    return new QuestionPrompt(message, { stdin, stdout, validators });
   }
 
   // eslint-disable-next-line max-params

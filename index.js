@@ -1,13 +1,13 @@
 // Import Internal Dependencies
 import { ConfirmPrompt } from "./src/confirm-prompt.js";
 import { SelectPrompt } from "./src/select-prompt.js";
-import { TextPrompt } from "./src/text-prompt.js";
+import { QuestionPrompt } from "./src/question-prompt.js";
 import { required } from "./src/validators.js";
 
-export async function prompt(message, options = {}) {
-  const textPrompt = new TextPrompt(message, options);
+export async function question(message, options = {}) {
+  const questionPrompt = new QuestionPrompt(message, options);
 
-  return textPrompt.question();
+  return questionPrompt.question();
 }
 
 export async function select(message, options) {
