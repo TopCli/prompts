@@ -13,7 +13,10 @@ describe("ConfirmPrompt", () => {
 
   it("should return initial, which is equal false by default", async() => {
     const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", undefined, (log) => logs.push(log));
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      input: undefined,
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await confirmPrompt.confirm();
 
     assert.deepEqual(input, false);
@@ -25,7 +28,10 @@ describe("ConfirmPrompt", () => {
 
   it("should return true given input \"y\"", async() => {
     const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", "y", (log) => logs.push(log));
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      input: "y",
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await confirmPrompt.confirm();
 
     assert.deepEqual(input, true);
@@ -37,7 +43,10 @@ describe("ConfirmPrompt", () => {
 
   it("should return true given input \"yes\"", async() => {
     const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", "yes", (log) => logs.push(log));
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      input: "yes",
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await confirmPrompt.confirm();
 
     assert.deepEqual(input, true);
@@ -49,7 +58,10 @@ describe("ConfirmPrompt", () => {
 
   it("should return false given input \"n\"", async() => {
     const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", "n", (log) => logs.push(log));
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      input: "n",
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await confirmPrompt.confirm();
 
     assert.deepEqual(input, false);
@@ -61,7 +73,10 @@ describe("ConfirmPrompt", () => {
 
   it("should return false given input \"no\"", async() => {
     const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", "n", (log) => logs.push(log));
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      input: "no",
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await confirmPrompt.confirm();
 
     assert.deepEqual(input, false);
@@ -73,7 +88,10 @@ describe("ConfirmPrompt", () => {
 
   it("input should not be case sensitive", async() => {
     const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", "yEs", (log) => logs.push(log));
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      input: "yEs",
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await confirmPrompt.confirm();
 
     assert.deepEqual(input, true);
@@ -83,15 +101,35 @@ describe("ConfirmPrompt", () => {
     ]);
   });
 
-  it("should return initial when input is not \"y\"/\"yes\"/\"n\"/\"no\"", async() => {
+  it("should return initial (true) when input is not 'y'|'yes'|'n'|'no'", async() => {
     const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", "bar", (log) => logs.push(log), true);
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      input: "bar",
+      initial: true,
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await confirmPrompt.confirm();
 
     assert.deepEqual(input, true);
     assert.deepEqual(logs, [
       "? Foo (Yes/no)",
       "✔ Foo"
+    ]);
+  });
+
+  it("should return initial (false) when input is not 'y'|'yes'|'n'|'no'", async() => {
+    const logs = [];
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      input: "bar",
+      initial: false,
+      onStdoutWrite: (log) => logs.push(log)
+    });
+    const input = await confirmPrompt.confirm();
+
+    assert.deepEqual(input, false);
+    assert.deepEqual(logs, [
+      "? Foo (yes/No)",
+      "✖ Foo"
     ]);
   });
 });

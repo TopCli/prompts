@@ -1,5 +1,3 @@
-/* eslint-disable line-comment-position */
-
 // Import Node.js Dependencies
 import assert from "node:assert";
 import { describe, it } from "node:test";
@@ -8,17 +6,31 @@ import { describe, it } from "node:test";
 import { SelectPrompt } from "../src/select-prompt.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
 
+const kInputs = {
+  down: { name: "down" },
+  return: { name: "return" }
+};
+
 describe("SelectPrompt", () => {
   it("message should be required", () => {
-    assert.throws(() => new SelectPrompt(12), { name: "TypeError", message: "message must be string, number given." });
+    assert.throws(() => new SelectPrompt(12), {
+      name: "TypeError",
+      message: "message must be string, number given."
+    });
   });
 
   it("Options should be required", () => {
-    assert.throws(() => new SelectPrompt("foo"), { name: "TypeError", message: "Missing required options" });
+    assert.throws(() => new SelectPrompt("foo"), {
+      name: "TypeError",
+      message: "Missing required options"
+    });
   });
 
   it("choices should be required", async() => {
-    assert.throws(() => new SelectPrompt("foo", { }), { name: "TypeError", message: "Missing required param: choices" });
+    assert.throws(() => new SelectPrompt("foo", {}), {
+      name: "TypeError",
+      message: "Missing required param: choices"
+    });
   });
 
   it("choice.label should be required", async() => {
@@ -27,7 +39,10 @@ describe("SelectPrompt", () => {
         description: "foo",
         value: true
       }]
-    }), { name: "TypeError", message: "Missing label for choice {\"description\":\"foo\",\"value\":true}" });
+    }), {
+      name: "TypeError",
+      message: "Missing label for choice {\"description\":\"foo\",\"value\":true}"
+    });
   });
 
   it("choice.value should be required", async() => {
@@ -36,7 +51,10 @@ describe("SelectPrompt", () => {
         label: "foo",
         description: "bar"
       }]
-    }), { name: "TypeError", message: "Missing value for choice {\"label\":\"foo\",\"description\":\"bar\"}" });
+    }), {
+      name: "TypeError",
+      message: "Missing value for choice {\"label\":\"foo\",\"description\":\"bar\"}"
+    });
   });
 
   it("When press <return>, it should select the first choice.", async() => {
@@ -44,19 +62,21 @@ describe("SelectPrompt", () => {
     const options = {
       choices: ["foo", "bar"]
     };
-    const inputs = [{ name: "return" }];
+    const inputs = [kInputs.return];
     const logs = [];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
-      options,
-      inputs,
-      (log) => logs.push(log)
+      {
+        ...options,
+        inputs: [kInputs.return],
+        onStdoutWrite: (log) => logs.push(log)
+      }
     );
 
     const input = await selectPrompt.select();
 
-    assert.deepEqual(input, "foo");
-    assert.deepEqual(logs, [
+    assert.equal(input, "foo");
+    assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
       " › foo",
       "   bar",
@@ -71,19 +91,21 @@ describe("SelectPrompt", () => {
       choices: ["foo", "bar"]
     };
     const inputs = [
-      { name: "down" },
-      { name: "return" }
+      kInputs.down,
+      kInputs.return
     ];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
-      options,
-      inputs,
-      (log) => logs.push(log)
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
     );
 
     const input = await selectPrompt.select();
 
-    assert.deepEqual(logs, [
+    assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
       " › foo",
       "   bar",
@@ -91,7 +113,7 @@ describe("SelectPrompt", () => {
       " › bar",
       "✔ Choose between foo & bar › bar"
     ]);
-    assert.deepEqual(input, "bar");
+    assert.equal(input, "bar");
   });
 
   it("It should work with choice objects.", async() => {
@@ -103,23 +125,24 @@ describe("SelectPrompt", () => {
         { value: "bar", label: "bar" }
       ]
     };
-    const inputs = [{ name: "return" }];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
-      options,
-      inputs,
-      (log) => logs.push(log)
+      {
+        ...options,
+        inputs: [kInputs.return],
+        onStdoutWrite: (log) => logs.push(log)
+      }
     );
 
     const input = await selectPrompt.select();
 
-    assert.deepEqual(logs, [
+    assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
       " › foo",
       "   bar",
       "✔ Choose between foo & bar › foo"
     ]);
-    assert.deepEqual(input, "foo");
+    assert.equal(input, "foo");
   });
 
   it("When the first item is selected and the up arrow is pressed, the last item should be selected.", async() => {
@@ -132,19 +155,21 @@ describe("SelectPrompt", () => {
       ]
     };
     const inputs = [
-      { name: "down" },
-      { name: "return" }
+      kInputs.down,
+      kInputs.return
     ];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
-      options,
-      inputs,
-      (log) => logs.push(log)
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
     );
 
     const input = await selectPrompt.select();
 
-    assert.deepEqual(logs, [
+    assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
       " › foo",
       "   bar",
@@ -152,7 +177,7 @@ describe("SelectPrompt", () => {
       " › bar",
       "✔ Choose between foo & bar › bar"
     ]);
-    assert.deepEqual(input, "bar");
+    assert.equal(input, "bar");
   });
 
   it("When the first item is selected and the up arrow is pressed, the last item should be selected.", async() => {
@@ -165,20 +190,22 @@ describe("SelectPrompt", () => {
       ]
     };
     const inputs = [
-      { name: "down" },
-      { name: "down" },
-      { name: "return" }
+      kInputs.down,
+      kInputs.down,
+      kInputs.return
     ];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
-      options,
-      inputs,
-      (log) => logs.push(log)
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
     );
 
     const input = await selectPrompt.select();
 
-    assert.deepEqual(logs, [
+    assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
       " › foo",
       "   bar",
@@ -188,7 +215,7 @@ describe("SelectPrompt", () => {
       "   bar",
       "✔ Choose between foo & bar › foo"
     ]);
-    assert.deepEqual(input, "foo");
+    assert.equal(input, "foo");
   });
 
   it("It should ignore foo.", async() => {
@@ -201,23 +228,24 @@ describe("SelectPrompt", () => {
       ],
       ignoreValues: ["foo"]
     };
-    const inputs = [{ name: "return" }];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
-      options,
-      inputs,
-      (log) => logs.push(log)
+      {
+        ...options,
+        inputs: [kInputs.return],
+        onStdoutWrite: (log) => logs.push(log)
+      }
     );
 
     const input = await selectPrompt.select();
 
-    assert.deepEqual(logs, [
+    assert.equal(input, "foo");
+    assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
       " › foo",
       "   bar"
-      // '✔ Choose between foo & bar › foo'
+      // '✔ Choose between foo & bar › foo' <-- not displayed because foo is ignored
     ]);
-    assert.deepEqual(input, "foo");
   });
 
   it("Should display 5 choices and allow scrolling.", async() => {
@@ -239,21 +267,23 @@ describe("SelectPrompt", () => {
       maxVisible: 5
     };
     const inputs = [
-      { name: "down" },
-      { name: "down" },
-      { name: "down" },
-      { name: "return" }
+      kInputs.down,
+      kInputs.down,
+      kInputs.down,
+      kInputs.return
     ];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
-      options,
-      inputs,
-      (log) => logs.push(log)
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
     );
 
     const input = await selectPrompt.select();
 
-    assert.deepEqual(logs, [
+    assert.deepStrictEqual(logs, [
       "? Choose option",
       // Firstly, it renders the first 5 choices. (as maxVisible is 5)
       " › Option 1 ",
@@ -287,7 +317,7 @@ describe("SelectPrompt", () => {
       // Finally, the user presses the return key and the selected option is returned & displayed.
       "✔ Choose option › Option 4"
     ]);
-    assert.deepEqual(input, "option4");
+    assert.equal(input, "option4");
   });
 
   it("Choices descriptions should be aligned.", async() => {
@@ -300,25 +330,24 @@ describe("SelectPrompt", () => {
       ],
       maxVisible: 5
     };
-    const inputs = [
-      { name: "return" }
-    ];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
-      options,
-      inputs,
-      (log) => logs.push(log)
+      {
+        ...options,
+        inputs: [kInputs.return],
+        onStdoutWrite: (log) => logs.push(log)
+      }
     );
 
     const input = await selectPrompt.select();
 
-    assert.deepEqual(logs, [
+    assert.deepStrictEqual(logs, [
       "? Choose option",
       " › one      - foo",
       "   Option 2 - foo",
       "✔ Choose option › one"
     ]);
-    assert.deepEqual(input, "option1");
+    assert.equal(input, "option1");
   });
 
   it("Choices descriptions should not be aligned as longest choice is too long.", async() => {
@@ -332,14 +361,13 @@ describe("SelectPrompt", () => {
       ],
       maxVisible: 5
     };
-    const inputs = [
-      { name: "return" }
-    ];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
-      options,
-      inputs,
-      (log) => logs.push(log)
+      {
+        ...options,
+        inputs: [kInputs.return],
+        onStdoutWrite: (log) => logs.push(log)
+      }
     );
 
     const input = await selectPrompt.select();
@@ -351,6 +379,6 @@ describe("SelectPrompt", () => {
       "   Option three - foo",
       "✔ Choose option › one"
     ]);
-    assert.deepEqual(input, "option1");
+    assert.equal(input, "option1");
   });
 });
