@@ -14,7 +14,10 @@ describe("QuestionPrompt", () => {
 
   it("should render with tick on valid input", async() => {
     const logs = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", "Joe", (log) => logs.push(log));
+    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
+      input: "Joe",
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await questionPrompt.question();
     assert.equal(input, "Joe");
     assert.deepStrictEqual(logs, [
@@ -25,7 +28,10 @@ describe("QuestionPrompt", () => {
 
   it("should render cross on invalid input", async() => {
     const logs = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", undefined, (log) => logs.push(log));
+    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
+      input: undefined,
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await questionPrompt.question();
     assert.strictEqual(input, undefined);
     assert.deepStrictEqual(logs, [
@@ -36,15 +42,14 @@ describe("QuestionPrompt", () => {
 
   it("validator should not pass", async() => {
     const logs = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt(
-      "What's your name?",
-      ["test1", "test10", "test2"],
-      (log) => logs.push(log),
-      [{
+    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
+      input: ["test1", "test10", "test2"],
+      validators: [{
         validate: (input) => !input.startsWith("test1"),
         error: (input) => `Value cannot start with 'test1', given ${input}.`
-      }]
-    );
+      }],
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await questionPrompt.question();
     assert.equal(input, "test2");
     assert.deepStrictEqual(logs, [
@@ -57,12 +62,11 @@ describe("QuestionPrompt", () => {
 
   it("input should be required", async() => {
     const logs = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt(
-      "What's your name?",
-      ["", "toto"],
-      (log) => logs.push(log),
-      [required()]
-    );
+    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
+      input: ["", "toto"],
+      validators: [required()],
+      onStdoutWrite: (log) => logs.push(log)
+    });
     const input = await questionPrompt.question();
 
     assert.equal(input, "toto");
