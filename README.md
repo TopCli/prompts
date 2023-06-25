@@ -91,7 +91,7 @@ Use `ignoreValues` to skip result render & clear lines after a selected one.
 ### `confirm()`
 
 ```ts
-confirm(message: string, options?: ConfirmOptions): Promise<string>
+confirm(message: string, options?: ConfirmOptions): Promise<boolean>
 ```
 
 Boolean prompt, return `options.initial` if user input is different from "y"/"yes"/"n"/"no", (default `false`).

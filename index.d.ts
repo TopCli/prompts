@@ -25,6 +25,6 @@ export interface ConfirmOptions {
 
 export function question(message: string, options?: PromptOptions): Promise<string>;
 export function select(message: string, options: SelectOptions): Promise<string>;
-export function confirm(message: string, options?: ConfirmOptions): Promise<string>;
+export function confirm(message: string, options?: ConfirmOptions): Promise<boolean>;
 
 export function required(): Validator;
