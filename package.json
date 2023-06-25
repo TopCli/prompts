@@ -1,6 +1,6 @@
 {
   "name": "@topcli/prompts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node.js user input library for command-line interfaces.",
   "scripts": {
     "test": "node --loader=esmock --test ./test/**.test.js",
