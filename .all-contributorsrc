@@ -1,0 +1,44 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "PierreDemailly",
+      "name": "PierreDemailly",
+      "avatar_url": "https://avatars.githubusercontent.com/u/39910767?v=4",
+      "profile": "https://github.com/PierreDemailly",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "fraxken",
+      "name": "Gentilhomme",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4438263?v=4",
+      "profile": "https://www.linkedin.com/in/thomas-gentilhomme/",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "tony-go",
+      "name": "Tony Gorez",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/22824417?v=4",
+      "profile": "http://tonygo.dev",
+      "contributions": [
+        "review"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "prompts",
+  "projectOwner": "TopCli",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true,
+  "commitConvention": "angular"
+}
