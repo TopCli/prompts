@@ -1,17 +1,31 @@
 // Import Third-party Dependencies
-import ansi from "ansi-styles";
+import kleur from "kleur";
+import isUnicodeSupported from "is-unicode-supported";
 
-const kPointer = `${ansi.gray.open}›${ansi.gray.close}`;
+const kMainSymbols = {
+  tick: "✔",
+  cross: "✖",
+  pointer: "›",
+  previous: "⭡",
+  next: "⭣"
+};
+const kFallbackSymbols = {
+  tick: "√",
+  cross: "×",
+  pointer: ">",
+  previous: "↑",
+  next: "↓"
+};
+const kSymbols = isUnicodeSupported() ? kMainSymbols : kFallbackSymbols;
+const kPointer = kleur.gray(kSymbols.pointer);
 
 export const SYMBOLS = {
-  QuestionMark: `${ansi.blue.open}?${ansi.blue.close}`,
-  Tick: `${ansi.green.open}✔${ansi.green.close}`,
-  Cross: `${ansi.red.open}✖${ansi.red.close}`,
+  QuestionMark: kleur.blue().bold("?"),
+  Tick: kleur.green().bold(kSymbols.tick),
+  Cross: kleur.red().bold(kSymbols.cross),
   Pointer: kPointer,
-  Active: `${ansi.reset.open}${kPointer}`,
-  Inactive: `${ansi.gray.open}`,
-  Previous: "⭡",
-  Next: "⭣",
+  Previous: kSymbols.previous,
+  Next: kSymbols.next,
   ShowCursor: "\x1B[?25h",
   HideCursor: "\x1B[?25l"
 };

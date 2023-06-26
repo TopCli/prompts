@@ -2,7 +2,7 @@
 import { EOL } from "node:os";
 
 // Import Third-party Dependencies
-import ansi from "ansi-styles";
+import kleur from "kleur";
 
 // Import Internal Dependencies
 import { AbstractPrompt } from "./abstract-prompt.js";
@@ -17,9 +17,9 @@ export class ConfirmPrompt extends AbstractPrompt {
     } = options;
     super(message, stdin, stdout);
 
-    const Yes = `${ansi.bold.open}Yes${ansi.bold.close}`;
-    const No = `${ansi.bold.open}No${ansi.bold.close}`;
-    const tip = initial ? `${Yes}/no` : `yes/${No}`;
+    const Yes = kleur.bold("Yes");
+    const No = kleur.bold("No");
+    this.tip = kleur.gray(initial ? `(${Yes}/no)` : `(yes/${No})`);
 
     this.initial = initial;
   }
@@ -39,14 +39,14 @@ export class ConfirmPrompt extends AbstractPrompt {
   }
 
   #getQuestionQuery() {
-    const query = `${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}`;
+    const query = kleur.bold(`${SYMBOLS.QuestionMark} ${this.message}`);
 
-    return `${query} ${ansi.grey.open}(${this.initial ? "Yes/no" : "yes/No"})${ansi.grey.close} `;
+    return `${query} ${this.tip} `;
   }
 
   #onQuestionAnswer() {
     this.clearLastLine();
-    this.write(`${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross} ${this.message}${EOL}`);
+    this.write(`${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross} ${kleur.bold(this.message)}${EOL}`);
   }
 
   #validateResult(result) {

@@ -2,8 +2,7 @@
 import { EOL } from "node:os";
 
 // Import Third-party Dependencies
-import ansi from "ansi-styles";
-import stripAnsi from "strip-ansi";
+import kleur from "kleur";
 
 // Import Internal Dependencies
 import { AbstractPrompt } from "./abstract-prompt.js";
@@ -17,8 +16,6 @@ export class QuestionPrompt extends AbstractPrompt {
     super(message, stdin, stdout);
 
     this.#validators = validators;
-    this.questionPrefix = `${ansi.bold.open}${SYMBOLS.QuestionMark} `;
-    this.questionSuffix = `${ansi.bold.close} `;
     this.questionSuffixError = "";
   }
 
@@ -35,19 +32,19 @@ export class QuestionPrompt extends AbstractPrompt {
   }
 
   #getQuestionQuery() {
-    return `${this.questionPrefix}${this.message}${this.questionSuffix}${this.questionSuffixError}`;
+    return `${kleur.bold(`${SYMBOLS.QuestionMark} ${this.message}`)} ${this.questionSuffixError}`;
   }
 
   #setQuestionSuffixError(error) {
-    const suffix = `${ansi.red.open}[${error}]${ansi.red.close} `;
+    const suffix = kleur.red(`[${error}] `);
     this.questionSuffixError = suffix;
   }
 
   #writeAnswer() {
-    const prefix = `${ansi.bold.open}${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross}`;
-    const suffix = `${ansi.yellow.close}${ansi.bold.close}${EOL}`;
+    const prefix = this.answer ? SYMBOLS.Tick : SYMBOLS.Cross;
+    const answer = kleur.yellow(this.answer ?? "");
 
-    this.write(`${prefix} ${this.message} ${SYMBOLS.Pointer} ${ansi.yellow.open}${this.answer ?? ""}${suffix}`);
+    this.write(`${prefix} ${kleur.bold(this.message)} ${SYMBOLS.Pointer} ${answer}${EOL}`);
   }
 
   #onQuestionAnswer() {

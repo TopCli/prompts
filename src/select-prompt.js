@@ -2,7 +2,7 @@
 import { EOL } from "node:os";
 
 // Import Third-party Dependencies
-import ansi from "ansi-styles";
+import kleur from "kleur";
 
 // Import Internal Dependencies
 import { AbstractPrompt } from "./abstract-prompt.js";
@@ -82,6 +82,7 @@ export class SelectPrompt extends AbstractPrompt {
 
     for (let choiceIndex = startIndex; choiceIndex < endIndex; choiceIndex++) {
       const choice = this.#getFormattedChoice(choiceIndex);
+      const isChoiceSelected = choiceIndex === this.activeIndex;
       const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
       const showNextChoicesArrow = endIndex < this.choices.length && choiceIndex === endIndex - 1;
 
@@ -93,20 +94,21 @@ export class SelectPrompt extends AbstractPrompt {
         prefixArrow = SYMBOLS.Next;
       }
 
-      const prefix = `${prefixArrow}${choiceIndex === this.activeIndex ? `${SYMBOLS.Active} ` : `${SYMBOLS.Inactive}  `}`;
+      const prefix = `${prefixArrow}${isChoiceSelected ? `${SYMBOLS.Pointer} ` : "  "}`;
       const formattedLabel = choice.label.padEnd(
         this.longestChoice < 10 ? this.longestChoice : 0
       );
       const formattedDescription = choice.description ? ` - ${choice.description}` : "";
-      const str = `${prefix}${formattedLabel}${formattedDescription}${ansi.reset.open}${EOL}`;
+      const color = isChoiceSelected ? kleur.white().bold : kleur.gray;
+      const str = color(`${prefix}${formattedLabel}${formattedDescription}${EOL}`);
 
       this.write(str);
     }
   }
 
   #showAnsweredQuestion(choice) {
-    const prefix = `${ansi.bold.open}${SYMBOLS.Tick} ${this.message} ${SYMBOLS.Pointer}`;
-    const formattedChoice = `${ansi.yellow.open}${choice.label ?? choice}${ansi.reset.open}`;
+    const prefix = `${SYMBOLS.Tick} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
+    const formattedChoice = kleur.yellow(choice.label ?? choice);
 
     this.write(`${prefix} ${formattedChoice}${EOL}`);
   }
@@ -175,6 +177,6 @@ export class SelectPrompt extends AbstractPrompt {
   }
 
   #showQuestion() {
-    this.write(`${ansi.bold.open}${SYMBOLS.QuestionMark} ${this.message}${ansi.bold.close}${EOL}`);
+    this.write(`${SYMBOLS.QuestionMark} ${kleur.bold(this.message)}${EOL}`);
   }
 }
