@@ -76,4 +76,32 @@ describe("QuestionPrompt", () => {
       "✔ What's your name? › toto"
     ]);
   });
+
+  it("should return the default value", async() => {
+    const logs = [];
+    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
+      input: [""],
+      defaultValue: "John Doe",
+      onStdoutWrite: (log) => logs.push(log)
+    });
+    const input = await questionPrompt.question();
+
+    assert.equal(input, "John Doe");
+    assert.deepStrictEqual(logs, [
+      "? What's your name? (John Doe)",
+      "✔ What's your name? › John Doe"
+    ]);
+  });
+
+  it("should throw when given defaultValue is not a string", async() => {
+    await assert.rejects(async() => {
+      await TestingPrompt.QuestionPrompt("What's your name?", {
+        input: [""],
+        defaultValue: { foo: "bar" }
+      });
+    }, {
+      name: "TypeError",
+      message: "defaultValue must be a string"
+    });
+  });
 });

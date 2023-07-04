@@ -1,4 +1,5 @@
 export interface PromptOptions {
+  defaultValue?: string;
   validators?: Validator[];
 }
 

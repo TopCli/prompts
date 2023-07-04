@@ -12,9 +12,21 @@ export class QuestionPrompt extends AbstractPrompt {
   #validators;
 
   constructor(message, options = {}) {
-    const { stdin = process.stdin, stdout = process.stdout, validators = [] } = options;
+    const {
+      stdin = process.stdin,
+      stdout = process.stdout,
+      defaultValue,
+      validators = []
+    } = options;
+
     super(message, stdin, stdout);
 
+    if (defaultValue && typeof defaultValue !== "string") {
+      throw new TypeError("defaultValue must be a string");
+    }
+
+    this.defaultValue = defaultValue;
+    this.tip = this.defaultValue ? ` (${this.defaultValue})` : "";
     this.#validators = validators;
     this.questionSuffixError = "";
   }
@@ -32,7 +44,7 @@ export class QuestionPrompt extends AbstractPrompt {
   }
 
   #getQuestionQuery() {
-    return `${kleur.bold(`${SYMBOLS.QuestionMark} ${this.message}`)} ${this.questionSuffixError}`;
+    return `${kleur.bold(`${SYMBOLS.QuestionMark} ${this.message}${this.tip}`)} ${this.questionSuffixError}`;
   }
 
   #setQuestionSuffixError(error) {
@@ -65,6 +77,10 @@ export class QuestionPrompt extends AbstractPrompt {
 
   async question() {
     this.answer = await this.#question();
+
+    if (this.answer === "" && this.defaultValue) {
+      this.answer = this.defaultValue;
+    }
 
     this.#onQuestionAnswer();
 

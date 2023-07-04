@@ -100,6 +100,7 @@ Boolean prompt, return `options.initial` if user input is different from "y"/"ye
 
 ```ts
 export interface PromptOptions {
+  defaultValue?: string;
   validators?: {
     validate: (input: string) => boolean;
     error: (input: string) => string;
