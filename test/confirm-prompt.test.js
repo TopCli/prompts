@@ -37,7 +37,7 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, false);
     assert.deepEqual(logs, [
-      "? Foo yes No",
+      "? Foo Yes/No",
       "✖ Foo"
     ]);
   });
@@ -53,7 +53,7 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, true);
     assert.deepEqual(logs, [
-      "? Foo Yes no",
+      "? Foo Yes/No",
       "✔ Foo"
     ]);
   });
@@ -73,10 +73,8 @@ describe("ConfirmPrompt", () => {
 
       assert.deepEqual(input, true);
       assert.deepEqual(logs, [
-        // By default, 'No' is selected as it is the default value (Capitalized)
-        "? Foo yes No",
-        // Then we press the key, so the selected value is now 'Yes'
-        "? Foo Yes no",
+        "? Foo Yes/No",
+        "? Foo Yes/No",
         "✔ Foo"
       ]);
     });
@@ -91,9 +89,9 @@ describe("ConfirmPrompt", () => {
 
       assert.deepEqual(input, false);
       assert.deepEqual(logs, [
-        "? Foo yes No",
-        "? Foo Yes no",
-        "? Foo yes No",
+        "? Foo Yes/No",
+        "? Foo Yes/No",
+        "? Foo Yes/No",
         "✖ Foo"
       ]);
     });
