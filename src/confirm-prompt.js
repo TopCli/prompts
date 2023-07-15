@@ -8,7 +8,25 @@ import kleur from "kleur";
 import { AbstractPrompt } from "./abstract-prompt.js";
 import { SYMBOLS } from "./constants.js";
 
+// CONSTANTS
+const kToggleKeys = new Set([
+  "left",
+  "right",
+  "tab",
+  "q",
+  "a",
+  "d",
+  "h",
+  "j",
+  "k",
+  "l",
+  "space"
+]);
+
 export class ConfirmPrompt extends AbstractPrompt {
+  #boundKeyPressEvent;
+  #boundExitEvent;
+
   constructor(message, options = {}) {
     const {
       stdin = process.stdin,
@@ -17,55 +35,83 @@ export class ConfirmPrompt extends AbstractPrompt {
     } = options;
     super(message, stdin, stdout);
 
-    const Yes = kleur.bold("Yes");
-    const No = kleur.bold("No");
-    this.tip = kleur.gray(initial ? `(${Yes}/no)` : `(yes/${No})`);
-
     this.initial = initial;
+    this.selectedValue = initial;
+  }
+
+  #getHint() {
+    const Yes = kleur.bold().underline().cyan("Yes");
+    const No = kleur.bold().underline().cyan("No");
+
+    return this.selectedValue ? `${Yes} no` : `yes ${No}`;
+  }
+
+  #render() {
+    this.write(this.#getQuestionQuery());
   }
 
   #question() {
     return new Promise((resolve) => {
       const questionQuery = this.#getQuestionQuery();
 
-      this.rl.question(questionQuery,
-        (answer) => {
-          this.history.push(questionQuery + answer);
+      this.write(questionQuery);
 
-          resolve(answer);
-        }
-      );
+      this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve);
+      this.stdin.on("keypress", this.#boundKeyPressEvent);
+
+      this.#boundExitEvent = this.#onProcessExit.bind(this);
+      process.once("exit", this.#boundExitEvent);
     });
+  }
+
+  #onKeypress(resolve, value, key) {
+    this.stdin.pause();
+    this.stdout.moveCursor(-this.#getQuestionQuery().length, 0);
+    this.stdout.clearScreenDown(() => this.stdin.resume());
+
+    if (key.name === "return") {
+      resolve(this.selectedValue);
+
+      return;
+    }
+
+    if (kToggleKeys.has(key.name)) {
+      this.selectedValue = !this.selectedValue;
+    }
+
+    this.#render();
+  }
+
+  #onProcessExit() {
+    this.stdin.off("keypress", this.#boundKeyPressEvent);
   }
 
   #getQuestionQuery() {
     const query = kleur.bold(`${SYMBOLS.QuestionMark} ${this.message}`);
 
-    return `${query} ${this.tip} `;
+    return `${query} ${this.#getHint()}`;
   }
 
   #onQuestionAnswer() {
     this.clearLastLine();
-    this.write(`${this.answer ? SYMBOLS.Tick : SYMBOLS.Cross} ${kleur.bold(this.message)}${EOL}`);
-  }
-
-  #validateResult(result) {
-    if (typeof result !== "string") {
-      return false;
-    }
-
-    return ["y", "yes", "no", "n"].includes(result.toLowerCase());
+    this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${kleur.bold(this.message)}${EOL}`);
   }
 
   async confirm() {
+    this.write(SYMBOLS.HideCursor);
+
     try {
-      const result = await this.#question();
-      this.answer = this.#validateResult(result) ? ["y", "yes"].includes(result.toLocaleLowerCase()) : this.initial;
+      await this.#question();
       this.#onQuestionAnswer();
 
-      return this.answer;
+      return this.selectedValue;
     }
     finally {
+      this.write(SYMBOLS.ShowCursor);
+
+      this.#onProcessExit();
+      process.off("exit", this.#boundExitEvent);
+
       this.destroy();
     }
   }

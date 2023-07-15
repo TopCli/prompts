@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "Node.js user input library for command-line interfaces.",
   "scripts": {
-    "test": "node --loader=esmock --test test/",
+    "test": "node --no-warnings=ExperimentalWarning --loader=esmock --test test/",
     "coverage": "c8 -r html npm run test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
