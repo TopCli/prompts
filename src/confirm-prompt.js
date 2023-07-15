@@ -43,7 +43,7 @@ export class ConfirmPrompt extends AbstractPrompt {
     const Yes = kleur.bold().underline().cyan("Yes");
     const No = kleur.bold().underline().cyan("No");
 
-    return this.selectedValue ? `${Yes} no` : `yes ${No}`;
+    return this.selectedValue ? `${Yes}/No` : `Yes/${No}`;
   }
 
   #render() {
