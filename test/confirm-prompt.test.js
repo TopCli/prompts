@@ -6,105 +6,46 @@ import { describe, it } from "node:test";
 import { ConfirmPrompt } from "../src/confirm-prompt.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
 
+// CONSTANTS
+const kInputs = {
+  left: { name: "left" },
+  right: { name: "right" },
+  tab: { name: "tab" },
+  q: { name: "q" },
+  a: { name: "a" },
+  d: { name: "d" },
+  h: { name: "h" },
+  j: { name: "j" },
+  k: { name: "k" },
+  l: { name: "l" },
+  space: { name: "space" },
+  return: { name: "return" }
+};
+
 describe("ConfirmPrompt", () => {
   it("message should be required", async() => {
     assert.throws(() => new ConfirmPrompt(12), { name: "TypeError", message: "message must be string, number given." });
   });
 
-  it("should return initial, which is equal false by default", async() => {
+  it("should return initial, which is equal to false by default", async() => {
     const logs = [];
     const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
-      input: undefined,
+      inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
     });
     const input = await confirmPrompt.confirm();
 
     assert.deepEqual(input, false);
     assert.deepEqual(logs, [
-      "? Foo (yes/No)",
+      "? Foo Yes/No",
       "✖ Foo"
     ]);
   });
 
-  it("should return true given input \"y\"", async() => {
+  it("should return true when instant return with initial 'true'", async() => {
     const logs = [];
     const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
-      input: "y",
-      onStdoutWrite: (log) => logs.push(log)
-    });
-    const input = await confirmPrompt.confirm();
-
-    assert.deepEqual(input, true);
-    assert.deepEqual(logs, [
-      "? Foo (yes/No)",
-      "✔ Foo"
-    ]);
-  });
-
-  it("should return true given input \"yes\"", async() => {
-    const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
-      input: "yes",
-      onStdoutWrite: (log) => logs.push(log)
-    });
-    const input = await confirmPrompt.confirm();
-
-    assert.deepEqual(input, true);
-    assert.deepEqual(logs, [
-      "? Foo (yes/No)",
-      "✔ Foo"
-    ]);
-  });
-
-  it("should return false given input \"n\"", async() => {
-    const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
-      input: "n",
-      onStdoutWrite: (log) => logs.push(log)
-    });
-    const input = await confirmPrompt.confirm();
-
-    assert.deepEqual(input, false);
-    assert.deepEqual(logs, [
-      "? Foo (yes/No)",
-      "✖ Foo"
-    ]);
-  });
-
-  it("should return false given input \"no\"", async() => {
-    const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
-      input: "no",
-      onStdoutWrite: (log) => logs.push(log)
-    });
-    const input = await confirmPrompt.confirm();
-
-    assert.deepEqual(input, false);
-    assert.deepEqual(logs, [
-      "? Foo (yes/No)",
-      "✖ Foo"
-    ]);
-  });
-
-  it("input should not be case sensitive", async() => {
-    const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
-      input: "yEs",
-      onStdoutWrite: (log) => logs.push(log)
-    });
-    const input = await confirmPrompt.confirm();
-
-    assert.deepEqual(input, true);
-    assert.deepEqual(logs, [
-      "? Foo (yes/No)",
-      "✔ Foo"
-    ]);
-  });
-
-  it("should return initial (true) when input is not 'y'|'yes'|'n'|'no'", async() => {
-    const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
-      input: "bar",
+      inputs: [kInputs.return],
       initial: true,
       onStdoutWrite: (log) => logs.push(log)
     });
@@ -112,24 +53,47 @@ describe("ConfirmPrompt", () => {
 
     assert.deepEqual(input, true);
     assert.deepEqual(logs, [
-      "? Foo (Yes/no)",
+      "? Foo Yes/No",
       "✔ Foo"
     ]);
   });
 
-  it("should return initial (false) when input is not 'y'|'yes'|'n'|'no'", async() => {
-    const logs = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
-      input: "bar",
-      initial: false,
-      onStdoutWrite: (log) => logs.push(log)
-    });
-    const input = await confirmPrompt.confirm();
+  for (const key of Object.keys(kInputs)) {
+    if (key === "return") {
+      continue;
+    }
 
-    assert.deepEqual(input, false);
-    assert.deepEqual(logs, [
-      "? Foo (yes/No)",
-      "✖ Foo"
-    ]);
-  });
+    it(`should switch value when pressing "${key}"`, async() => {
+      const logs = [];
+      const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+        inputs: [kInputs[key], kInputs.return],
+        onStdoutWrite: (log) => logs.push(log)
+      });
+      const input = await confirmPrompt.confirm();
+
+      assert.deepEqual(input, true);
+      assert.deepEqual(logs, [
+        "? Foo Yes/No",
+        "? Foo Yes/No",
+        "✔ Foo"
+      ]);
+    });
+
+    it(`should switch value multiple time when pressing "${key}"`, async() => {
+      const logs = [];
+      const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+        inputs: [kInputs[key], kInputs[key], kInputs.return],
+        onStdoutWrite: (log) => logs.push(log)
+      });
+      const input = await confirmPrompt.confirm();
+
+      assert.deepEqual(input, false);
+      assert.deepEqual(logs, [
+        "? Foo Yes/No",
+        "? Foo Yes/No",
+        "? Foo Yes/No",
+        "✖ Foo"
+      ]);
+    });
+  }
 });

@@ -45,21 +45,17 @@ export class TestingPrompt {
   }
 
   static async ConfirmPrompt(message, options) {
-    const { input, initial, onStdoutWrite } = options;
+    const { inputs, initial, onStdoutWrite } = options;
     const { ConfirmPrompt } = await esmock("../../src/confirm-prompt", { }, {
       readline: {
         createInterface: () => {
           return {
-            question: (query, onInput) => {
-              onInput(input);
-              onStdoutWrite(stripAnsi(query).trim());
-            },
             close: () => true
           };
         }
       }
     });
-    const { stdin, stdout } = mockProcess(input, (data) => onStdoutWrite(data));
+    const { stdin, stdout } = mockProcess(inputs, (data) => onStdoutWrite(data));
 
     return new ConfirmPrompt(message, { initial, stdin, stdout });
   }

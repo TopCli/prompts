@@ -40,7 +40,7 @@ const isCLI = await confirm('Your project is a CLI ?', {
   initial: true
 });
 
-console.log(name, runner, isCLI);^
+console.log(name, runner, isCLI);
 ```
 
 ## API

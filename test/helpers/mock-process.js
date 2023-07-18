@@ -22,7 +22,9 @@ export function mockProcess(inputs, writeCb) {
         cb(null, input);
       }
     },
-    off: () => true
+    off: () => true,
+    pause: () => true,
+    paused: () => false
   };
 
   return { stdout, stdin };
