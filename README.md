@@ -27,7 +27,7 @@ $ yarn add @topcli/prompts
 You can locally run `node ./demo.js`
 
 ```js
-import { question, confirm, select } from "./index.js";
+import { question, confirm, select } from "@topcli/prompts";
 
 const kTestRunner = ["node", "tap", "tape", "vitest", "mocha", "ava"];
 
