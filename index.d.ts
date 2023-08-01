@@ -2,7 +2,7 @@ export interface QuestionOptions {
   stdin?: NodeJS.ReadStream & {
     fd: 0;
   };
-  stdout?: NodeJS. WriteStream & {
+  stdout?: NodeJS.WriteStream & {
     fd: 1;
   };
   defaultValue?: string;
