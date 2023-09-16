@@ -6,6 +6,12 @@ import { describe, it } from "node:test";
 import { QuestionPrompt } from "../src/question-prompt.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
 import { required } from "../src/validators.js";
+import { PromptAgent } from "../src/prompt-agent.js";
+import { question } from "../index.js";
+import { mockProcess } from "./helpers/mock-process.js";
+
+// CONSTANTS
+const kPromptAgent = PromptAgent.agent();
 
 describe("QuestionPrompt", () => {
   it("message should be string", async() => {
@@ -14,28 +20,26 @@ describe("QuestionPrompt", () => {
 
   it("should render with tick on valid input", async() => {
     const logs = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
-      input: "Joe",
-      onStdoutWrite: (log) => logs.push(log)
-    });
-    const input = await questionPrompt.question();
+    const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
+    kPromptAgent.nextAnswer("Joe");
+
+    const input = await question("What's your name?", { stdin, stdout });
+
     assert.equal(input, "Joe");
     assert.deepStrictEqual(logs, [
-      "? What's your name?",
       "✔ What's your name? › Joe"
     ]);
   });
 
   it("should render cross on invalid input", async() => {
     const logs = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
-      input: undefined,
-      onStdoutWrite: (log) => logs.push(log)
-    });
-    const input = await questionPrompt.question();
+    const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
+    kPromptAgent.nextAnswer(undefined);
+
+    const input = await question("What's your name?", { stdin, stdout });
+
     assert.strictEqual(input, undefined);
     assert.deepStrictEqual(logs, [
-      "? What's your name?",
       "✖ What's your name? › "
     ]);
   });

@@ -5,10 +5,10 @@
 [![isc](https://img.shields.io/badge/License-ISC-blue.svg?style=for-the-badge)](https://github.com/TopCli/prompts/blob/main/LICENSE)
 ![build](https://img.shields.io/github/actions/workflow/status/TopCli/prompts/node.js.yml?style=for-the-badge)
 
-Node.js user input library for command-line interfaces.
+Node.js user prompt library for command-line interfaces.
 
 ## Requirements
-- [Node.js](https://nodejs.org/en/) v14 or higher
+- [Node.js](https://nodejs.org/en/) v16 or higher
 
 ## Getting Started
 
@@ -89,38 +89,64 @@ Use `ignoreValues` to skip result render & clear lines after a selected one.
 confirm(message: string, options?: ConfirmOptions): Promise<boolean>
 ```
 
-Boolean prompt, return `options.initial` if user input is different from "y"/"yes"/"n"/"no", (default `false`).
+Boolean prompt, return `options.initial` if user input is different from `y`/`yes`/`n`/`no` (case insensitive), (default `false`).
+
+### `PromptAgent`
+
+The `PromptAgent` class allows to programmatically set the next answers for any prompt function, this can be useful for testing.
+
+```ts
+const agent = PromptAgent.agent();
+agent.nextAnswer("John");
+
+const input = await question("What's your name?");
+assert.equal(input, "John");
+```
+
+> [!WARNING]
+> Answers set with `PromptAgent` will **bypass** any logical & validation rules.
+> Examples:
+> - When using `question()`, `validators` functions will not be executed.
+> - When using `select()`, the answer can be different from the available choices.
+> - When using `confirm()`, the answer can be any type other than boolean.
+> **Use with caution**
 
 ## Interfaces
 
 ```ts
-export interface PromptOptions {
-  defaultValue?: string;
-  validators?: {
-    validate: (input: string) => boolean;
-    error: (input: string) => string;
-  }[];
+export interface SharedOptions {
+  stdin?: NodeJS.ReadStream & {
+    fd: 0;
+  };
+  stdout?: NodeJS.WriteStream & {
+    fd: 1;
+  };
 }
-```
-```ts
+
+export interface Validator {
+  validate: (input: string) => boolean;
+  error: (input?: string) => string;
+}
+
+export interface QuestionOptions extends SharedOptions {
+  defaultValue?: string;
+  validators?: Validator[];
+}
+
 export interface Choice {
   value: any;
   label: string;
   description?: string;
 }
-```
 
-```ts
-export interface SelectOptions {
+export interface SelectOptions extends SharedOptions  {
   choices: (Choice | string)[];
-  maxVisible?: number = 8;
+  maxVisible?: number;
   ignoreValues?: (string | number | boolean)[];
 }
-```
 
-```ts
-export interface ConfirmOptions {
-  initial?: boolean = false;
+export interface ConfirmOptions extends SharedOptions  {
+  initial?: boolean;
 }
 ```
 

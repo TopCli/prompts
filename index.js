@@ -3,6 +3,7 @@ import { ConfirmPrompt } from "./src/confirm-prompt.js";
 import { SelectPrompt } from "./src/select-prompt.js";
 import { QuestionPrompt } from "./src/question-prompt.js";
 import { required } from "./src/validators.js";
+import { PromptAgent } from "./src/prompt-agent.js";
 
 export async function question(message, options = {}) {
   const questionPrompt = new QuestionPrompt(message, options);
@@ -22,4 +23,4 @@ export async function confirm(message, options) {
   return confirmPrompt.confirm();
 }
 
-export { required };
+export { required, PromptAgent };

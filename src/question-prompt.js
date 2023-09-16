@@ -76,6 +76,14 @@ export class QuestionPrompt extends AbstractPrompt {
   }
 
   async question() {
+    if (this.agent.nextAnswers.length > 0) {
+      this.answer = this.agent.nextAnswers.shift();
+      this.#writeAnswer();
+      this.destroy();
+
+      return this.answer;
+    }
+
     this.answer = await this.#question();
 
     if (this.answer === "" && this.defaultValue) {

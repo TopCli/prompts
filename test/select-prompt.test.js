@@ -5,11 +5,15 @@ import { describe, it } from "node:test";
 // Import Internal Dependencies
 import { SelectPrompt } from "../src/select-prompt.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
+import { mockProcess } from "./helpers/mock-process.js";
+import { PromptAgent } from "../src/prompt-agent.js";
+import { select } from "../index.js";
 
 const kInputs = {
   down: { name: "down" },
   return: { name: "return" }
 };
+const kPromptAgent = PromptAgent.agent();
 
 describe("SelectPrompt", () => {
   it("message should be required", () => {
@@ -380,5 +384,26 @@ describe("SelectPrompt", () => {
       "✔ Choose option › one"
     ]);
     assert.equal(input, "option1");
+  });
+
+  it("should return the answer set via PromptAgent", async() => {
+    const logs = [];
+    const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
+    kPromptAgent.nextAnswer("option1");
+
+    const options = {
+      choices: [
+        { value: "option1", label: "one", description: "foo" },
+        { value: "option2", label: "Option 2", description: "foo" },
+        { value: "option3", label: "Option three", description: "foo" }
+      ],
+      maxVisible: 5
+    };
+    const input = await select("Choose option", { ...options, stdin, stdout });
+
+    assert.equal(input, "option1");
+    assert.deepStrictEqual(logs, [
+      "✔ Choose option › option1"
+    ]);
   });
 });

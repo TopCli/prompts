@@ -98,6 +98,15 @@ export class ConfirmPrompt extends AbstractPrompt {
   }
 
   async confirm() {
+    if (this.agent.nextAnswers.length > 0) {
+      const answer = this.agent.nextAnswers.shift();
+      this.selectedValue = answer;
+      this.#onQuestionAnswer();
+      this.destroy();
+
+      return answer;
+    }
+
     this.write(SYMBOLS.HideCursor);
 
     try {

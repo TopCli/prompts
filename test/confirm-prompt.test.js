@@ -5,6 +5,9 @@ import { describe, it } from "node:test";
 // Import Internal Dependencies
 import { ConfirmPrompt } from "../src/confirm-prompt.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
+import { confirm } from "../index.js";
+import { mockProcess } from "./helpers/mock-process.js";
+import { PromptAgent } from "../src/prompt-agent.js";
 
 // CONSTANTS
 const kInputs = {
@@ -21,6 +24,7 @@ const kInputs = {
   space: { name: "space" },
   return: { name: "return" }
 };
+const kPromptAgent = PromptAgent.agent();
 
 describe("ConfirmPrompt", () => {
   it("message should be required", async() => {
@@ -96,4 +100,30 @@ describe("ConfirmPrompt", () => {
       ]);
     });
   }
+
+  it("should return the answer (true) set via PromptAgent", async() => {
+    const logs = [];
+    const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
+    kPromptAgent.nextAnswer(true);
+
+    const input = await confirm("Foo", { stdin, stdout });
+
+    assert.equal(input, true);
+    assert.deepStrictEqual(logs, [
+      "✔ Foo"
+    ]);
+  });
+
+  it("should return the answer (false) set via PromptAgent", async() => {
+    const logs = [];
+    const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
+    kPromptAgent.nextAnswer(false);
+
+    const input = await confirm("Foo", { stdin, stdout });
+
+    assert.equal(input, false);
+    assert.deepStrictEqual(logs, [
+      "✖ Foo"
+    ]);
+  });
 });
