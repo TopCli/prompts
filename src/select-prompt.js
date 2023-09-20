@@ -114,6 +114,14 @@ export class SelectPrompt extends AbstractPrompt {
   }
 
   async select() {
+    if (this.agent.nextAnswers.length > 0) {
+      const answer = this.agent.nextAnswers.shift();
+      this.#showAnsweredQuestion(answer);
+      this.destroy();
+
+      return answer;
+    }
+
     this.write(SYMBOLS.HideCursor);
     this.#showQuestion();
 
