@@ -65,9 +65,8 @@ export class ConfirmPrompt extends AbstractPrompt {
   }
 
   #onKeypress(resolve, value, key) {
-    this.stdin.pause();
     this.stdout.moveCursor(-this.#getQuestionQuery().length, 0);
-    this.stdout.clearScreenDown(() => this.stdin.resume());
+    this.stdout.clearScreenDown();
 
     if (key.name === "return") {
       resolve(this.selectedValue);
