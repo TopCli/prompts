@@ -47,7 +47,7 @@ export class AbstractPrompt {
 
     const lastLineRows = Math.ceil(stripAnsi(lastLine).length / this.stdout.columns);
 
-    this.stdout.moveCursor(0, -lastLineRows);
+    this.stdout.moveCursor(-this.stdout.columns, -lastLineRows);
     this.stdout.clearScreenDown();
   }
 

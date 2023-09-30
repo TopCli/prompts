@@ -30,14 +30,14 @@ describe("SelectPrompt", () => {
     });
   });
 
-  it("choices should be required", async() => {
+  it("choices should be required", () => {
     assert.throws(() => new SelectPrompt("foo", {}), {
       name: "TypeError",
       message: "Missing required param: choices"
     });
   });
 
-  it("choice.label should be required", async() => {
+  it("choice.label should be required", () => {
     assert.throws(() => new SelectPrompt("foo", {
       choices: [{
         description: "foo",
@@ -49,7 +49,7 @@ describe("SelectPrompt", () => {
     });
   });
 
-  it("choice.value should be required", async() => {
+  it("choice.value should be required", () => {
     assert.throws(() => new SelectPrompt("foo", {
       choices: [{
         label: "foo",
