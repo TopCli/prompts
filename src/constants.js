@@ -7,14 +7,18 @@ const kMainSymbols = {
   cross: "✖",
   pointer: "›",
   previous: "⭡",
-  next: "⭣"
+  next: "⭣",
+  active: "●",
+  inactive: "○"
 };
 const kFallbackSymbols = {
   tick: "√",
   cross: "×",
   pointer: ">",
   previous: "↑",
-  next: "↓"
+  next: "↓",
+  active: "(+)",
+  inactive: "(-)"
 };
 const kSymbols = isUnicodeSupported() ? kMainSymbols : kFallbackSymbols;
 const kPointer = kleur.gray(kSymbols.pointer);
@@ -27,5 +31,7 @@ export const SYMBOLS = {
   Previous: kSymbols.previous,
   Next: kSymbols.next,
   ShowCursor: "\x1B[?25h",
-  HideCursor: "\x1B[?25l"
+  HideCursor: "\x1B[?25l",
+  Active: kleur.cyan(kSymbols.active),
+  Inactive: kleur.gray(kSymbols.inactive)
 };

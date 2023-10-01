@@ -27,15 +27,19 @@ $ yarn add @topcli/prompts
 You can locally run `node ./demo.js`
 
 ```js
-import { question, confirm, select } from "@topcli/prompts";
+import { question, confirm, select, multiselect } from "@topcli/prompts";
 
 const kTestRunner = ["node", "tap", "tape", "vitest", "mocha", "ava"];
 
 const name = await question("Project name ?", { defaultValue: "foo" });
 const runner = await select("Choose a test runner", { choices: kTestRunner, maxVisible: 5 });
 const isCLI = await confirm("Your project is a CLI ?", { initial: true });
+const os = await multiselect("Choose OS", {
+  choices: ["linux", "mac", "windows"],
+  preSelectedChoices: ["linux"]
+});
 
-console.log(name, runner, isCLI);
+console.log(name, runner, isCLI, os);
 ```
 
 ## API
@@ -83,6 +87,15 @@ select(message: string, options: SelectOptions): Promise<string>
 Scrollable select depending `maxVisible` (default `8`).
 Use `ignoreValues` to skip result render & clear lines after a selected one.
 
+### `multiselect()`
+
+```ts
+multiselect(message: string, options: MultiselectOptions): Promise<[string]>
+```
+
+Scrollable multiselect depending `maxVisible` (default `8`).
+Use `preSelectedChoices` to pre-select choices.
+
 ### `confirm()`
 
 ```ts
@@ -109,6 +122,7 @@ assert.equal(input, "John");
 > - When using `question()`, `validators` functions will not be executed.
 > - When using `select()`, the answer can be different from the available choices.
 > - When using `confirm()`, the answer can be any type other than boolean.
+> - etc  
 > **Use with caution**
 
 ## Interfaces

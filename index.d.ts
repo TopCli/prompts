@@ -30,12 +30,19 @@ export interface SelectOptions extends SharedOptions  {
   ignoreValues?: (string | number | boolean)[];
 }
 
+export interface MultiselectOptions extends SharedOptions  {
+  choices: (Choice | string)[];
+  maxVisible?: number;
+  preSelectedChoices?: (Choice | string)[];
+}
+
 export interface ConfirmOptions extends SharedOptions  {
   initial?: boolean;
 }
 
 export function question(message: string, options?: QuestionOptions): Promise<string>;
 export function select(message: string, options: SelectOptions): Promise<string>;
+export function multiselect(message: string, options: MultiselectOptions): Promise<string[]>;
 export function confirm(message: string, options?: ConfirmOptions): Promise<boolean>;
 
 export function required(): Validator;

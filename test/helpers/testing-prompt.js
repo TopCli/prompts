@@ -44,6 +44,22 @@ export class TestingPrompt {
     return new SelectPrompt(message, { ...options, stdin, stdout });
   }
 
+  static async MultiselectPrompt(message, options) {
+    const { inputs, onStdoutWrite } = options;
+    const { MultiselectPrompt } = await esmock("../../src/multiselect-prompt", { }, {
+      readline: {
+        createInterface: () => {
+          return {
+            close: () => true
+          };
+        }
+      }
+    });
+    const { stdin, stdout } = mockProcess(inputs, (data) => onStdoutWrite(data));
+
+    return new MultiselectPrompt(message, { ...options, stdin, stdout });
+  }
+
   static async ConfirmPrompt(message, options) {
     const { inputs, initial, onStdoutWrite } = options;
     const { ConfirmPrompt } = await esmock("../../src/confirm-prompt", { }, {

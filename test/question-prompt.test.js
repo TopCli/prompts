@@ -14,7 +14,7 @@ import { mockProcess } from "./helpers/mock-process.js";
 const kPromptAgent = PromptAgent.agent();
 
 describe("QuestionPrompt", () => {
-  it("message should be string", async() => {
+  it("message should be string", () => {
     assert.throws(() => new QuestionPrompt(12), { name: "TypeError", message: "message must be string, number given." });
   });
 
