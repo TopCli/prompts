@@ -93,8 +93,19 @@ Use `ignoreValues` to skip result render & clear lines after a selected one.
 multiselect(message: string, options: MultiselectOptions): Promise<[string]>
 ```
 
-Scrollable multiselect depending `maxVisible` (default `8`).
+Scrollable multiselect depending `maxVisible` (default `8`).  
 Use `preSelectedChoices` to pre-select choices.
+
+Use `validators` to handle user input.
+
+**Example**
+
+```js
+const os = await multiselect('Choose OS', {
+  choices: ["linux", "mac", "windows"]
+  validators: [required()]
+});
+```
 
 ### `confirm()`
 
@@ -157,6 +168,13 @@ export interface SelectOptions extends SharedOptions  {
   choices: (Choice | string)[];
   maxVisible?: number;
   ignoreValues?: (string | number | boolean)[];
+}
+
+export interface MultiselectOptions extends SharedOptions  {
+  choices: (Choice | string)[];
+  maxVisible?: number;
+  preSelectedChoices?: (Choice | string)[];
+  validators?: Validator[];
 }
 
 export interface ConfirmOptions extends SharedOptions  {
