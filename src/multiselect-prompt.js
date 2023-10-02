@@ -185,6 +185,10 @@ export class MultiselectPrompt extends AbstractPrompt {
           this.activeIndex = this.activeIndex === this.choices.length - 1 ? 0 : this.activeIndex + 1;
           render();
         }
+        else if (key.name === "a") {
+          this.selectedIndexes = this.selectedIndexes.length === this.choices.length ? [] : this.choices.map((_, index) => index);
+          render();
+        }
         else if (key.name === "space") {
           const isChoiceSelected = this.selectedIndexes.includes(this.activeIndex);
 
@@ -219,6 +223,9 @@ export class MultiselectPrompt extends AbstractPrompt {
   }
 
   #showQuestion() {
-    this.write(`${SYMBOLS.QuestionMark} ${kleur.bold(this.message)}${EOL}`);
+    const hint = kleur.gray(
+      `(Press ${kleur.bold("<a>")} to toggle all, ${kleur.bold("<space>")} to select, ${kleur.bold("<return>")} to submit)`
+    );
+    this.write(`${SYMBOLS.QuestionMark} ${kleur.bold(this.message)} ${hint}${EOL}`);
   }
 }

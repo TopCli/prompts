@@ -10,6 +10,7 @@ import { PromptAgent } from "../src/prompt-agent.js";
 import { multiselect } from "../index.js";
 
 const kInputs = {
+  a: { name: "a" },
   down: { name: "down" },
   return: { name: "return" },
   space: { name: "space" }
@@ -81,7 +82,7 @@ describe("MultiselectPrompt", () => {
 
     assert.deepEqual(input, []);
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar",
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit)",
       "  ○ foo",
       "  ○ bar",
       "✖ Choose between foo & bar ›"
@@ -108,7 +109,7 @@ describe("MultiselectPrompt", () => {
 
     assert.deepEqual(input, ["foo"]);
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar",
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <space> so the first choice 'foo' is selected
@@ -142,7 +143,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar",
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // We press <down>, cursor moves from "foo" to "bar"
@@ -181,7 +182,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar",
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <space> so the first choice 'foo' is selected
@@ -222,7 +223,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar",
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <space> so the first choice 'foo' is selected
@@ -233,6 +234,47 @@ describe("MultiselectPrompt", () => {
       "  ○ bar",
       // we press <return> so [] is returned
       "✖ Choose between foo & bar ›"
+    ]);
+    assert.deepStrictEqual(input, []);
+  });
+
+  it("When press <a>, it should toggle all.", async() => {
+    const logs = [];
+    const message = "Choose between foo, bar & baz";
+    const options = {
+      choices: ["foo", "bar", "baz"]
+    };
+    const inputs = [
+      kInputs.a,
+      kInputs.a,
+      kInputs.return
+    ];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
+      message,
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
+    );
+
+    const input = await multiselectPrompt.multiselect();
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo, bar & baz (Press <a> to toggle all, <space> to select, <return> to submit)",
+      "  ○ foo",
+      "  ○ bar",
+      "  ○ baz",
+      // we press <a>, it toggle all
+      "  ● foo",
+      "  ● bar",
+      "  ● baz",
+      // we press <a>, it toggle all
+      "  ○ foo",
+      "  ○ bar",
+      "  ○ baz",
+      // we press <return> so [] is returned
+      "✖ Choose between foo, bar & baz ›"
     ]);
     assert.deepStrictEqual(input, []);
   });
@@ -262,7 +304,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar",
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <space> so the first choice 'foo' is selected
@@ -300,7 +342,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar",
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <up-arrow> so the last choice 'bar' is the active one
@@ -352,7 +394,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose option",
+      "? Choose option (Press <a> to toggle all, <space> to select, <return> to submit)",
       // Firstly, it renders the first 5 choices. (as maxVisible is 5)
       "  ○ Option 1 ",
       "  ○ Option 2 ",
@@ -433,7 +475,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar",
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit)",
       // bar is pre-selected
       "  ○ foo",
       "  ● bar",
