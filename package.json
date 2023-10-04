@@ -24,7 +24,7 @@
   "type": "module",
   "devDependencies": {
     "@nodesecure/eslint-config": "^1.8.0",
-    "@types/node": "^20.8.1",
+    "@types/node": "^20.8.2",
     "c8": "^8.0.1",
     "eslint": "^8.50.0",
     "esmock": "^2.5.1"
