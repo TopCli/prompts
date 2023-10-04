@@ -17,7 +17,6 @@ export interface QuestionOptions extends SharedOptions {
   validators?: Validator[];
 }
 
-
 export interface Choice {
   value: any;
   label: string;
@@ -34,6 +33,7 @@ export interface MultiselectOptions extends SharedOptions  {
   choices: (Choice | string)[];
   maxVisible?: number;
   preSelectedChoices?: (Choice | string)[];
+  validators?: Validator[];
 }
 
 export interface ConfirmOptions extends SharedOptions  {

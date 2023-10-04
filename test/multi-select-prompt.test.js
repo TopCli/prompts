@@ -7,7 +7,7 @@ import { MultiselectPrompt } from "../src/multiselect-prompt.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
 import { mockProcess } from "./helpers/mock-process.js";
 import { PromptAgent } from "../src/prompt-agent.js";
-import { multiselect } from "../index.js";
+import { multiselect, required } from "../index.js";
 
 const kInputs = {
   a: { name: "a" },
@@ -504,5 +504,45 @@ describe("MultiselectPrompt", () => {
     assert.deepStrictEqual(logs, [
       "✔ Choose option › option1"
     ]);
+  });
+
+  it("It should render with validation error.", async() => {
+    const logs = [];
+    const message = "Choose between foo & bar";
+    const options = {
+      choices: ["foo", "bar"],
+      validators: [required()]
+    };
+    const inputs = [
+      kInputs.return,
+      kInputs.space,
+      kInputs.return
+    ];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
+      message,
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
+    );
+
+    const input = await multiselectPrompt.multiselect();
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit)",
+      "  ○ foo",
+      "  ○ bar",
+      // we press <return> so it re-render question with error
+      "? Choose between foo & bar (Press <a> to toggle all, <space> to select, <return> to submit) [required]",
+      "  ○ foo",
+      "  ○ bar",
+      // we press <space> so it select 'foo'
+      "  ● foo",
+      "  ○ bar",
+      // we press <return> so 'foo' is returned
+      "✔ Choose between foo & bar › foo"
+    ]);
+    assert.deepEqual(input, ["foo"]);
   });
 });

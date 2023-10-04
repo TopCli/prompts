@@ -9,6 +9,8 @@ import { AbstractPrompt } from "./abstract-prompt.js";
 import { SYMBOLS } from "./constants.js";
 
 export class MultiselectPrompt extends AbstractPrompt {
+  #validators;
+
   activeIndex = 0;
   selectedIndexes = [];
 
@@ -21,7 +23,8 @@ export class MultiselectPrompt extends AbstractPrompt {
       stdin = process.stdin,
       stdout = process.stdout,
       choices,
-      preSelectedChoices
+      preSelectedChoices,
+      validators = []
     } = options ?? {};
 
     super(message, stdin, stdout);
@@ -54,6 +57,8 @@ export class MultiselectPrompt extends AbstractPrompt {
 
       return choice.label.length;
     }));
+
+    this.#validators = validators;
 
     if (!preSelectedChoices) {
       return;
@@ -152,7 +157,8 @@ export class MultiselectPrompt extends AbstractPrompt {
     const render = (options = {}) => {
       const {
         initialRender = false,
-        clearRender = false
+        clearRender = false,
+        error = null
       } = options;
 
       if (!initialRender) {
@@ -168,6 +174,12 @@ export class MultiselectPrompt extends AbstractPrompt {
         this.stdout.clearScreenDown();
 
         return;
+      }
+
+      if (error) {
+        this.stdout.moveCursor(0, -2);
+        this.stdout.clearScreenDown();
+        this.#showQuestion(error);
       }
 
       this.#showChoices();
@@ -202,12 +214,22 @@ export class MultiselectPrompt extends AbstractPrompt {
           render();
         }
         else if (key.name === "return") {
+          const labels = this.selectedIndexes.map((index) => this.choices[index].label ?? this.choices[index]);
+          const values = this.selectedIndexes.map((index) => this.choices[index].value ?? this.choices[index]);
+
+          for (const validator of this.#validators) {
+            if (!validator.validate(values)) {
+              const error = validator.error(values);
+              render({ error });
+
+              return;
+            }
+          }
+
           this.stdin.off("keypress", onKeypress);
 
           render({ clearRender: true });
 
-          const labels = this.selectedIndexes.map((index) => this.choices[index].label ?? this.choices[index]);
-          const values = this.selectedIndexes.map((index) => this.choices[index].value ?? this.choices[index]);
 
           this.#showAnsweredQuestion(labels.join(", "));
 
@@ -222,10 +244,14 @@ export class MultiselectPrompt extends AbstractPrompt {
     });
   }
 
-  #showQuestion() {
-    const hint = kleur.gray(
+  #showQuestion(error = null) {
+    let hint = kleur.gray(
       `(Press ${kleur.bold("<a>")} to toggle all, ${kleur.bold("<space>")} to select, ${kleur.bold("<return>")} to submit)`
     );
+    if (error) {
+      hint += ` ${kleur.red().bold(`[${error}]`)}`;
+    }
+
     this.write(`${SYMBOLS.QuestionMark} ${kleur.bold(this.message)} ${hint}${EOL}`);
   }
 }
