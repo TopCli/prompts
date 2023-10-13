@@ -108,4 +108,33 @@ describe("QuestionPrompt", () => {
       message: "defaultValue must be a string"
     });
   });
+
+  it("should not display answer when prompt is secure", async() => {
+    const logs = [];
+    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
+      input: ["John Deeoe"],
+      secure: true,
+      onStdoutWrite: (log) => logs.push(log)
+    });
+    const input = await questionPrompt.question();
+
+    assert.equal(input, "John Deeoe");
+    assert.deepStrictEqual(logs, [
+      "? What's your name?",
+      "✔ What's your name? › CONFIDENTIAL"
+    ]);
+  });
+
+  it("should not display answer when prompt is secure and using PromptAgent", async() => {
+    const logs = [];
+    const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
+    kPromptAgent.nextAnswer("John Doe");
+
+    const input = await question("What's your name?", { secure: true, stdin, stdout });
+
+    assert.equal(input, "John Doe");
+    assert.deepStrictEqual(logs, [
+      "✔ What's your name? › CONFIDENTIAL"
+    ]);
+  });
 });

@@ -10,13 +10,15 @@ import { SYMBOLS } from "./constants.js";
 
 export class QuestionPrompt extends AbstractPrompt {
   #validators;
+  #secure;
 
   constructor(message, options = {}) {
     const {
       stdin = process.stdin,
       stdout = process.stdout,
       defaultValue,
-      validators = []
+      validators = [],
+      secure = false
     } = options;
 
     super(message, stdin, stdout);
@@ -28,6 +30,7 @@ export class QuestionPrompt extends AbstractPrompt {
     this.defaultValue = defaultValue;
     this.tip = this.defaultValue ? ` (${this.defaultValue})` : "";
     this.#validators = validators;
+    this.#secure = Boolean(secure);
     this.questionSuffixError = "";
   }
 
@@ -37,9 +40,11 @@ export class QuestionPrompt extends AbstractPrompt {
 
       this.rl.question(questionQuery, (answer) => {
         this.history.push(questionQuery + answer);
+        this.mute = false;
 
         resolve(answer);
       });
+      this.mute = this.#secure;
     });
   }
 
@@ -54,8 +59,7 @@ export class QuestionPrompt extends AbstractPrompt {
 
   #writeAnswer() {
     const prefix = this.answer ? SYMBOLS.Tick : SYMBOLS.Cross;
-    const answer = kleur.yellow(this.answer ?? "");
-
+    const answer = kleur.yellow(this.#secure ? "CONFIDENTIAL" : this.answer ?? "");
     this.write(`${prefix} ${kleur.bold(this.message)} ${SYMBOLS.Pointer} ${answer}${EOL}`);
   }
 

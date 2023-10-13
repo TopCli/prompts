@@ -15,6 +15,7 @@ export interface Validator {
 export interface QuestionOptions extends SharedOptions {
   defaultValue?: string;
   validators?: Validator[];
+  secure?: boolean;
 }
 
 export interface Choice {
