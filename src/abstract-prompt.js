@@ -1,6 +1,7 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
 import { createInterface } from "node:readline";
+import { Writable } from "node:stream";
 
 // Import Third-party Dependencies
 import stripAnsi from "strip-ansi";
@@ -23,11 +24,23 @@ export class AbstractPrompt {
     this.message = message;
     this.history = [];
     this.agent = PromptAgent.agent();
+    this.mute = false;
 
     if (this.stdout.isTTY) {
       this.stdin.setRawMode(true);
     }
-    this.rl = createInterface({ input, output });
+    this.rl = createInterface({
+      input,
+      output: new Writable({
+        write: (chunk, encoding, callback) => {
+          if (!this.mute) {
+            this.stdout.write(chunk, encoding);
+          }
+          callback();
+        }
+      }),
+      terminal: true
+    });
   }
 
   write(data) {

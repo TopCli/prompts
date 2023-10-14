@@ -26,7 +26,8 @@ export function mockProcess(inputs, writeCb) {
     pause: () => true,
     paused: () => false,
     resume: () => true,
-    removeListener: () => true
+    removeListener: () => true,
+    listenerCount: () => true
   };
 
   return { stdout, stdin };

@@ -51,6 +51,7 @@ question(message: string, options?: PromptOptions): Promise<string>
 ```
 
 Simple prompt, similar to `rl.question()` with an improved UI.
+Use `options.secure` if you need to hide both input and answer.
 Use `options.validators` to handle user input.
 
 **Example**
@@ -156,6 +157,7 @@ export interface Validator {
 export interface QuestionOptions extends SharedOptions {
   defaultValue?: string;
   validators?: Validator[];
+  secure?: boolean;
 }
 
 export interface Choice {

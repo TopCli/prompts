@@ -7,7 +7,7 @@ import { mockProcess } from "./mock-process.js";
 
 export class TestingPrompt {
   static async QuestionPrompt(message, options) {
-    const { input, onStdoutWrite, defaultValue, validators } = options;
+    const { input, onStdoutWrite, defaultValue, validators, secure } = options;
     const inputs = Array.isArray(input) ? input : [input];
 
     const { QuestionPrompt } = await esmock("../../src/question-prompt", { }, {
@@ -25,7 +25,7 @@ export class TestingPrompt {
     });
     const { stdin, stdout } = mockProcess([], (data) => onStdoutWrite(data));
 
-    return new QuestionPrompt(message, { stdin, stdout, defaultValue, validators });
+    return new QuestionPrompt(message, { stdin, stdout, defaultValue, validators, secure });
   }
 
   static async SelectPrompt(message, options) {
