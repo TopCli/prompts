@@ -27,7 +27,8 @@
     "@types/node": "^20.8.5",
     "c8": "^8.0.1",
     "eslint": "^8.51.0",
-    "esmock": "^2.5.2"
+    "esmock": "^2.5.2",
+    "is-ci": "^3.0.1"
   },
   "dependencies": {
     "is-unicode-supported": "^2.0.0",
