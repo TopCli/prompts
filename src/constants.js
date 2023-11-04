@@ -1,6 +1,7 @@
 // Import Third-party Dependencies
 import kleur from "kleur";
 import isUnicodeSupported from "is-unicode-supported";
+import isCI from "is-ci";
 
 const kMainSymbols = {
   tick: "✔",
@@ -20,7 +21,7 @@ const kFallbackSymbols = {
   active: "(+)",
   inactive: "(-)"
 };
-const kSymbols = isUnicodeSupported() ? kMainSymbols : kFallbackSymbols;
+const kSymbols = isUnicodeSupported() || isCI ? kMainSymbols : kFallbackSymbols;
 const kPointer = kleur.gray(kSymbols.pointer);
 
 export const SYMBOLS = {
