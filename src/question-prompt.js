@@ -3,6 +3,8 @@ import { EOL } from "node:os";
 
 // Import Third-party Dependencies
 import kleur from "kleur";
+import stripAnsi from "strip-ansi";
+import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
 import { AbstractPrompt } from "./abstract-prompt.js";
@@ -64,7 +66,12 @@ export class QuestionPrompt extends AbstractPrompt {
   }
 
   #onQuestionAnswer() {
-    this.clearLastLine();
+    const questionLineCount = Math.ceil(
+      wcwidth(stripAnsi(this.#getQuestionQuery() + this.answer)) / this.stdout.columns
+    );
+
+    this.stdout.moveCursor(-this.stdout.columns, -questionLineCount);
+    this.stdout.clearScreenDown();
 
     for (const validator of this.#validators) {
       if (!validator.validate(this.answer)) {
