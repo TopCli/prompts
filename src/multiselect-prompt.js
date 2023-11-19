@@ -11,6 +11,8 @@ import { AbstractPrompt } from "./abstract-prompt.js";
 import { SYMBOLS } from "./constants.js";
 
 export class MultiselectPrompt extends AbstractPrompt {
+  #boundExitEvent = () => void 0;
+  #boundKeyPressEvent = () => void 0;
   #validators;
 
   activeIndex = 0;
@@ -145,6 +147,70 @@ export class MultiselectPrompt extends AbstractPrompt {
     this.write(`${prefix}${choices ? ` ${formattedChoice}` : ""}${EOL}`);
   }
 
+  #onProcessExit() {
+    this.stdin.off("keypress", this.#boundKeyPressEvent);
+    this.stdout.moveCursor(-this.stdout.columns, 0);
+    this.stdout.clearScreenDown();
+    this.write(SYMBOLS.ShowCursor);
+  }
+
+  #onKeypress(...args) {
+    const [resolve, render, _, key] = args;
+
+    if (key.name === "up") {
+      this.activeIndex = this.activeIndex === 0 ? this.choices.length - 1 : this.activeIndex - 1;
+      render();
+    }
+    else if (key.name === "down") {
+      this.activeIndex = this.activeIndex === this.choices.length - 1 ? 0 : this.activeIndex + 1;
+      render();
+    }
+    else if (key.name === "a") {
+      this.selectedIndexes = this.selectedIndexes.length === this.choices.length ? [] : this.choices.map((_, index) => index);
+      render();
+    }
+    else if (key.name === "space") {
+      const isChoiceSelected = this.selectedIndexes.includes(this.activeIndex);
+
+      if (isChoiceSelected) {
+        this.selectedIndexes = this.selectedIndexes.filter((index) => index !== this.activeIndex);
+      }
+      else {
+        this.selectedIndexes.push(this.activeIndex);
+      }
+
+      render();
+    }
+    else if (key.name === "return") {
+      const labels = this.selectedIndexes.map((index) => this.choices[index].label ?? this.choices[index]);
+      const values = this.selectedIndexes.map((index) => this.choices[index].value ?? this.choices[index]);
+
+      for (const validator of this.#validators) {
+        if (!validator.validate(values)) {
+          const error = validator.error(values);
+          render({ error });
+
+          return;
+        }
+      }
+
+      render({ clearRender: true });
+
+      this.#showAnsweredQuestion(labels.join(", "));
+
+      this.write(SYMBOLS.ShowCursor);
+      this.destroy();
+
+      this.#onProcessExit();
+      process.off("exit", this.#boundExitEvent);
+
+      resolve(values);
+    }
+    else {
+      render();
+    }
+  }
+
   async multiselect() {
     if (this.agent.nextAnswers.length > 0) {
       const answer = this.agent.nextAnswers.shift();
@@ -194,59 +260,11 @@ export class MultiselectPrompt extends AbstractPrompt {
     render({ initialRender: true });
 
     return new Promise((resolve) => {
-      const onKeypress = (value, key) => {
-        if (key.name === "up") {
-          this.activeIndex = this.activeIndex === 0 ? this.choices.length - 1 : this.activeIndex - 1;
-          render();
-        }
-        else if (key.name === "down") {
-          this.activeIndex = this.activeIndex === this.choices.length - 1 ? 0 : this.activeIndex + 1;
-          render();
-        }
-        else if (key.name === "a") {
-          this.selectedIndexes = this.selectedIndexes.length === this.choices.length ? [] : this.choices.map((_, index) => index);
-          render();
-        }
-        else if (key.name === "space") {
-          const isChoiceSelected = this.selectedIndexes.includes(this.activeIndex);
+      this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve, render);
+      this.stdin.on("keypress", this.#boundKeyPressEvent);
 
-          if (isChoiceSelected) {
-            this.selectedIndexes = this.selectedIndexes.filter((index) => index !== this.activeIndex);
-          }
-          else {
-            this.selectedIndexes.push(this.activeIndex);
-          }
-
-          render();
-        }
-        else if (key.name === "return") {
-          const labels = this.selectedIndexes.map((index) => this.choices[index].label ?? this.choices[index]);
-          const values = this.selectedIndexes.map((index) => this.choices[index].value ?? this.choices[index]);
-
-          for (const validator of this.#validators) {
-            if (!validator.validate(values)) {
-              const error = validator.error(values);
-              render({ error });
-
-              return;
-            }
-          }
-
-          this.stdin.off("keypress", onKeypress);
-
-          render({ clearRender: true });
-
-
-          this.#showAnsweredQuestion(labels.join(", "));
-
-          this.write(SYMBOLS.ShowCursor);
-          this.destroy();
-
-          resolve(values);
-        }
-      };
-
-      this.stdin.on("keypress", onKeypress);
+      this.#boundExitEvent = this.#onProcessExit.bind(this);
+      process.once("exit", this.#boundExitEvent);
     });
   }
 
