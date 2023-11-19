@@ -9,6 +9,8 @@ import { AbstractPrompt } from "./abstract-prompt.js";
 import { SYMBOLS } from "./constants.js";
 
 export class SelectPrompt extends AbstractPrompt {
+  #boundExitEvent = () => void 0;
+  #boundKeyPressEvent = () => void 0;
   activeIndex = 0;
 
   get choices() {
@@ -113,6 +115,46 @@ export class SelectPrompt extends AbstractPrompt {
     this.write(`${prefix} ${formattedChoice}${EOL}`);
   }
 
+  #onProcessExit() {
+    this.stdin.off("keypress", this.#boundKeyPressEvent);
+    this.stdout.moveCursor(-this.stdout.columns, 0);
+    this.stdout.clearScreenDown();
+    this.write(SYMBOLS.ShowCursor);
+  }
+
+  #onKeypress(...args) {
+    const [resolve, render, _, key] = args;
+
+    if (key.name === "up") {
+      this.activeIndex = this.activeIndex === 0 ? this.choices.length - 1 : this.activeIndex - 1;
+      render();
+    }
+    else if (key.name === "down") {
+      this.activeIndex = this.activeIndex === this.choices.length - 1 ? 0 : this.activeIndex + 1;
+      render();
+    }
+    else if (key.name === "return") {
+      render({ clearRender: true });
+
+      const currentChoice = this.choices[this.activeIndex];
+      const value = currentChoice.value ?? currentChoice;
+
+      if (!this.options.ignoreValues?.includes(value)) {
+        this.#showAnsweredQuestion(currentChoice);
+      }
+
+      this.write(SYMBOLS.ShowCursor);
+      this.destroy();
+
+      this.#onProcessExit();
+      process.off("exit", this.#boundExitEvent);
+      resolve(value);
+    }
+    else {
+      render();
+    }
+  }
+
   async select() {
     if (this.agent.nextAnswers.length > 0) {
       const answer = this.agent.nextAnswers.shift();
@@ -152,35 +194,11 @@ export class SelectPrompt extends AbstractPrompt {
     render({ initialRender: true });
 
     return new Promise((resolve) => {
-      const onKeypress = (value, key) => {
-        if (key.name === "up") {
-          this.activeIndex = this.activeIndex === 0 ? this.choices.length - 1 : this.activeIndex - 1;
-          render();
-        }
-        else if (key.name === "down") {
-          this.activeIndex = this.activeIndex === this.choices.length - 1 ? 0 : this.activeIndex + 1;
-          render();
-        }
-        else if (key.name === "return") {
-          this.stdin.off("keypress", onKeypress);
+      this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve, render);
+      this.stdin.on("keypress", this.#boundKeyPressEvent);
 
-          render({ clearRender: true });
-
-          const currentChoice = this.choices[this.activeIndex];
-          const value = currentChoice.value ?? currentChoice;
-
-          if (!this.options.ignoreValues?.includes(value)) {
-            this.#showAnsweredQuestion(currentChoice);
-          }
-
-          this.write(SYMBOLS.ShowCursor);
-          this.destroy();
-
-          resolve(value);
-        }
-      };
-
-      this.stdin.on("keypress", onKeypress);
+      this.#boundExitEvent = this.#onProcessExit.bind(this);
+      process.once("exit", this.#boundExitEvent);
     });
   }
 
