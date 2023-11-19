@@ -3,6 +3,8 @@ import { EOL } from "node:os";
 
 // Import Third-party Dependencies
 import kleur from "kleur";
+import stripAnsi from "strip-ansi";
+import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
 import { AbstractPrompt } from "./abstract-prompt.js";
@@ -13,6 +15,7 @@ export class MultiselectPrompt extends AbstractPrompt {
 
   activeIndex = 0;
   selectedIndexes = [];
+  questionMessage;
 
   get choices() {
     return this.options.choices;
@@ -170,7 +173,10 @@ export class MultiselectPrompt extends AbstractPrompt {
       }
 
       if (clearRender) {
-        this.stdout.moveCursor(0, -2);
+        const questionLineCount = Math.ceil(
+          wcwidth(stripAnsi(this.questionMessage)) / this.stdout.columns
+        );
+        this.stdout.moveCursor(-this.stdout.columns, -(1 + questionLineCount));
         this.stdout.clearScreenDown();
 
         return;
@@ -251,7 +257,8 @@ export class MultiselectPrompt extends AbstractPrompt {
     if (error) {
       hint += ` ${kleur.red().bold(`[${error}]`)}`;
     }
+    this.questionMessage = `${SYMBOLS.QuestionMark} ${kleur.bold(this.message)} ${hint}`;
 
-    this.write(`${SYMBOLS.QuestionMark} ${kleur.bold(this.message)} ${hint}${EOL}`);
+    this.write(`${this.questionMessage}${EOL}`);
   }
 }

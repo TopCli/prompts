@@ -3,6 +3,8 @@ import { EOL } from "node:os";
 
 // Import Third-party Dependencies
 import kleur from "kleur";
+import stripAnsi from "strip-ansi";
+import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
 import { AbstractPrompt } from "./abstract-prompt.js";
@@ -65,7 +67,10 @@ export class ConfirmPrompt extends AbstractPrompt {
   }
 
   #onKeypress(resolve, value, key) {
-    this.stdout.moveCursor(-this.#getQuestionQuery().length, 0);
+    this.stdout.moveCursor(
+      -this.stdout.columns,
+      -Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns)
+    );
     this.stdout.clearScreenDown();
 
     if (key.name === "return") {
@@ -92,7 +97,11 @@ export class ConfirmPrompt extends AbstractPrompt {
   }
 
   #onQuestionAnswer() {
-    this.clearLastLine();
+    this.stdout.moveCursor(
+      -this.stdout.columns,
+      -(Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns) || 1)
+    );
+    this.stdout.clearScreenDown();
     this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${kleur.bold(this.message)}${EOL}`);
   }
 
