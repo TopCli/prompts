@@ -10,7 +10,7 @@ export class TestingPrompt {
     const { input, onStdoutWrite, defaultValue, validators, secure } = options;
     const inputs = Array.isArray(input) ? input : [input];
 
-    const { QuestionPrompt } = await esmock("../../src/question-prompt", { }, {
+    const { QuestionPrompt } = await esmock("../../src/prompts/question", { }, {
       readline: {
         createInterface: () => {
           return {
@@ -30,7 +30,7 @@ export class TestingPrompt {
 
   static async SelectPrompt(message, options) {
     const { inputs, onStdoutWrite } = options;
-    const { SelectPrompt } = await esmock("../../src/select-prompt", { }, {
+    const { SelectPrompt } = await esmock("../../src/prompts/select", { }, {
       readline: {
         createInterface: () => {
           return {
@@ -46,7 +46,7 @@ export class TestingPrompt {
 
   static async MultiselectPrompt(message, options) {
     const { inputs, onStdoutWrite } = options;
-    const { MultiselectPrompt } = await esmock("../../src/multiselect-prompt", { }, {
+    const { MultiselectPrompt } = await esmock("../../src/prompts/multiselect", { }, {
       readline: {
         createInterface: () => {
           return {
@@ -62,7 +62,7 @@ export class TestingPrompt {
 
   static async ConfirmPrompt(message, options) {
     const { inputs, initial, onStdoutWrite } = options;
-    const { ConfirmPrompt } = await esmock("../../src/confirm-prompt", { }, {
+    const { ConfirmPrompt } = await esmock("../../src/prompts/confirm", { }, {
       readline: {
         createInterface: () => {
           return {
