@@ -3,7 +3,7 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 
 // Import Internal Dependencies
-import { ConfirmPrompt } from "../src/confirm-prompt.js";
+import { ConfirmPrompt } from "../src/prompts/confirm.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
 import { confirm } from "../index.js";
 import { mockProcess } from "./helpers/mock-process.js";

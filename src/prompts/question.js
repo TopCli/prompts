@@ -7,8 +7,8 @@ import stripAnsi from "strip-ansi";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
-import { AbstractPrompt } from "./abstract-prompt.js";
-import { SYMBOLS } from "./constants.js";
+import { AbstractPrompt } from "./abstract.js";
+import { SYMBOLS } from "../constants.js";
 
 export class QuestionPrompt extends AbstractPrompt {
   #validators;

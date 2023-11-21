@@ -7,7 +7,7 @@ import { Writable } from "node:stream";
 import stripAnsi from "strip-ansi";
 
 // Import Internal Dependencies
-import { PromptAgent } from "./prompt-agent.js";
+import { PromptAgent } from "../prompt-agent.js";
 
 export class AbstractPrompt {
   constructor(message, input = process.stdin, output = process.stdout) {

@@ -3,7 +3,7 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 
 // Import Internal Dependencies
-import { SelectPrompt } from "../src/select-prompt.js";
+import { SelectPrompt } from "../src/prompts/select.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
 import { mockProcess } from "./helpers/mock-process.js";
 import { PromptAgent } from "../src/prompt-agent.js";
