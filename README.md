@@ -108,6 +108,8 @@ const os = await multiselect('Choose OS', {
 });
 ```
 
+Use `autocomplete` to allow filtered choices. This can be usefull for a large list of choices.
+
 ### `confirm()`
 
 ```ts
@@ -177,6 +179,7 @@ export interface MultiselectOptions extends SharedOptions  {
   maxVisible?: number;
   preSelectedChoices?: (Choice | string)[];
   validators?: Validator[];
+  autocomplete?: boolean;
 }
 
 export interface ConfirmOptions extends SharedOptions  {
