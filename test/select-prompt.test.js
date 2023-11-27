@@ -120,7 +120,7 @@ describe("SelectPrompt", () => {
     assert.equal(input, "bar");
   });
 
-  it("It should work with choice objects.", async() => {
+  it("should work with choice objects.", async() => {
     const logs = [];
     const message = "Choose between foo & bar";
     const options = {
@@ -222,7 +222,7 @@ describe("SelectPrompt", () => {
     assert.equal(input, "foo");
   });
 
-  it("It should ignore foo.", async() => {
+  it("should ignore foo.", async() => {
     const logs = [];
     const message = "Choose between foo & bar";
     const options = {
