@@ -35,6 +35,7 @@ export interface MultiselectOptions extends SharedOptions  {
   maxVisible?: number;
   preSelectedChoices?: (Choice | string)[];
   validators?: Validator[];
+  autocomplete?: boolean;
 }
 
 export interface ConfirmOptions extends SharedOptions  {

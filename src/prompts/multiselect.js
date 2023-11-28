@@ -10,6 +10,9 @@ import { AbstractPrompt } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 
+// CONSTANTS
+const kRequiredChoiceProperties = ["label", "value"];
+
 export class MultiselectPrompt extends AbstractPrompt {
   #boundExitEvent = () => void 0;
   #boundKeyPressEvent = () => void 0;
@@ -18,9 +21,40 @@ export class MultiselectPrompt extends AbstractPrompt {
   activeIndex = 0;
   selectedIndexes = [];
   questionMessage;
+  autocompleteValue = "";
 
   get choices() {
     return this.options.choices;
+  }
+
+  get filteredChoices() {
+    return this.options.autocomplete && this.autocompleteValue.length > 0 ? this.choices.filter((choice) => {
+      if (typeof choice === "string") {
+        if (this.autocompleteValue.includes(" ")) {
+          return this.autocompleteValue.split(" ").every((word) => choice.includes(word)) ||
+          choice.includes(this.autocompleteValue);
+        }
+
+        return choice.includes(this.autocompleteValue);
+      }
+
+      if (this.autocompleteValue.includes(" ")) {
+        return this.autocompleteValue.split(" ").every((word) => choice.label.includes(word)) ||
+        choice.label.includes(this.autocompleteValue);
+      }
+
+      return choice.label.includes(this.autocompleteValue);
+    }) : this.choices;
+  }
+
+  get longestChoice() {
+    return Math.max(...this.filteredChoices.map((choice) => {
+      if (typeof choice === "string") {
+        return choice.length;
+      }
+
+      return choice.label.length;
+    }));
   }
 
   constructor(message, options) {
@@ -46,12 +80,12 @@ export class MultiselectPrompt extends AbstractPrompt {
       throw new TypeError("Missing required param: choices");
     }
 
-    this.longestChoice = Math.max(...choices.map((choice) => {
-      if (typeof choice === "string") {
-        return choice.length;
-      }
+    this.#validators = validators;
 
-      const kRequiredChoiceProperties = ["label", "value"];
+    for (const choice of choices) {
+      if (typeof choice === "string") {
+        continue;
+      }
 
       for (const prop of kRequiredChoiceProperties) {
         if (!choice[prop]) {
@@ -59,18 +93,14 @@ export class MultiselectPrompt extends AbstractPrompt {
           throw new TypeError(`Missing ${prop} for choice ${JSON.stringify(choice)}`);
         }
       }
-
-      return choice.label.length;
-    }));
-
-    this.#validators = validators;
+    }
 
     if (!preSelectedChoices) {
       return;
     }
 
     for (const choice of preSelectedChoices) {
-      const choiceIndex = this.choices.findIndex((item) => {
+      const choiceIndex = this.filteredChoices.findIndex((item) => {
         if (typeof item === "string") {
           return item === choice;
         }
@@ -87,7 +117,7 @@ export class MultiselectPrompt extends AbstractPrompt {
   }
 
   #getFormattedChoice(choiceIndex) {
-    const choice = this.choices[choiceIndex];
+    const choice = this.filteredChoices[choiceIndex];
 
     if (typeof choice === "string") {
       return { value: choice, label: choice };
@@ -98,12 +128,12 @@ export class MultiselectPrompt extends AbstractPrompt {
 
   #getVisibleChoices() {
     const maxVisible = this.options.maxVisible || 8;
-    let startIndex = Math.min(this.choices.length - maxVisible, this.activeIndex - Math.floor(maxVisible / 2));
+    let startIndex = Math.min(this.filteredChoices.length - maxVisible, this.activeIndex - Math.floor(maxVisible / 2));
     if (startIndex < 0) {
       startIndex = 0;
     }
 
-    const endIndex = Math.min(startIndex + maxVisible, this.choices.length);
+    const endIndex = Math.min(startIndex + maxVisible, this.filteredChoices.length);
 
     return { startIndex, endIndex };
   }
@@ -112,12 +142,15 @@ export class MultiselectPrompt extends AbstractPrompt {
     const { startIndex, endIndex } = this.#getVisibleChoices();
     this.lastRender = { startIndex, endIndex };
 
+    if (this.options.autocomplete) {
+      this.write(`${SYMBOLS.Pointer} ${this.autocompleteValue}${EOL}`);
+    }
     for (let choiceIndex = startIndex; choiceIndex < endIndex; choiceIndex++) {
       const choice = this.#getFormattedChoice(choiceIndex);
       const isChoiceActive = choiceIndex === this.activeIndex;
       const isChoiceSelected = this.selectedIndexes.includes(choiceIndex);
       const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
-      const showNextChoicesArrow = endIndex < this.choices.length && choiceIndex === endIndex - 1;
+      const showNextChoicesArrow = endIndex < this.filteredChoices.length && choiceIndex === endIndex - 1;
 
       let prefixArrow = "  ";
       if (showPreviousChoicesArrow) {
@@ -156,34 +189,30 @@ export class MultiselectPrompt extends AbstractPrompt {
 
   #onKeypress(...args) {
     const [resolve, render, _, key] = args;
-
     if (key.name === "up") {
-      this.activeIndex = this.activeIndex === 0 ? this.choices.length - 1 : this.activeIndex - 1;
+      this.activeIndex = this.activeIndex === 0 ? this.filteredChoices.length - 1 : this.activeIndex - 1;
       render();
     }
     else if (key.name === "down") {
-      this.activeIndex = this.activeIndex === this.choices.length - 1 ? 0 : this.activeIndex + 1;
+      this.activeIndex = this.activeIndex === this.filteredChoices.length - 1 ? 0 : this.activeIndex + 1;
       render();
     }
-    else if (key.name === "a") {
-      this.selectedIndexes = this.selectedIndexes.length === this.choices.length ? [] : this.choices.map((_, index) => index);
+    else if (key.ctrl && key.name === "a") {
+      // eslint-disable-next-line max-len
+      this.selectedIndexes = this.selectedIndexes.length === this.filteredChoices.length ? [] : this.filteredChoices.map((_, index) => index);
       render();
     }
-    else if (key.name === "space") {
-      const isChoiceSelected = this.selectedIndexes.includes(this.activeIndex);
-
-      if (isChoiceSelected) {
-        this.selectedIndexes = this.selectedIndexes.filter((index) => index !== this.activeIndex);
-      }
-      else {
-        this.selectedIndexes.push(this.activeIndex);
-      }
-
+    else if (key.name === "right") {
+      this.selectedIndexes.push(this.activeIndex);
+      render();
+    }
+    else if (key.name === "left") {
+      this.selectedIndexes = this.selectedIndexes.filter((index) => index !== this.activeIndex);
       render();
     }
     else if (key.name === "return") {
-      const labels = this.selectedIndexes.map((index) => this.choices[index].label ?? this.choices[index]);
-      const values = this.selectedIndexes.map((index) => this.choices[index].value ?? this.choices[index]);
+      const labels = this.selectedIndexes.map((index) => this.filteredChoices[index].label ?? this.filteredChoices[index]);
+      const values = this.selectedIndexes.map((index) => this.filteredChoices[index].value ?? this.filteredChoices[index]);
 
       for (const validator of this.#validators) {
         if (!validator.validate(values)) {
@@ -207,6 +236,17 @@ export class MultiselectPrompt extends AbstractPrompt {
       resolve(values);
     }
     else {
+      if (!key.ctrl && this.options.autocomplete) {
+        // reset selected choices when user type
+        this.selectedIndexes = [];
+        this.activeIndex = 0;
+        if (key.name === "backspace" && this.autocompleteValue.length > 0) {
+          this.autocompleteValue = this.autocompleteValue.slice(0, -1);
+        }
+        else if (key.name !== "backspace") {
+          this.autocompleteValue += key.sequence;
+        }
+      }
       render();
     }
   }
@@ -236,6 +276,15 @@ export class MultiselectPrompt extends AbstractPrompt {
           this.clearLastLine();
           linesToClear--;
         }
+        if (this.options.autocomplete) {
+          let linesToClear = Math.ceil(
+            wcwidth(`${SYMBOLS.Pointer} ${this.autocompleteValue}`) / this.stdout.columns
+          );
+          while (linesToClear > 0) {
+            this.clearLastLine();
+            linesToClear--;
+          }
+        }
       }
 
       if (clearRender) {
@@ -249,7 +298,8 @@ export class MultiselectPrompt extends AbstractPrompt {
       }
 
       if (error) {
-        this.stdout.moveCursor(0, -2);
+        const linesToClear = Math.ceil(wcwidth(this.questionMessage) / this.stdout.columns) + 1;
+        this.stdout.moveCursor(0, -linesToClear);
         this.stdout.clearScreenDown();
         this.#showQuestion(error);
       }
@@ -270,7 +320,8 @@ export class MultiselectPrompt extends AbstractPrompt {
 
   #showQuestion(error = null) {
     let hint = kleur.gray(
-      `(Press ${kleur.bold("<a>")} to toggle all, ${kleur.bold("<space>")} to select, ${kleur.bold("<return>")} to submit)`
+      // eslint-disable-next-line max-len
+      `(Press ${kleur.bold("<Ctrl+A>")} to toggle all, ${kleur.bold("<Ctrl+Space>")} to select, ${kleur.bold("<Left/Right>")} to toggle, ${kleur.bold("<Return>")} to submit)`
     );
     if (error) {
       hint += ` ${kleur.red().bold(`[${error}]`)}`;
