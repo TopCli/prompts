@@ -1,8 +1,8 @@
 // Import Third-party Dependencies
-import stripAnsi from "strip-ansi";
 import esmock from "esmock";
 
 // Import Internal Dependencies
+import { stripAnsi } from "../../src/utils.js";
 import { mockProcess } from "./mock-process.js";
 
 export class TestingPrompt {
