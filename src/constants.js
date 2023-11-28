@@ -1,6 +1,8 @@
 // Import Third-party Dependencies
 import kleur from "kleur";
-import isUnicodeSupported from "is-unicode-supported";
+
+// Import Internal Dependencies
+import { isUnicodeSupported } from "./utils.js";
 
 const kMainSymbols = {
   tick: "✔",
