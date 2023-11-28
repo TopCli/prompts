@@ -3,10 +3,8 @@ import { EOL } from "node:os";
 import { createInterface } from "node:readline";
 import { Writable } from "node:stream";
 
-// Import Third-party Dependencies
-import stripAnsi from "strip-ansi";
-
 // Import Internal Dependencies
+import { stripAnsi } from "../utils.js";
 import { PromptAgent } from "../prompt-agent.js";
 
 export class AbstractPrompt {

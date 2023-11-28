@@ -1,8 +1,8 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
 
-// Import Third-party Dependencies
-import stripAnsi from "strip-ansi";
+// Import Internal Dependencies
+import { stripAnsi } from "../../src/utils.js";
 
 export function mockProcess(inputs, writeCb) {
   const stdout = {

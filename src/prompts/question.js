@@ -3,11 +3,11 @@ import { EOL } from "node:os";
 
 // Import Third-party Dependencies
 import kleur from "kleur";
-import stripAnsi from "strip-ansi";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
 import { AbstractPrompt } from "./abstract.js";
+import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 
 export class QuestionPrompt extends AbstractPrompt {
