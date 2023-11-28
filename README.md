@@ -95,7 +95,7 @@ Use `ignoreValues` to skip result render & clear lines after a selected one.
 multiselect(message: string, options: MultiselectOptions): Promise<[string]>
 ```
 
-Scrollable multiselect depending `maxVisible` (default `8`).
+Scrollable multiselect depending `maxVisible` (default `8`).<br>
 Use `preSelectedChoices` to pre-select choices.
 
 Use `validators` to handle user input.
@@ -135,7 +135,7 @@ assert.equal(input, "John");
 > - When using `question()`, `validators` functions will not be executed.
 > - When using `select()`, the answer can be different from the available choices.
 > - When using `confirm()`, the answer can be any type other than boolean.
-> - etc
+> - etc<br>
 > **Use with caution**
 
 ## Interfaces
