@@ -111,6 +111,8 @@ const os = await multiselect('Choose OS', {
 
 Use `autocomplete` to allow filtered choices. This can be usefull for a large list of choices.
 
+Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`
+
 ### `confirm()`
 
 ```ts
@@ -181,6 +183,7 @@ export interface MultiselectOptions extends SharedOptions  {
   preSelectedChoices?: (Choice | string)[];
   validators?: Validator[];
   autocomplete?: boolean;
+  caseSensitive?: boolean;
 }
 
 export interface ConfirmOptions extends SharedOptions  {

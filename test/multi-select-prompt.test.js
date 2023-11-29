@@ -705,9 +705,92 @@ describe("MultiselectPrompt", () => {
       "› ba",
       "  ● bar",
       "  ● baz",
-      // we press <return> so 'foo' is returned
+      // we press <return> so 'bar, baz' is returned
       "✔ Choose between foo, bar & baz › bar, baz"
     ]);
     assert.deepEqual(input, ["bar", "baz"]);
+  });
+
+  it("autocomplete filters should be case insensitive by default", async() => {
+    const logs = [];
+    const message = "Choose between foo, bar & baz";
+    const options = {
+      choices: ["foo", "bar", "baz"],
+      autocomplete: true
+    };
+    const inputs = [
+      { sequence: "B" },
+      kInputs.toggleAll,
+      kInputs.return
+    ];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
+      message,
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
+    );
+
+    const input = await multiselectPrompt.multiselect();
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "› ",
+      "  ○ foo",
+      "  ○ bar",
+      "  ○ baz",
+      // we press <B> so it filters values with 'b' or 'B' (case insensitive)
+      "› B",
+      "  ○ bar",
+      "  ○ baz",
+      // we press <Ctrl+A> so it select all
+      "› B",
+      "  ● bar",
+      "  ● baz",
+      // we press <return> so 'bar, baz' is returned
+      "✔ Choose between foo, bar & baz › bar, baz"
+    ]);
+    assert.deepEqual(input, ["bar", "baz"]);
+  });
+
+  it("autocomplete filters should be case sensitive", async() => {
+    const logs = [];
+    const message = "Choose between foo, bar & baz";
+    const options = {
+      choices: ["foo", "bar", "baz"],
+      autocomplete: true,
+      caseSensitive: true
+    };
+    const inputs = [
+      { sequence: "B" },
+      kInputs.toggleAll,
+      kInputs.return
+    ];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
+      message,
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
+    );
+
+    const input = await multiselectPrompt.multiselect();
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "› ",
+      "  ○ foo",
+      "  ○ bar",
+      "  ○ baz",
+      // we press <B> so it filters no value (case sensitive)
+      "› B",
+      // we press <Ctrl+A> so it select nothing
+      "› B",
+      // we press <return> so nothing is returned
+      "✖ Choose between foo, bar & baz ›"
+    ]);
+    assert.deepEqual(input, []);
   });
 });

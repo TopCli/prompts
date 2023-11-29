@@ -36,6 +36,7 @@ export interface MultiselectOptions extends SharedOptions  {
   preSelectedChoices?: (Choice | string)[];
   validators?: Validator[];
   autocomplete?: boolean;
+  caseSensitive?: boolean;
 }
 
 export interface ConfirmOptions extends SharedOptions  {

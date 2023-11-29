@@ -28,23 +28,35 @@ export class MultiselectPrompt extends AbstractPrompt {
   }
 
   get filteredChoices() {
-    return this.options.autocomplete && this.autocompleteValue.length > 0 ? this.choices.filter((choice) => {
-      if (typeof choice === "string") {
-        if (this.autocompleteValue.includes(" ")) {
-          return this.autocompleteValue.split(" ").every((word) => choice.includes(word)) ||
-          choice.includes(this.autocompleteValue);
-        }
+    if (!(this.options.autocomplete && this.autocompleteValue.length > 0)) {
+      return this.choices;
+    }
 
-        return choice.includes(this.autocompleteValue);
-      }
+    const isCaseSensitive = this.options.caseSensitive;
+    const autocompleteValue = isCaseSensitive ? this.autocompleteValue : this.autocompleteValue.toLowerCase();
 
-      if (this.autocompleteValue.includes(" ")) {
-        return this.autocompleteValue.split(" ").every((word) => choice.label.includes(word)) ||
-        choice.label.includes(this.autocompleteValue);
-      }
+    return this.choices.filter((choice) => this.#filterChoice(choice, autocompleteValue, isCaseSensitive));
+  }
 
-      return choice.label.includes(this.autocompleteValue);
-    }) : this.choices;
+  #filterChoice(choice, autocompleteValue, isCaseSensitive) {
+    // eslint-disable-next-line no-nested-ternary
+    const choiceValue = typeof choice === "string" ?
+      (isCaseSensitive ? choice : choice.toLowerCase()) :
+      (isCaseSensitive ? choice.label : choice.label.toLowerCase());
+
+    if (autocompleteValue.includes(" ")) {
+      return this.#filterMultipleWords(choiceValue, autocompleteValue, isCaseSensitive);
+    }
+
+    return choiceValue.includes(autocompleteValue);
+  }
+
+  #filterMultipleWords(choiceValue, autocompleteValue, isCaseSensitive) {
+    return autocompleteValue.split(" ").every((word) => {
+      const wordValue = isCaseSensitive ? word : word.toLowerCase();
+
+      return choiceValue.includes(wordValue) || choiceValue.includes(autocompleteValue);
+    });
   }
 
   get longestChoice() {
@@ -109,6 +121,7 @@ export class MultiselectPrompt extends AbstractPrompt {
       });
 
       if (choiceIndex === -1) {
+        this.destroy();
         throw new Error(`Invalid pre-selected choice: ${choice.value ?? choice}`);
       }
 
