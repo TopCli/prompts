@@ -21,21 +21,21 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("MultiselectPrompt", () => {
   it("message should be required", () => {
-    assert.throws(() => new MultiselectPrompt(12), {
+    assert.throws(() => new MultiselectPrompt(12 as any, undefined as any), {
       name: "TypeError",
       message: "message must be string, number given."
     });
   });
 
   it("Options should be required", () => {
-    assert.throws(() => new MultiselectPrompt("foo"), {
+    assert.throws(() => new MultiselectPrompt("foo", undefined as any), {
       name: "TypeError",
       message: "Missing required options"
     });
   });
 
   it("choices should be required", () => {
-    assert.throws(() => new MultiselectPrompt("foo", {}), {
+    assert.throws(() => new MultiselectPrompt("foo", {} as any), {
       name: "TypeError",
       message: "Missing required param: choices"
     });
@@ -46,7 +46,7 @@ describe("MultiselectPrompt", () => {
       choices: [{
         description: "foo",
         value: true
-      }]
+      } as any]
     }), {
       name: "TypeError",
       message: "Missing label for choice {\"description\":\"foo\",\"value\":true}"
@@ -58,7 +58,7 @@ describe("MultiselectPrompt", () => {
       choices: [{
         label: "foo",
         description: "bar"
-      }]
+      } as any]
     }), {
       name: "TypeError",
       message: "Missing value for choice {\"label\":\"foo\",\"description\":\"bar\"}"
@@ -70,7 +70,7 @@ describe("MultiselectPrompt", () => {
     const options = {
       choices: ["foo", "bar"]
     };
-    const logs = [];
+    const logs: string[] = [];
     const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
       message,
       {
@@ -97,7 +97,7 @@ describe("MultiselectPrompt", () => {
       choices: ["foo", "bar"]
     };
     const inputs = [kInputs.right, kInputs.return];
-    const logs = [];
+    const logs: string[] = [];
     const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
       message,
       {
@@ -123,7 +123,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("When press <down> then <right> then <return>, it should return an array with the second choice.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: ["foo", "bar"]
@@ -161,7 +161,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("When press <right> then <down> then <right> then <return>, it should return an array with all choice.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: ["foo", "bar"]
@@ -203,7 +203,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("When press <right> then <left> then <return>, it should return an empty array.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: ["foo", "bar"]
@@ -241,7 +241,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("When press <ctrl+a>, it should toggle all.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo, bar & baz";
     const options = {
       choices: ["foo", "bar", "baz"]
@@ -282,7 +282,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("should work with choice objects.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: [
@@ -319,7 +319,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("When the first item is selected and the up arrow is pressed, the last item should be selected.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: [
@@ -360,7 +360,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("Should display 5 choices and allow scrolling.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose option";
     const options = {
       choices: [
@@ -442,7 +442,7 @@ describe("MultiselectPrompt", () => {
       choices: ["foo", "bar"],
       preSelectedChoices: ["toto"]
     };
-    const logs = [];
+    const logs: string[] = [];
     await assert.rejects(async() => {
       await TestingPrompt.MultiselectPrompt(
         message,
@@ -456,7 +456,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("should pre-selected choices", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: ["foo", "bar"],
@@ -488,7 +488,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("should return the answer set via PromptAgent", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
     kPromptAgent.nextAnswer("option1");
 
@@ -509,7 +509,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("should render with validation error.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: ["foo", "bar"],
@@ -549,7 +549,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("should filter values with autocomplete", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo, bar & baz";
     const options = {
       choices: ["foo", "bar", "baz"],
@@ -597,7 +597,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("should filter all choices with autocomplete when using backspace", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo, bar & baz";
     const options = {
       choices: ["foo", "bar", "baz"],
@@ -657,7 +657,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("validators should works with autocomplete", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo, bar & baz";
     const options = {
       choices: ["foo", "bar", "baz"],
@@ -712,7 +712,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("autocomplete filters should be case insensitive by default", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo, bar & baz";
     const options = {
       choices: ["foo", "bar", "baz"],
@@ -755,7 +755,7 @@ describe("MultiselectPrompt", () => {
   });
 
   it("autocomplete filters should be case sensitive", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo, bar & baz";
     const options = {
       choices: ["foo", "bar", "baz"],

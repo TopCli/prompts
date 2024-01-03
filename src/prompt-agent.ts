@@ -1,28 +1,24 @@
 // CONSTANTS
 const kPrivateInstancier = Symbol("instancier");
 
-export class PromptAgent {
+export class PromptAgent<T = string> {
   /**
    * The prompts answers queue.
    * When not empty, any prompt will be answered by the first answer in this list.
-   *
-   *  @type {string[]}
    */
-  nextAnswers = [];
+  nextAnswers: T[] = [];
 
   /**
    * The shared PromptAgent.
-   *
-   * @type {PromptAgent}
    */
-  static #this;
+  static #this: PromptAgent;
 
-  static agent() {
+  static agent<T>() {
     // eslint-disable-next-line no-return-assign
-    return this.#this ??= new PromptAgent(kPrivateInstancier);
+    return (this.#this as PromptAgent<T>) ??= new PromptAgent<T>(kPrivateInstancier);
   }
 
-  constructor(instancier) {
+  constructor(instancier: symbol) {
     if (instancier !== kPrivateInstancier) {
       throw new Error("Cannot instanciate PromptAgent, use PromptAgent.agent() instead");
     }
@@ -33,8 +29,6 @@ export class PromptAgent {
    *
    * This is useful for testing.
    *
-   * @param {string | boolean | Array<string | boolean>} value
-   *
    * @example
    * ```js
    * const promptAgent = PromptAgent.agent();
@@ -44,7 +38,7 @@ export class PromptAgent {
    * assert.equal(input, "toto");
    * ```
    */
-  nextAnswer(value) {
+  nextAnswer(value: T) {
     if (Array.isArray(value)) {
       this.nextAnswers.push(...value);
 

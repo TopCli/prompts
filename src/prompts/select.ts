@@ -9,17 +9,29 @@ import wcwidth from "@topcli/wcwidth";
 import { AbstractPrompt } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
+import { Choice, SharedOptions } from "../types.js";
 
-export class SelectPrompt extends AbstractPrompt {
+export interface SelectOptions extends SharedOptions {
+  choices: (Choice | string)[];
+  maxVisible?: number;
+  ignoreValues?: (string | number | boolean)[];
+}
+
+export class SelectPrompt extends AbstractPrompt<string | string[]> {
   #boundExitEvent = () => void 0;
   #boundKeyPressEvent = () => void 0;
   activeIndex = 0;
+  selectedIndexes: number[] = [];
+  questionMessage: string;
+  longestChoicelength: number;
+  options: SelectOptions;
+  lastRender: { startIndex: number; endIndex: number; };
 
   get choices() {
     return this.options.choices;
   }
 
-  constructor(message, options) {
+  constructor(message: string, options: SelectOptions) {
     const {
       stdin = process.stdin,
       stdout = process.stdout,
@@ -40,7 +52,7 @@ export class SelectPrompt extends AbstractPrompt {
       throw new TypeError("Missing required param: choices");
     }
 
-    this.longestChoice = Math.max(...choices.map((choice) => {
+    this.longestChoicelength = Math.max(...choices.map((choice) => {
       if (typeof choice === "string") {
         return choice.length;
       }
@@ -58,7 +70,7 @@ export class SelectPrompt extends AbstractPrompt {
     }));
   }
 
-  #getFormattedChoice(choiceIndex) {
+  #getFormattedChoice(choiceIndex: number) {
     const choice = this.choices[choiceIndex];
 
     if (typeof choice === "string") {
@@ -100,7 +112,7 @@ export class SelectPrompt extends AbstractPrompt {
 
       const prefix = `${prefixArrow}${isChoiceSelected ? `${SYMBOLS.Pointer} ` : "  "}`;
       const formattedLabel = choice.label.padEnd(
-        this.longestChoice < 10 ? this.longestChoice : 0
+        this.longestChoicelength < 10 ? this.longestChoicelength : 0
       );
       const formattedDescription = choice.description ? ` - ${choice.description}` : "";
       const color = isChoiceSelected ? kleur.white().bold : kleur.gray;
@@ -110,9 +122,9 @@ export class SelectPrompt extends AbstractPrompt {
     }
   }
 
-  #showAnsweredQuestion(choice) {
+  #showAnsweredQuestion(choice: Choice | string) {
     const prefix = `${SYMBOLS.Tick} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
-    const formattedChoice = kleur.yellow(choice.label ?? choice);
+    const formattedChoice = kleur.yellow(typeof choice === "string" ? choice : choice.label);
 
     this.write(`${prefix} ${formattedChoice}${EOL}`);
   }
@@ -125,7 +137,7 @@ export class SelectPrompt extends AbstractPrompt {
   }
 
   #onKeypress(...args) {
-    const [resolve, render, _, key] = args;
+    const [resolve, render, , key] = args;
 
     if (key.name === "up") {
       this.activeIndex = this.activeIndex === 0 ? this.choices.length - 1 : this.activeIndex - 1;
@@ -139,8 +151,7 @@ export class SelectPrompt extends AbstractPrompt {
       render({ clearRender: true });
 
       const currentChoice = this.choices[this.activeIndex];
-      const value = currentChoice.value ?? currentChoice;
-
+      const value = typeof currentChoice === "string" ? currentChoice : currentChoice.value;
       if (!this.options.ignoreValues?.includes(value)) {
         this.#showAnsweredQuestion(currentChoice);
       }
@@ -157,19 +168,25 @@ export class SelectPrompt extends AbstractPrompt {
     }
   }
 
-  async select() {
-    if (this.agent.nextAnswers.length > 0) {
-      const answer = this.agent.nextAnswers.shift();
-      this.#showAnsweredQuestion(answer);
+  async select(): Promise<string[]> {
+    const answer = this.agent.nextAnswers.shift();
+    if (answer !== undefined) {
+      const formatedAnser = Array.isArray(answer) ? answer.join(", ") : answer;
+      this.#showAnsweredQuestion(formatedAnser);
       this.destroy();
 
-      return answer;
+      return Array.isArray(answer) ? answer : [answer];
     }
 
     this.write(SYMBOLS.HideCursor);
     this.#showQuestion();
 
-    const render = (options = {}) => {
+    const render = (
+      options: {
+        initialRender?: boolean;
+        clearRender?: boolean;
+      } = {}
+    ) => {
       const {
         initialRender = false,
         clearRender = false

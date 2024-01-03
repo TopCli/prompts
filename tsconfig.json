@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "strictNullChecks": true,
+    "target": "ES2022",
+    "outDir": "dist",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "resolveJsonModule": false,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "rootDir": "./",
+    "typeRoots": [
+      "./node_modules/@types",
+    ],
+    "types": ["node"]
+  },
+  "include": ["src", "index.ts"],
+  "exclude": ["node_modules", "dist"]
+}

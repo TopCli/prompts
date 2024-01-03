@@ -3,31 +3,43 @@
   "version": "1.7.0",
   "description": "Node.js user input library for command-line interfaces.",
   "scripts": {
-    "test": "node --no-warnings=ExperimentalWarning --loader=esmock --test test/",
+    "build": "tsup index.ts --format cjs,esm --dts --clean",
+    "prepublishOnly": "npm run build",
+    "test": "glob -c \"tsx --no-warnings=ExperimentalWarning --loader=esmock --test\" \"./test/**/*.test.ts\"",
     "coverage": "c8 -r html npm run test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
-  "main": "./index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "keywords": [
     "node.js",
     "cli",
     "prompt"
   ],
   "files": [
-    "index.js",
-    "index.d.ts",
-    "src"
+    "dist"
   ],
   "author": "PierreDemailly <pierredemailly.pro@gmail.com>",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@nodesecure/eslint-config": "^1.8.0",
-    "@types/node": "^20.8.5",
+    "@nodesecure/eslint-config": "^1.9.0",
+    "@types/node": "^20.10.6",
     "c8": "^8.0.1",
-    "eslint": "^8.51.0",
-    "esmock": "^2.5.2"
+    "eslint": "^8.56.0",
+    "esmock": "^2.6.0",
+    "glob": "^10.3.10",
+    "tsup": "^8.0.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@topcli/wcwidth": "^1.0.1",

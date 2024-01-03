@@ -1,5 +1,6 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
+import type { Key } from "node:readline";
 
 // Import Third-party Dependencies
 import kleur from "kleur";
@@ -9,6 +10,11 @@ import wcwidth from "@topcli/wcwidth";
 import { AbstractPrompt } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
+import { SharedOptions } from "../types.js";
+
+export interface ConfirmOptions extends SharedOptions {
+  initial?: boolean;
+}
 
 // CONSTANTS
 const kToggleKeys = new Set([
@@ -25,11 +31,13 @@ const kToggleKeys = new Set([
   "space"
 ]);
 
-export class ConfirmPrompt extends AbstractPrompt {
-  #boundKeyPressEvent;
-  #boundExitEvent;
+export class ConfirmPrompt extends AbstractPrompt<boolean> {
+  initial: boolean;
+  selectedValue: boolean;
+  #boundKeyPressEvent: (...args: any) => void;
+  #boundExitEvent: (...args: any) => void;
 
-  constructor(message, options = {}) {
+  constructor(message: string, options: ConfirmOptions = {}) {
     const {
       stdin = process.stdin,
       stdout = process.stdout,
@@ -66,7 +74,7 @@ export class ConfirmPrompt extends AbstractPrompt {
     });
   }
 
-  #onKeypress(resolve, value, key) {
+  #onKeypress(resolve: (value: unknown) => void, value: never, key: Key) {
     this.stdout.moveCursor(
       -this.stdout.columns,
       -Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns)
@@ -79,7 +87,7 @@ export class ConfirmPrompt extends AbstractPrompt {
       return;
     }
 
-    if (kToggleKeys.has(key.name)) {
+    if (kToggleKeys.has(key.name ?? "")) {
       this.selectedValue = !this.selectedValue;
     }
 
@@ -105,9 +113,9 @@ export class ConfirmPrompt extends AbstractPrompt {
     this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${kleur.bold(this.message)}${EOL}`);
   }
 
-  async confirm() {
-    if (this.agent.nextAnswers.length > 0) {
-      const answer = this.agent.nextAnswers.shift();
+  async confirm(): Promise<boolean> {
+    const answer = this.agent.nextAnswers.shift();
+    if (answer !== undefined) {
       this.selectedValue = answer;
       this.#onQuestionAnswer();
       this.destroy();

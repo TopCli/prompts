@@ -3,10 +3,11 @@ import { EOL } from "node:os";
 
 // Import Internal Dependencies
 import { stripAnsi } from "../../src/utils.js";
+import { SharedOptions } from "../../index.js";
 
-export function mockProcess(inputs, writeCb) {
+export function mockProcess(inputs: string[], writeCb: (value: string) => void) {
   const stdout = {
-    write: (msg) => {
+    write: (msg: string) => {
       const noAnsiMsg = stripAnsi(msg);
       if (noAnsiMsg) {
         writeCb(noAnsiMsg.replace(EOL, ""));
@@ -30,5 +31,8 @@ export function mockProcess(inputs, writeCb) {
     listenerCount: () => true
   };
 
-  return { stdout, stdin };
+  return {
+    stdout: stdout as unknown as SharedOptions["stdout"],
+    stdin: stdin as unknown as SharedOptions["stdin"]
+  };
 }

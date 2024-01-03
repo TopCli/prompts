@@ -15,11 +15,11 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("QuestionPrompt", () => {
   it("message should be string", () => {
-    assert.throws(() => new QuestionPrompt(12), { name: "TypeError", message: "message must be string, number given." });
+    assert.throws(() => new QuestionPrompt(12 as any), { name: "TypeError", message: "message must be string, number given." });
   });
 
   it("should render with tick on valid input", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
     kPromptAgent.nextAnswer("Joe");
 
@@ -32,24 +32,24 @@ describe("QuestionPrompt", () => {
   });
 
   it("should render cross on invalid input", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
-    kPromptAgent.nextAnswer(undefined);
+    kPromptAgent.nextAnswer("");
 
     const input = await question("What's your name?", { stdin, stdout });
 
-    assert.strictEqual(input, undefined);
+    assert.strictEqual(input, "");
     assert.deepStrictEqual(logs, [
       "✖ What's your name? › "
     ]);
   });
 
   it("validator should not pass", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
       input: ["test1", "test10", "test2"],
       validators: [{
-        validate: (input) => !input.startsWith("test1"),
+        validate: (input) => !(input as string).startsWith("test1"),
         error: (input) => `Value cannot start with 'test1', given ${input}.`
       }],
       onStdoutWrite: (log) => logs.push(log)
@@ -65,7 +65,7 @@ describe("QuestionPrompt", () => {
   });
 
   it("input should be required", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
       input: ["", "toto"],
       validators: [required()],
@@ -82,7 +82,7 @@ describe("QuestionPrompt", () => {
   });
 
   it("should return the default value", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
       input: [""],
       defaultValue: "John Doe",
@@ -102,7 +102,7 @@ describe("QuestionPrompt", () => {
       await TestingPrompt.QuestionPrompt("What's your name?", {
         input: [""],
         defaultValue: { foo: "bar" }
-      });
+      } as any);
     }, {
       name: "TypeError",
       message: "defaultValue must be a string"
@@ -110,7 +110,7 @@ describe("QuestionPrompt", () => {
   });
 
   it("should not display answer when prompt is secure", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
       input: ["John Deeoe"],
       secure: true,
@@ -126,7 +126,7 @@ describe("QuestionPrompt", () => {
   });
 
   it("should not display answer when prompt is secure and using PromptAgent", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
     kPromptAgent.nextAnswer("John Doe");
 

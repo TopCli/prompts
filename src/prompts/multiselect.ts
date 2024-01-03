@@ -9,19 +9,32 @@ import wcwidth from "@topcli/wcwidth";
 import { AbstractPrompt } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
+import { PromptValidator } from "../validators.js";
+import { Choice, SharedOptions } from "../types.js";
 
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
 
-export class MultiselectPrompt extends AbstractPrompt {
+export interface MultiselectOptions extends SharedOptions {
+  choices: (Choice | string)[];
+  maxVisible?: number;
+  preSelectedChoices?: (Choice | string)[];
+  validators?: PromptValidator[];
+  autocomplete?: boolean;
+  caseSensitive?: boolean;
+}
+
+export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
   #boundExitEvent = () => void 0;
   #boundKeyPressEvent = () => void 0;
-  #validators;
+  #validators: PromptValidator[];
 
   activeIndex = 0;
-  selectedIndexes = [];
-  questionMessage;
+  selectedIndexes: number[] = [];
+  questionMessage: string;
   autocompleteValue = "";
+  options: MultiselectOptions;
+  lastRender: { startIndex: number; endIndex: number; };
 
   get choices() {
     return this.options.choices;
@@ -38,7 +51,7 @@ export class MultiselectPrompt extends AbstractPrompt {
     return this.choices.filter((choice) => this.#filterChoice(choice, autocompleteValue, isCaseSensitive));
   }
 
-  #filterChoice(choice, autocompleteValue, isCaseSensitive) {
+  #filterChoice(choice: Choice | string, autocompleteValue: string, isCaseSensitive = false) {
     // eslint-disable-next-line no-nested-ternary
     const choiceValue = typeof choice === "string" ?
       (isCaseSensitive ? choice : choice.toLowerCase()) :
@@ -51,7 +64,7 @@ export class MultiselectPrompt extends AbstractPrompt {
     return choiceValue.includes(autocompleteValue);
   }
 
-  #filterMultipleWords(choiceValue, autocompleteValue, isCaseSensitive) {
+  #filterMultipleWords(choiceValue: string, autocompleteValue: string, isCaseSensitive: boolean) {
     return autocompleteValue.split(" ").every((word) => {
       const wordValue = isCaseSensitive ? word : word.toLowerCase();
 
@@ -69,7 +82,7 @@ export class MultiselectPrompt extends AbstractPrompt {
     }));
   }
 
-  constructor(message, options) {
+  constructor(message: string, options: MultiselectOptions) {
     const {
       stdin = process.stdin,
       stdout = process.stdout,
@@ -122,14 +135,14 @@ export class MultiselectPrompt extends AbstractPrompt {
 
       if (choiceIndex === -1) {
         this.destroy();
-        throw new Error(`Invalid pre-selected choice: ${choice.value ?? choice}`);
+        throw new Error(`Invalid pre-selected choice: ${typeof choice === "string" ? choice : choice.value}`);
       }
 
       this.selectedIndexes.push(choiceIndex);
     }
   }
 
-  #getFormattedChoice(choiceIndex) {
+  #getFormattedChoice(choiceIndex: number) {
     const choice = this.filteredChoices[choiceIndex];
 
     if (typeof choice === "string") {
@@ -185,7 +198,7 @@ export class MultiselectPrompt extends AbstractPrompt {
     }
   }
 
-  #showAnsweredQuestion(choices, isAgentAnswer = false) {
+  #showAnsweredQuestion(choices: string, isAgentAnswer = false) {
     const prefixSymbol = this.selectedIndexes.length === 0 && !isAgentAnswer ? SYMBOLS.Cross : SYMBOLS.Tick;
     const prefix = `${prefixSymbol} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
     const formattedChoice = kleur.yellow(choices);
@@ -201,7 +214,7 @@ export class MultiselectPrompt extends AbstractPrompt {
   }
 
   #onKeypress(...args) {
-    const [resolve, render, _, key] = args;
+    const [resolve, render, , key] = args;
     if (key.name === "up") {
       this.activeIndex = this.activeIndex === 0 ? this.filteredChoices.length - 1 : this.activeIndex - 1;
       render();
@@ -224,8 +237,16 @@ export class MultiselectPrompt extends AbstractPrompt {
       render();
     }
     else if (key.name === "return") {
-      const labels = this.selectedIndexes.map((index) => this.filteredChoices[index].label ?? this.filteredChoices[index]);
-      const values = this.selectedIndexes.map((index) => this.filteredChoices[index].value ?? this.filteredChoices[index]);
+      const labels = this.selectedIndexes.map((index) => {
+        const choice = this.filteredChoices[index];
+
+        return typeof choice === "string" ? choice : choice.label;
+      });
+      const values = this.selectedIndexes.map((index) => {
+        const choice = this.filteredChoices[index];
+
+        return typeof choice === "string" ? choice : choice.value;
+      });
 
       for (const validator of this.#validators) {
         if (!validator.validate(values)) {
@@ -264,19 +285,26 @@ export class MultiselectPrompt extends AbstractPrompt {
     }
   }
 
-  async multiselect() {
-    if (this.agent.nextAnswers.length > 0) {
-      const answer = this.agent.nextAnswers.shift();
-      this.#showAnsweredQuestion(answer, true);
+  async multiselect(): Promise<string[]> {
+    const answer = this.agent.nextAnswers.shift();
+    if (answer !== undefined) {
+      const formatedAnser = Array.isArray(answer) ? answer.join(", ") : answer;
+      this.#showAnsweredQuestion(formatedAnser, true);
       this.destroy();
 
-      return answer;
+      return Array.isArray(answer) ? answer : [answer];
     }
 
     this.write(SYMBOLS.HideCursor);
     this.#showQuestion();
 
-    const render = (options = {}) => {
+    const render = (
+      options: {
+        initialRender?: boolean;
+        clearRender?: boolean;
+        error?: string
+      } = {}
+    ) => {
       const {
         initialRender = false,
         clearRender = false,
@@ -331,7 +359,7 @@ export class MultiselectPrompt extends AbstractPrompt {
     });
   }
 
-  #showQuestion(error = null) {
+  #showQuestion(error: string | null = null) {
     let hint = kleur.gray(
       // eslint-disable-next-line max-len
       `(Press ${kleur.bold("<Ctrl+A>")} to toggle all, ${kleur.bold("<Ctrl+Space>")} to select, ${kleur.bold("<Left/Right>")} to toggle, ${kleur.bold("<Return>")} to submit)`
