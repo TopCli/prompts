@@ -17,21 +17,21 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("SelectPrompt", () => {
   it("message should be required", () => {
-    assert.throws(() => new SelectPrompt(12), {
+    assert.throws(() => new SelectPrompt(12 as any, undefined as any), {
       name: "TypeError",
       message: "message must be string, number given."
     });
   });
 
   it("Options should be required", () => {
-    assert.throws(() => new SelectPrompt("foo"), {
+    assert.throws(() => new SelectPrompt("foo", undefined as any), {
       name: "TypeError",
       message: "Missing required options"
     });
   });
 
   it("choices should be required", () => {
-    assert.throws(() => new SelectPrompt("foo", {}), {
+    assert.throws(() => new SelectPrompt("foo", {} as any), {
       name: "TypeError",
       message: "Missing required param: choices"
     });
@@ -42,7 +42,7 @@ describe("SelectPrompt", () => {
       choices: [{
         description: "foo",
         value: true
-      }]
+      }] as any
     }), {
       name: "TypeError",
       message: "Missing label for choice {\"description\":\"foo\",\"value\":true}"
@@ -54,7 +54,7 @@ describe("SelectPrompt", () => {
       choices: [{
         label: "foo",
         description: "bar"
-      }]
+      }] as any
     }), {
       name: "TypeError",
       message: "Missing value for choice {\"label\":\"foo\",\"description\":\"bar\"}"
@@ -67,12 +67,12 @@ describe("SelectPrompt", () => {
       choices: ["foo", "bar"]
     };
     const inputs = [kInputs.return];
-    const logs = [];
+    const logs: string[] = [];
     const selectPrompt = await TestingPrompt.SelectPrompt(
       message,
       {
         ...options,
-        inputs: [kInputs.return],
+        inputs,
         onStdoutWrite: (log) => logs.push(log)
       }
     );
@@ -89,7 +89,7 @@ describe("SelectPrompt", () => {
   });
 
   it("When press <down> then <return>, it should select the second choice.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: ["foo", "bar"]
@@ -121,7 +121,7 @@ describe("SelectPrompt", () => {
   });
 
   it("should work with choice objects.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: [
@@ -150,7 +150,7 @@ describe("SelectPrompt", () => {
   });
 
   it("When the first item is selected and the up arrow is pressed, the last item should be selected.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: [
@@ -185,7 +185,7 @@ describe("SelectPrompt", () => {
   });
 
   it("When the first item is selected and the up arrow is pressed, the last item should be selected.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: [
@@ -223,7 +223,7 @@ describe("SelectPrompt", () => {
   });
 
   it("should ignore foo.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose between foo & bar";
     const options = {
       choices: [
@@ -253,7 +253,7 @@ describe("SelectPrompt", () => {
   });
 
   it("Should display 5 choices and allow scrolling.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose option";
     const options = {
       choices: [
@@ -325,7 +325,7 @@ describe("SelectPrompt", () => {
   });
 
   it("Choices descriptions should be aligned.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose option";
     const options = {
       choices: [
@@ -355,7 +355,7 @@ describe("SelectPrompt", () => {
   });
 
   it("Choices descriptions should not be aligned as longest choice is too long.", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const message = "Choose option";
     const options = {
       choices: [
@@ -387,7 +387,7 @@ describe("SelectPrompt", () => {
   });
 
   it("should return the answer set via PromptAgent", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
     kPromptAgent.nextAnswer("option1");
 

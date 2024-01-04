@@ -1,14 +1,30 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
-import { createInterface } from "node:readline";
+import { Interface, createInterface } from "node:readline";
 import { Writable } from "node:stream";
 
 // Import Internal Dependencies
 import { stripAnsi } from "../utils.js";
 import { PromptAgent } from "../prompt-agent.js";
 
-export class AbstractPrompt {
-  constructor(message, input = process.stdin, output = process.stdout) {
+type Stdin = NodeJS.ReadStream & {
+  fd: 0;
+};
+
+type Stdout = NodeJS.WriteStream & {
+  fd: 1;
+}
+
+export class AbstractPrompt<T> {
+  stdin: Stdin;
+  stdout: Stdout;
+  message: string;
+  history: string[];
+  agent: PromptAgent<T>;
+  mute: boolean;
+  rl: Interface;
+
+  constructor(message: string, input = process.stdin, output = process.stdout) {
     if (this.constructor === AbstractPrompt) {
       throw new Error("AbstractPrompt can't be instantiated.");
     }
@@ -21,16 +37,17 @@ export class AbstractPrompt {
     this.stdout = output;
     this.message = message;
     this.history = [];
-    this.agent = PromptAgent.agent();
+    this.agent = PromptAgent.agent<T>();
     this.mute = false;
 
     if (this.stdout.isTTY) {
       this.stdin.setRawMode(true);
     }
+
     this.rl = createInterface({
       input,
       output: new Writable({
-        write: (chunk, encoding, callback) => {
+        write: (chunk: string, encoding: BufferEncoding, callback) => {
           if (!this.mute) {
             this.stdout.write(chunk, encoding);
           }
@@ -41,7 +58,7 @@ export class AbstractPrompt {
     });
   }
 
-  write(data) {
+  write(data: string) {
     const formattedData = stripAnsi(data).replace(EOL, "");
     if (formattedData) {
       this.history.push(formattedData);

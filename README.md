@@ -8,12 +8,9 @@
 Node.js user prompt library for command-line interfaces.
 
 ## Requirements
-- [Node.js](https://nodejs.org/en/) v16 or higher
+- [Node.js](https://nodejs.org/en/) v18 or higher
 
 ## Getting Started
-
-> [!CAUTION]
-> This package is ESM only.
 
 This package is available in the Node Package Repository and can be easily installed with [npm](https://docs.npmjs.com/getting-started/what-is-npm) or [yarn](https://yarnpkg.com).
 
@@ -154,9 +151,9 @@ export interface SharedOptions {
   };
 }
 
-export interface Validator {
-  validate: (input: string) => boolean;
-  error: (input?: string) => string;
+export interface PromptValidator<T = string | string[] | boolean> {
+    validate: (input: T) => boolean;
+    error: (input: T) => string;
 }
 
 export interface QuestionOptions extends SharedOptions {

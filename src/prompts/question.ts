@@ -9,12 +9,25 @@ import wcwidth from "@topcli/wcwidth";
 import { AbstractPrompt } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
+import { PromptValidator } from "../validators.js";
+import { SharedOptions } from "../types.js";
 
-export class QuestionPrompt extends AbstractPrompt {
-  #validators;
-  #secure;
+export interface QuestionOptions extends SharedOptions {
+  defaultValue?: string;
+  validators?: PromptValidator[];
+  secure?: boolean;
+}
 
-  constructor(message, options = {}) {
+export class QuestionPrompt extends AbstractPrompt<string> {
+  defaultValue?: string;
+  tip: string;
+  questionSuffixError: string;
+  answer?: string;
+  answerBuffer?: Promise<string>;
+  #validators: PromptValidator[];
+  #secure: boolean;
+
+  constructor(message: string, options: QuestionOptions = {}) {
     const {
       stdin = process.stdin,
       stdout = process.stdout,
@@ -36,7 +49,7 @@ export class QuestionPrompt extends AbstractPrompt {
     this.questionSuffixError = "";
   }
 
-  #question() {
+  #question(): Promise<string> {
     return new Promise((resolve) => {
       const questionQuery = this.#getQuestionQuery();
 
@@ -54,7 +67,7 @@ export class QuestionPrompt extends AbstractPrompt {
     return `${kleur.bold(`${SYMBOLS.QuestionMark} ${this.message}${this.tip}`)} ${this.questionSuffixError}`;
   }
 
-  #setQuestionSuffixError(error) {
+  #setQuestionSuffixError(error: string) {
     const suffix = kleur.red(`[${error}] `);
     this.questionSuffixError = suffix;
   }
@@ -74,21 +87,22 @@ export class QuestionPrompt extends AbstractPrompt {
     this.stdout.clearScreenDown();
 
     for (const validator of this.#validators) {
-      if (!validator.validate(this.answer)) {
-        const error = validator.error(this.answer);
+      if (!validator.validate(this.answer!)) {
+        const error = validator.error(this.answer!);
         this.#setQuestionSuffixError(error);
-        this.answer = this.#question();
+        this.answerBuffer = this.#question();
 
         return;
       }
     }
 
+    this.answerBuffer = void 0;
     this.#writeAnswer();
   }
 
-  async question() {
-    if (this.agent.nextAnswers.length > 0) {
-      this.answer = this.agent.nextAnswers.shift();
+  async question(): Promise<string> {
+    this.answer = this.agent.nextAnswers.shift();
+    if (this.answer !== undefined) {
       this.#writeAnswer();
       this.destroy();
 
@@ -103,8 +117,8 @@ export class QuestionPrompt extends AbstractPrompt {
 
     this.#onQuestionAnswer();
 
-    while (this.answer?.constructor.name === "Promise") {
-      this.answer = await this.answer;
+    while (this.answerBuffer !== undefined) {
+      this.answer = await this.answerBuffer;
       this.#onQuestionAnswer();
     }
 

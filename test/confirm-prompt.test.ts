@@ -28,11 +28,11 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("ConfirmPrompt", () => {
   it("message should be required", () => {
-    assert.throws(() => new ConfirmPrompt(12), { name: "TypeError", message: "message must be string, number given." });
+    assert.throws(() => new ConfirmPrompt(12 as any), { name: "TypeError", message: "message must be string, number given." });
   });
 
   it("should return initial, which is equal to false by default", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -47,7 +47,7 @@ describe("ConfirmPrompt", () => {
   });
 
   it("should return true when instant return with initial 'true'", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
       inputs: [kInputs.return],
       initial: true,
@@ -68,7 +68,7 @@ describe("ConfirmPrompt", () => {
     }
 
     it(`should switch value when pressing "${key}"`, async() => {
-      const logs = [];
+      const logs: string[] = [];
       const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
         inputs: [kInputs[key], kInputs.return],
         onStdoutWrite: (log) => logs.push(log)
@@ -84,7 +84,7 @@ describe("ConfirmPrompt", () => {
     });
 
     it(`should switch value multiple time when pressing "${key}"`, async() => {
-      const logs = [];
+      const logs: string[] = [];
       const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
         inputs: [kInputs[key], kInputs[key], kInputs.return],
         onStdoutWrite: (log) => logs.push(log)
@@ -102,7 +102,7 @@ describe("ConfirmPrompt", () => {
   }
 
   it("should return the answer (true) set via PromptAgent", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
     kPromptAgent.nextAnswer(true);
 
@@ -115,7 +115,7 @@ describe("ConfirmPrompt", () => {
   });
 
   it("should return the answer (false) set via PromptAgent", async() => {
-    const logs = [];
+    const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
     kPromptAgent.nextAnswer(false);
 

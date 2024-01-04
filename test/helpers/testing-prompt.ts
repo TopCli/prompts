@@ -3,10 +3,21 @@ import esmock from "esmock";
 
 // Import Internal Dependencies
 import { stripAnsi } from "../../src/utils.js";
+import { QuestionOptions, SelectOptions, MultiselectOptions, ConfirmOptions } from "../../index.js";
 import { mockProcess } from "./mock-process.js";
 
+export type TestingPromptOptions = Partial<QuestionOptions &
+  SelectOptions &
+  MultiselectOptions &
+  ConfirmOptions & {
+  input: any;
+  inputs: any[];
+}> & {
+  onStdoutWrite: (value: string) => void;
+}
+
 export class TestingPrompt {
-  static async QuestionPrompt(message, options) {
+  static async QuestionPrompt(message: string, options: TestingPromptOptions) {
     const { input, onStdoutWrite, defaultValue, validators, secure } = options;
     const inputs = Array.isArray(input) ? input : [input];
 
@@ -28,8 +39,8 @@ export class TestingPrompt {
     return new QuestionPrompt(message, { stdin, stdout, defaultValue, validators, secure });
   }
 
-  static async SelectPrompt(message, options) {
-    const { inputs, onStdoutWrite } = options;
+  static async SelectPrompt(message: string, options: TestingPromptOptions) {
+    const { inputs = [], onStdoutWrite } = options;
     const { SelectPrompt } = await esmock("../../src/prompts/select", { }, {
       readline: {
         createInterface: () => {
@@ -44,8 +55,8 @@ export class TestingPrompt {
     return new SelectPrompt(message, { ...options, stdin, stdout });
   }
 
-  static async MultiselectPrompt(message, options) {
-    const { inputs, onStdoutWrite } = options;
+  static async MultiselectPrompt(message: string, options: TestingPromptOptions) {
+    const { inputs = [], onStdoutWrite } = options;
     const { MultiselectPrompt } = await esmock("../../src/prompts/multiselect", { }, {
       readline: {
         createInterface: () => {
@@ -60,8 +71,8 @@ export class TestingPrompt {
     return new MultiselectPrompt(message, { ...options, stdin, stdout });
   }
 
-  static async ConfirmPrompt(message, options) {
-    const { inputs, initial, onStdoutWrite } = options;
+  static async ConfirmPrompt(message: string, options: TestingPromptOptions) {
+    const { inputs = [], initial, onStdoutWrite } = options;
     const { ConfirmPrompt } = await esmock("../../src/prompts/confirm", { }, {
       readline: {
         createInterface: () => {
