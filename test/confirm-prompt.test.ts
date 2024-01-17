@@ -21,6 +21,8 @@ const kInputs = {
   j: { name: "j" },
   k: { name: "k" },
   l: { name: "l" },
+  y: { name: "y" },
+  n: { name: "n" },
   space: { name: "space" },
   return: { name: "return" }
 };
@@ -63,7 +65,7 @@ describe("ConfirmPrompt", () => {
   });
 
   for (const key of Object.keys(kInputs)) {
-    if (key === "return") {
+    if (["return", "y", "n"].includes(key)) {
       continue;
     }
 
@@ -123,6 +125,40 @@ describe("ConfirmPrompt", () => {
 
     assert.equal(input, false);
     assert.deepStrictEqual(logs, [
+      "✖ Foo"
+    ]);
+  });
+
+  it("should return true when pressing 'y'", async() => {
+    const logs: string[] = [];
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      inputs: [kInputs.y],
+      onStdoutWrite: (log) => {
+        logs.push(log);
+      }
+    });
+    const input = await confirmPrompt.confirm();
+
+    assert.deepEqual(input, true);
+    assert.deepEqual(logs, [
+      "? Foo Yes/No",
+      "✔ Foo"
+    ]);
+  });
+
+  it("should return false when pressing 'n'", async() => {
+    const logs: string[] = [];
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      inputs: [kInputs.n],
+      onStdoutWrite: (log) => {
+        logs.push(log);
+      }
+    });
+    const input = await confirmPrompt.confirm();
+
+    assert.deepEqual(input, false);
+    assert.deepEqual(logs, [
+      "? Foo Yes/No",
       "✖ Foo"
     ]);
   });
