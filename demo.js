@@ -1,4 +1,4 @@
-import { question, confirm, select, multiselect, PromptAgent } from "./index.js";
+import { question, confirm, select, multiselect, PromptAgent } from "./dist/index.js";
 
 const kTestRunner = ["node", "tap", "tape", "vitest", "mocha", "ava"];
 

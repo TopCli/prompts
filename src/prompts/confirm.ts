@@ -34,6 +34,7 @@ const kToggleKeys = new Set([
 export class ConfirmPrompt extends AbstractPrompt<boolean> {
   initial: boolean;
   selectedValue: boolean;
+  fastAnswer: boolean;
   #boundKeyPressEvent: (...args: any) => void;
   #boundExitEvent: (...args: any) => void;
 
@@ -91,7 +92,20 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
       this.selectedValue = !this.selectedValue;
     }
 
-    this.#render();
+    if (key.name === "y") {
+      this.selectedValue = true;
+      resolve(true);
+      this.fastAnswer = true;
+    }
+    else if (key.name === "n") {
+      this.selectedValue = false;
+      resolve(false);
+      this.fastAnswer = true;
+    }
+
+    if (!this.fastAnswer) {
+      this.#render();
+    }
   }
 
   #onProcessExit() {
@@ -105,9 +119,10 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
   }
 
   #onQuestionAnswer() {
+    const defaultLines = this.fastAnswer ? 0 : 1;
     this.stdout.moveCursor(
       -this.stdout.columns,
-      -(Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns) || 1)
+      -(Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns) || defaultLines)
     );
     this.stdout.clearScreenDown();
     this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${kleur.bold(this.message)}${EOL}`);
