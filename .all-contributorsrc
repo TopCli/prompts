@@ -54,6 +54,15 @@
         "doc",
         "maintenance"
       ]
+    },
+    {
+      "login": "ncukondo",
+      "name": "Takeshi Kondo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17022138?v=4",
+      "profile": "https://github.com/ncukondo",
+      "contributions": [
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,
