@@ -201,6 +201,7 @@ export interface ConfirmOptions extends SharedOptions  {
       <td align="center" valign="top" width="14.28%"><a href="http://tonygo.dev"><img src="https://avatars0.githubusercontent.com/u/22824417?v=4?s=100" width="100px;" alt="Tony Gorez"/><br /><sub><b>Tony Gorez</b></sub></a><br /><a href="https://github.com/TopCli/prompts/pulls?q=is%3Apr+reviewed-by%3Atony-go" title="Reviewed Pull Requests">👀</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://sofiand.github.io/portfolio-client/"><img src="https://avatars.githubusercontent.com/u/39944043?v=4?s=100" width="100px;" alt="Yefis"/><br /><sub><b>Yefis</b></sub></a><br /><a href="https://github.com/TopCli/prompts/commits?author=SofianD" title="Code">💻</a> <a href="https://github.com/TopCli/prompts/commits?author=SofianD" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://justie.dev"><img src="https://avatars.githubusercontent.com/u/7118300?v=4?s=100" width="100px;" alt="Ben"/><br /><sub><b>Ben</b></sub></a><br /><a href="https://github.com/TopCli/prompts/commits?author=JUSTIVE" title="Documentation">📖</a> <a href="#maintenance-JUSTIVE" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ncukondo"><img src="https://avatars.githubusercontent.com/u/17022138?v=4?s=100" width="100px;" alt="Takeshi Kondo"/><br /><sub><b>Takeshi Kondo</b></sub></a><br /><a href="#maintenance-ncukondo" title="Maintenance">🚧</a></td>
     </tr>
   </tbody>
 </table>
