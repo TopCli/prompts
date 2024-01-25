@@ -8,7 +8,7 @@ import type { ConfirmOptions } from "./src/prompts/confirm.js";
 import type { MultiselectOptions } from "./src/prompts/multiselect.js";
 import type { SelectOptions } from "./src/prompts/select.js";
 
-export async function question(message, options = {}) {
+export async function question(message:string, options:QuestionOptions = {}) {
   const questionPrompt = new prompts.QuestionPrompt(message, options);
 
   return questionPrompt.question();
