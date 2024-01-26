@@ -17,7 +17,7 @@ export interface SelectOptions extends SharedOptions {
   ignoreValues?: (string | number | boolean)[];
 }
 
-export class SelectPrompt extends AbstractPrompt<string | string[]> {
+export class SelectPrompt extends AbstractPrompt<string> {
   #boundExitEvent = () => void 0;
   #boundKeyPressEvent = () => void 0;
   activeIndex = 0;
@@ -168,14 +168,13 @@ export class SelectPrompt extends AbstractPrompt<string | string[]> {
     }
   }
 
-  async select(): Promise<string[]> {
+  async select(): Promise<string> {
     const answer = this.agent.nextAnswers.shift();
     if (answer !== undefined) {
-      const formatedAnser = Array.isArray(answer) ? answer.join(", ") : answer;
-      this.#showAnsweredQuestion(formatedAnser);
+      this.#showAnsweredQuestion(answer);
       this.destroy();
 
-      return Array.isArray(answer) ? answer : [answer];
+      return answer;
     }
 
     this.write(SYMBOLS.HideCursor);
