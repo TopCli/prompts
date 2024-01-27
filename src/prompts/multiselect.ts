@@ -362,7 +362,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
   #showQuestion(error: string | null = null) {
     let hint = kleur.gray(
       // eslint-disable-next-line max-len
-      `(Press ${kleur.bold("<Ctrl+A>")} to toggle all, ${kleur.bold("<Ctrl+Space>")} to select, ${kleur.bold("<Left/Right>")} to toggle, ${kleur.bold("<Return>")} to submit)`
+      `(Press ${kleur.bold("<Ctrl+A>")} to toggle all, ${kleur.bold("<Left/Right>")} to toggle, ${kleur.bold("<Return>")} to submit)`
     );
     if (error) {
       hint += ` ${kleur.red().bold(`[${error}]`)}`;

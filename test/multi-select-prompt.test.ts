@@ -84,7 +84,7 @@ describe("MultiselectPrompt", () => {
 
     assert.deepEqual(input, []);
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "  ○ foo",
       "  ○ bar",
       "✖ Choose between foo & bar ›"
@@ -111,7 +111,7 @@ describe("MultiselectPrompt", () => {
 
     assert.deepEqual(input, ["foo"]);
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <space> so the first choice 'foo' is selected
@@ -145,7 +145,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // We press <down>, cursor moves from "foo" to "bar"
@@ -184,7 +184,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <space> so the first choice 'foo' is selected
@@ -225,7 +225,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <space> so the first choice 'foo' is selected
@@ -263,7 +263,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "  ○ foo",
       "  ○ bar",
       "  ○ baz",
@@ -306,7 +306,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <right> so the first choice 'foo' is selected
@@ -344,7 +344,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <up-arrow> so the last choice 'bar' is the active one
@@ -396,7 +396,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose option (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose option (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       // Firstly, it renders the first 5 choices. (as maxVisible is 5)
       "  ○ Option 1 ",
       "  ○ Option 2 ",
@@ -477,7 +477,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       // bar is pre-selected
       "  ○ foo",
       "  ● bar",
@@ -532,11 +532,11 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "  ○ foo",
       "  ○ bar",
       // we press <return> so it re-render question with error
-      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit) [required]",
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit) [required]",
       "  ○ foo",
       "  ○ bar",
       // we press <right> so it select 'foo'
@@ -573,7 +573,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "› ",
       "  ○ foo",
       "  ○ bar",
@@ -623,7 +623,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "› ",
       "  ○ foo",
       "  ○ bar",
@@ -683,7 +683,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "› ",
       "  ○ foo",
       "  ○ bar",
@@ -697,7 +697,7 @@ describe("MultiselectPrompt", () => {
       "  ○ bar",
       "  ○ baz",
       // we press <return> so it re-render question with error
-      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit) [required]",
+      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit) [required]",
       "› ba",
       "  ○ bar",
       "  ○ baz",
@@ -735,7 +735,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "› ",
       "  ○ foo",
       "  ○ bar",
@@ -779,7 +779,7 @@ describe("MultiselectPrompt", () => {
     const input = await multiselectPrompt.multiselect();
 
     assert.deepStrictEqual(logs, [
-      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Ctrl+Space> to select, <Left/Right> to toggle, <Return> to submit)",
+      "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
       "› ",
       "  ○ foo",
       "  ○ bar",
