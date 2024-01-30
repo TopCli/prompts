@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable max-len */
 // Import Node.js Dependencies
 import assert from "node:assert";
@@ -792,5 +793,77 @@ describe("MultiselectPrompt", () => {
       "✖ Choose between foo, bar & baz ›"
     ]);
     assert.deepEqual(input, []);
+  });
+
+  it("should not show hint.", async() => {
+    const logs: string[] = [];
+    const message = "Choose between foo & bar";
+    const options = {
+      choices: ["foo", "bar"],
+      showHint: false
+    };
+    const inputs = [
+      kInputs.return
+    ];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
+      message,
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
+    );
+
+    const input = await multiselectPrompt.multiselect();
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo & bar",
+      "  ○ foo",
+      "  ○ bar",
+      // we press <return> so it returns nothing
+      "✖ Choose between foo & bar ›"
+    ]);
+    assert.deepEqual(input, []);
+  });
+
+  it("should render error without hint.", async() => {
+    const logs: string[] = [];
+    const message = "Choose between foo & bar";
+    const options = {
+      choices: ["foo", "bar"],
+      validators: [required()],
+      showHint: false
+    };
+    const inputs = [
+      kInputs.return,
+      kInputs.right,
+      kInputs.return
+    ];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
+      message,
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
+    );
+
+    const input = await multiselectPrompt.multiselect();
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo & bar",
+      "  ○ foo",
+      "  ○ bar",
+      // we press <return> so it re-render question with error
+      "? Choose between foo & bar [required]",
+      "  ○ foo",
+      "  ○ bar",
+      // we press <right> so it select 'foo'
+      "  ● foo",
+      "  ○ bar",
+      // we press <return> so 'foo' is returned
+      "✔ Choose between foo & bar › foo"
+    ]);
+    assert.deepEqual(input, ["foo"]);
   });
 });

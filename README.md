@@ -97,6 +97,8 @@ Use `preSelectedChoices` to pre-select choices.
 
 Use `validators` to handle user input.
 
+Use `showHint: false` to disable hint (this option is truthy by default).
+
 **Example**
 
 ```js
@@ -181,6 +183,7 @@ export interface MultiselectOptions extends SharedOptions  {
   validators?: Validator[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
+  showHint?: boolean;
 }
 
 export interface ConfirmOptions extends SharedOptions  {

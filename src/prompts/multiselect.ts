@@ -22,12 +22,14 @@ export interface MultiselectOptions extends SharedOptions {
   validators?: PromptValidator[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
+  showHint?: boolean;
 }
 
 export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
   #boundExitEvent = () => void 0;
   #boundKeyPressEvent = () => void 0;
   #validators: PromptValidator[];
+  #showHint: boolean;
 
   activeIndex = 0;
   selectedIndexes: number[] = [];
@@ -88,7 +90,8 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
       stdout = process.stdout,
       choices,
       preSelectedChoices,
-      validators = []
+      validators = [],
+      showHint = true
     } = options ?? {};
 
     super(message, stdin, stdout);
@@ -106,6 +109,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
     }
 
     this.#validators = validators;
+    this.#showHint = showHint;
 
     for (const choice of choices) {
       if (typeof choice === "string") {
@@ -360,14 +364,14 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
   }
 
   #showQuestion(error: string | null = null) {
-    let hint = kleur.gray(
+    let hint = this.#showHint ? kleur.gray(
       // eslint-disable-next-line max-len
       `(Press ${kleur.bold("<Ctrl+A>")} to toggle all, ${kleur.bold("<Left/Right>")} to toggle, ${kleur.bold("<Return>")} to submit)`
-    );
+    ) : "";
     if (error) {
-      hint += ` ${kleur.red().bold(`[${error}]`)}`;
+      hint += `${hint.length > 0 ? " " : ""}${kleur.red().bold(`[${error}]`)}`;
     }
-    this.questionMessage = `${SYMBOLS.QuestionMark} ${kleur.bold(this.message)} ${hint}`;
+    this.questionMessage = `${SYMBOLS.QuestionMark} ${kleur.bold(this.message)}${hint.length > 0 ? ` ${hint}` : ""}`;
 
     this.write(`${this.questionMessage}${EOL}`);
   }
