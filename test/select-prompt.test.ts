@@ -462,14 +462,14 @@ describe("SelectPrompt", () => {
       "› b",
       " › bar",
       "   baz",
-      // we press <b> so it filters values with 'ba'
+      // we press <a> so it filters values with 'ba'
       "› ba",
       " › bar",
       "   baz",
       // we press <return> so 'bar' is returned
       "✔ Choose between foo, bar or baz › bar"
     ]);
-    assert.deepEqual(input, "bar");
+    assert.equal(input, "bar");
   });
 
   it("should filter all choices with autocomplete when using backspace", async() => {
@@ -523,7 +523,7 @@ describe("SelectPrompt", () => {
       // we press <return> so 'foo' is returned
       "✔ Choose between foo, bar or baz › foo"
     ]);
-    assert.deepEqual(input, "foo");
+    assert.equal(input, "foo");
   });
 
   it("autocomplete filters should be case insensitive by default", async() => {
@@ -561,7 +561,7 @@ describe("SelectPrompt", () => {
       // we press <return> so 'bar' is returned
       "✔ Choose between foo, bar or baz › bar"
     ]);
-    assert.deepEqual(input, "bar");
+    assert.equal(input, "bar");
   });
 
 
@@ -607,10 +607,10 @@ describe("SelectPrompt", () => {
       "› b",
       " › bar",
       "   baz",
-      // we press <return> so bar is returned
+      // we press <return> so 'bar' is returned
       "✔ Choose between foo, bar or baz › bar"
     ]);
-    assert.deepEqual(input, "bar");
+    assert.equal(input, "bar");
   });
 
   it("should fallback to empty string if filter returns empty choice list", async() => {
@@ -644,9 +644,9 @@ describe("SelectPrompt", () => {
       "   baz",
       // we press <B> so it filters no value (case sensitive)
       "› B",
-      // we press <return> so bar is returned
+      // we press <return> and an empty string is returned
       "✖ Choose between foo, bar or baz › "
     ]);
-    assert.deepEqual(input, "");
+    assert.equal(input, "");
   });
 });
