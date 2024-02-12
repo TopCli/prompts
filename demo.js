@@ -31,21 +31,28 @@ if (!interactive) {
   ]);
 }
 
-const name = await question("Question input", { defaultValue: "foo" });
-const runner = await select("Select input", { choices: stringSelect, maxVisible: 5 });
-const runner_complete = await select(
+const questionResponse = await question("Question input", { defaultValue: "foo" });
+const selectResponse = await select("Select input", { choices: stringSelect, maxVisible: 5 });
+const selectAutocompleteResponse = await select(
   "Select input /w autocomplete",
   { choices: choiceSelect, maxVisible: 5, autocomplete: true }
 );
-const isCLI = await confirm("Confirm input", { initial: true });
-const os = await multiselect("Multiselect input", {
+const confirmResponse = await confirm("Confirm input", { initial: true });
+const multiselectResponse = await multiselect("Multiselect input", {
   choices: stringSelect,
   preSelectedChoices: ["node"]
 });
-const os_autocomplete = await multiselect("Multiselect input /w autocomplete", {
+const multiselectAutocompleteResponse = await multiselect("Multiselect input /w autocomplete", {
   choices: choiceSelect,
   preSelectedChoices: ["tap"]
 });
 
 
-console.log({ name, runner, runner_complete, isCLI, os, os_autocomplete });
+console.log({
+  questionResponse,
+  selectResponse,
+  selectAutocompleteResponse,
+  confirmResponse,
+  multiselectResponse,
+  multiselectAutocompleteResponse
+});
