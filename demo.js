@@ -20,6 +20,8 @@ if (!interactive) {
     "toto",
     // Select input
     "node",
+    // Select ignore input
+    "ava",
     // Select input /w autocomplete
     "tape",
     // Confirm input
@@ -33,6 +35,10 @@ if (!interactive) {
 
 const questionResponse = await question("Question input", { defaultValue: "foo" });
 const selectResponse = await select("Select input", { choices: stringSelect, maxVisible: 5 });
+const selectIgnoreResponse = await select(
+  "Select ignore input",
+  { choices: stringSelect, maxVisible: 5, ignoreValues: ["tap", "tape"] }
+);
 const selectAutocompleteResponse = await select(
   "Select input /w autocomplete",
   { choices: choiceSelect, maxVisible: 5, autocomplete: true }
@@ -51,6 +57,7 @@ const multiselectAutocompleteResponse = await multiselect("Multiselect input /w 
 console.log({
   questionResponse,
   selectResponse,
+  selectIgnoreResponse,
   selectAutocompleteResponse,
   confirmResponse,
   multiselectResponse,
