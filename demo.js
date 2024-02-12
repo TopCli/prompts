@@ -2,11 +2,20 @@ import { question, confirm, select, multiselect, PromptAgent } from "./dist/inde
 
 const kTestRunner = ["node", "tap", "tape", "vitest", "mocha", "ava"];
 
+const kTestRunner2 = [
+  { value: "node", label: "Node" },
+  { value: "tap", label: "Tap" },
+  { value: "tape", label: "Tape" },
+  { value: "vitest", label: "ViTest" },
+  { value: "mocha", label: "Mocha" },
+  { value: "ava", label: "AVA" }
+];
+
 const name = await question("Project name ?", { defaultValue: "foo" });
 const runner = await select("Choose a test runner", { choices: kTestRunner, maxVisible: 5 });
 const runner_complete = await select(
   "Choose a test runner (autocomplete)",
-  { choices: kTestRunner, maxVisible: 5, autocomplete: true }
+  { choices: kTestRunner2, maxVisible: 5, autocomplete: true }
 );
 const isCLI = await confirm("Your project is a CLI ?", { initial: true });
 const os = await multiselect("Choose OS", {
