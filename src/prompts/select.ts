@@ -9,6 +9,7 @@ import wcwidth from "@topcli/wcwidth";
 import { AbstractPrompt } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
+import { PromptValidator } from "../validators.js";
 import { Choice, SharedOptions } from "../types.js";
 
 // CONSTANTS
@@ -18,6 +19,7 @@ export interface SelectOptions extends SharedOptions {
   choices: (Choice | string)[];
   maxVisible?: number;
   ignoreValues?: (string | number | boolean)[];
+  validators?: PromptValidator[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
 }
@@ -25,6 +27,7 @@ export interface SelectOptions extends SharedOptions {
 export class SelectPrompt extends AbstractPrompt<string> {
   #boundExitEvent = () => void 0;
   #boundKeyPressEvent = () => void 0;
+  #validators: PromptValidator[];
   activeIndex = 0;
   questionMessage: string;
   autocompleteValue = "";
@@ -81,7 +84,8 @@ export class SelectPrompt extends AbstractPrompt<string> {
     const {
       stdin = process.stdin,
       stdout = process.stdout,
-      choices
+      choices,
+      validators = []
     } = options ?? {};
 
     super(message, stdin, stdout);
@@ -97,6 +101,8 @@ export class SelectPrompt extends AbstractPrompt<string> {
       this.destroy();
       throw new TypeError("Missing required param: choices");
     }
+
+    this.#validators = validators;
 
     for (const choice of choices) {
       if (typeof choice === "string") {
@@ -197,6 +203,16 @@ export class SelectPrompt extends AbstractPrompt<string> {
 
       const label = typeof choice === "string" ? choice : choice.label;
       const value = typeof choice === "string" ? choice : choice.value;
+
+      for (const validator of this.#validators) {
+        if (!validator.validate(value)) {
+          const error = validator.error(value);
+          render({ error });
+
+          return;
+        }
+      }
+
       render({ clearRender: true });
       if (!this.options.ignoreValues?.includes(value)) {
         this.#showAnsweredQuestion(label);
@@ -241,11 +257,13 @@ export class SelectPrompt extends AbstractPrompt<string> {
       options: {
         initialRender?: boolean;
         clearRender?: boolean;
+        error?: string
       } = {}
     ) => {
       const {
         initialRender = false,
-        clearRender = false
+        clearRender = false,
+        error = null
       } = options;
 
       if (!initialRender) {
@@ -275,6 +293,13 @@ export class SelectPrompt extends AbstractPrompt<string> {
         return;
       }
 
+      if (error) {
+        const linesToClear = Math.ceil(wcwidth(this.questionMessage) / this.stdout.columns) + 1;
+        this.stdout.moveCursor(0, -linesToClear);
+        this.stdout.clearScreenDown();
+        this.#showQuestion(error);
+      }
+
       this.#showChoices();
     };
 
@@ -289,8 +314,12 @@ export class SelectPrompt extends AbstractPrompt<string> {
     });
   }
 
-  #showQuestion() {
-    this.questionMessage = `${SYMBOLS.QuestionMark} ${kleur.bold(this.message)}`;
+  #showQuestion(error: string | null = null) {
+    let hint = "";
+    if (error) {
+      hint = ` ${hint.length > 0 ? " " : ""}${kleur.red().bold(`[${error}]`)}`;
+    }
+    this.questionMessage = `${SYMBOLS.QuestionMark} ${kleur.bold(this.message)}${hint}`;
     this.write(`${this.questionMessage}${EOL}`);
   }
 }
