@@ -192,8 +192,6 @@ export class SelectPrompt extends AbstractPrompt<string> {
       render();
     }
     else if (key.name === "return") {
-      console.log({ index: this.activeIndex });
-
       const choice = this.filteredChoices[this.activeIndex];
 
       const value = typeof choice === "string" ? choice : choice.value;
@@ -211,6 +209,16 @@ export class SelectPrompt extends AbstractPrompt<string> {
       resolve(value);
     }
     else {
+      if (!key.ctrl && this.options.autocomplete) {
+        // reset selected choices when user type
+        this.activeIndex = 0;
+        if (key.name === "backspace" && this.autocompleteValue.length > 0) {
+          this.autocompleteValue = this.autocompleteValue.slice(0, -1);
+        }
+        else if (key.name !== "backspace") {
+          this.autocompleteValue += key.sequence;
+        }
+      }
       render();
     }
   }
