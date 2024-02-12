@@ -213,6 +213,9 @@ export interface ConfirmOptions extends SharedOptions  {
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ncukondo"><img src="https://avatars.githubusercontent.com/u/17022138?v=4?s=100" width="100px;" alt="Takeshi Kondo"/><br /><sub><b>Takeshi Kondo</b></sub></a><br /><a href="#maintenance-ncukondo" title="Maintenance">🚧</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/FredGuiou"><img src="https://avatars.githubusercontent.com/u/99122562?v=4?s=100" width="100px;" alt="FredGuiou"/><br /><sub><b>FredGuiou</b></sub></a><br /><a href="https://github.com/TopCli/prompts/commits?author=FredGuiou" title="Code">💻</a> <a href="https://github.com/TopCli/prompts/commits?author=FredGuiou" title="Tests">⚠️</a> <a href="https://github.com/TopCli/prompts/commits?author=FredGuiou" title="Documentation">📖</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/noxify"><img src="https://avatars.githubusercontent.com/u/521777?v=4?s=100" width="100px;" alt="Marcus Reinhardt"/><br /><sub><b>Marcus Reinhardt</b></sub></a><br /><a href="https://github.com/TopCli/prompts/commits?author=noxify" title="Code">💻</a> <a href="https://github.com/TopCli/prompts/commits?author=noxify" title="Tests">⚠️</a> <a href="https://github.com/TopCli/prompts/commits?author=noxify" title="Documentation">📖</a></td>
+    </tr>
   </tbody>
 </table>
 
