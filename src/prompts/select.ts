@@ -168,7 +168,8 @@ export class SelectPrompt extends AbstractPrompt<string> {
   }
 
   #showAnsweredQuestion(choice: Choice | string) {
-    const prefix = `${SYMBOLS.Tick} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
+    const symbolPrefix = choice === "" ? SYMBOLS.Cross : SYMBOLS.Tick;
+    const prefix = `${symbolPrefix} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
     const formattedChoice = kleur.yellow(typeof choice === "string" ? choice : choice.label);
 
     this.write(`${prefix} ${formattedChoice}${EOL}`);
@@ -192,7 +193,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
       render();
     }
     else if (key.name === "return") {
-      const choice = this.filteredChoices[this.activeIndex];
+      const choice = this.filteredChoices[this.activeIndex] || "";
 
       const label = typeof choice === "string" ? choice : choice.label;
       const value = typeof choice === "string" ? choice : choice.value;

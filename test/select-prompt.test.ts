@@ -407,6 +407,28 @@ describe("SelectPrompt", () => {
     ]);
   });
 
+  it("should return the answer set via PromptAgent with autocomplete", async() => {
+    const logs: string[] = [];
+    const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
+    kPromptAgent.nextAnswer("option1");
+
+    const options = {
+      choices: [
+        { value: "option1", label: "one", description: "foo" },
+        { value: "option2", label: "Option 2", description: "foo" },
+        { value: "option3", label: "Option three", description: "foo" }
+      ],
+      maxVisible: 5,
+      autocomplete: true
+    };
+    const input = await select("Choose option", { ...options, stdin, stdout });
+
+    assert.equal(input, "option1");
+    assert.deepStrictEqual(logs, [
+      "✔ Choose option › option1"
+    ]);
+  });
+
   it("should filter values with autocomplete", async() => {
     const logs: string[] = [];
     const message = "Choose between foo, bar or baz";
@@ -589,5 +611,42 @@ describe("SelectPrompt", () => {
       "✔ Choose between foo, bar or baz › bar"
     ]);
     assert.deepEqual(input, "bar");
+  });
+
+  it("should fallback to empty string if filter returns empty choice list", async() => {
+    const logs: string[] = [];
+    const message = "Choose between foo, bar or baz";
+    const options = {
+      choices: ["foo", "bar", "baz"],
+      autocomplete: true,
+      caseSensitive: true
+    };
+    const inputs = [
+      { sequence: "B" },
+      kInputs.return
+    ];
+    const selectPrompt = await TestingPrompt.SelectPrompt(
+      message,
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
+    );
+
+    const input = await selectPrompt.select();
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo, bar or baz",
+      "› ",
+      " › foo",
+      "   bar",
+      "   baz",
+      // we press <B> so it filters no value (case sensitive)
+      "› B",
+      // we press <return> so bar is returned
+      "✖ Choose between foo, bar or baz › "
+    ]);
+    assert.deepEqual(input, "");
   });
 });
