@@ -119,10 +119,10 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
   }
 
   #onQuestionAnswer() {
-    const defaultLines = this.fastAnswer ? 0 : 1;
+    this.clearLastLine();
     this.stdout.moveCursor(
       -this.stdout.columns,
-      -(Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns) || defaultLines)
+      -Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns)
     );
     this.stdout.clearScreenDown();
     this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${kleur.bold(this.message)}${EOL}`);
