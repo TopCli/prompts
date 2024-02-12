@@ -86,6 +86,10 @@ select(message: string, options: SelectOptions): Promise<string>
 Scrollable select depending `maxVisible` (default `8`).
 Use `ignoreValues` to skip result render & clear lines after a selected one.
 
+Use `autocomplete` to allow filtered choices. This can be useful for a large list of choices.
+
+Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`
+
 ### `multiselect()`
 
 ```ts
@@ -108,7 +112,7 @@ const os = await multiselect('Choose OS', {
 });
 ```
 
-Use `autocomplete` to allow filtered choices. This can be usefull for a large list of choices.
+Use `autocomplete` to allow filtered choices. This can be useful for a large list of choices.
 
 Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`
 
@@ -174,6 +178,8 @@ export interface SelectOptions extends SharedOptions  {
   choices: (Choice | string)[];
   maxVisible?: number;
   ignoreValues?: (string | number | boolean)[];
+  autocomplete?: boolean;
+  caseSensitive?: boolean;
 }
 
 export interface MultiselectOptions extends SharedOptions  {

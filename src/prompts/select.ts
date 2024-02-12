@@ -11,24 +11,70 @@ import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 import { Choice, SharedOptions } from "../types.js";
 
+// CONSTANTS
+const kRequiredChoiceProperties = ["label", "value"];
+
 export interface SelectOptions extends SharedOptions {
   choices: (Choice | string)[];
   maxVisible?: number;
   ignoreValues?: (string | number | boolean)[];
+  autocomplete?: boolean;
+  caseSensitive?: boolean;
 }
 
 export class SelectPrompt extends AbstractPrompt<string> {
   #boundExitEvent = () => void 0;
   #boundKeyPressEvent = () => void 0;
   activeIndex = 0;
-  selectedIndexes: number[] = [];
   questionMessage: string;
-  longestChoicelength: number;
+  autocompleteValue = "";
   options: SelectOptions;
   lastRender: { startIndex: number; endIndex: number; };
 
   get choices() {
     return this.options.choices;
+  }
+
+  get filteredChoices() {
+    if (!(this.options.autocomplete && this.autocompleteValue.length > 0)) {
+      return this.choices;
+    }
+
+    const isCaseSensitive = this.options.caseSensitive;
+    const autocompleteValue = isCaseSensitive ? this.autocompleteValue : this.autocompleteValue.toLowerCase();
+
+    return this.choices.filter((choice) => this.#filterChoice(choice, autocompleteValue, isCaseSensitive));
+  }
+
+  #filterChoice(choice: Choice | string, autocompleteValue: string, isCaseSensitive = false) {
+    // eslint-disable-next-line no-nested-ternary
+    const choiceValue = typeof choice === "string" ?
+      (isCaseSensitive ? choice : choice.toLowerCase()) :
+      (isCaseSensitive ? choice.label : choice.label.toLowerCase());
+
+    if (autocompleteValue.includes(" ")) {
+      return this.#filterMultipleWords(choiceValue, autocompleteValue, isCaseSensitive);
+    }
+
+    return choiceValue.includes(autocompleteValue);
+  }
+
+  #filterMultipleWords(choiceValue: string, autocompleteValue: string, isCaseSensitive: boolean) {
+    return autocompleteValue.split(" ").every((word) => {
+      const wordValue = isCaseSensitive ? word : word.toLowerCase();
+
+      return choiceValue.includes(wordValue) || choiceValue.includes(autocompleteValue);
+    });
+  }
+
+  get longestChoice() {
+    return Math.max(...this.filteredChoices.map((choice) => {
+      if (typeof choice === "string") {
+        return choice.length;
+      }
+
+      return choice.label.length;
+    }));
   }
 
   constructor(message: string, options: SelectOptions) {
@@ -52,12 +98,10 @@ export class SelectPrompt extends AbstractPrompt<string> {
       throw new TypeError("Missing required param: choices");
     }
 
-    this.longestChoicelength = Math.max(...choices.map((choice) => {
+    for (const choice of choices) {
       if (typeof choice === "string") {
-        return choice.length;
+        continue;
       }
-
-      const kRequiredChoiceProperties = ["label", "value"];
 
       for (const prop of kRequiredChoiceProperties) {
         if (!choice[prop]) {
@@ -65,13 +109,11 @@ export class SelectPrompt extends AbstractPrompt<string> {
           throw new TypeError(`Missing ${prop} for choice ${JSON.stringify(choice)}`);
         }
       }
-
-      return choice.label.length;
-    }));
+    }
   }
 
   #getFormattedChoice(choiceIndex: number) {
-    const choice = this.choices[choiceIndex];
+    const choice = this.filteredChoices[choiceIndex];
 
     if (typeof choice === "string") {
       return { value: choice, label: choice };
@@ -82,12 +124,12 @@ export class SelectPrompt extends AbstractPrompt<string> {
 
   #getVisibleChoices() {
     const maxVisible = this.options.maxVisible || 8;
-    let startIndex = Math.min(this.choices.length - maxVisible, this.activeIndex - Math.floor(maxVisible / 2));
+    let startIndex = Math.min(this.filteredChoices.length - maxVisible, this.activeIndex - Math.floor(maxVisible / 2));
     if (startIndex < 0) {
       startIndex = 0;
     }
 
-    const endIndex = Math.min(startIndex + maxVisible, this.choices.length);
+    const endIndex = Math.min(startIndex + maxVisible, this.filteredChoices.length);
 
     return { startIndex, endIndex };
   }
@@ -96,11 +138,14 @@ export class SelectPrompt extends AbstractPrompt<string> {
     const { startIndex, endIndex } = this.#getVisibleChoices();
     this.lastRender = { startIndex, endIndex };
 
+    if (this.options.autocomplete) {
+      this.write(`${SYMBOLS.Pointer} ${this.autocompleteValue}${EOL}`);
+    }
     for (let choiceIndex = startIndex; choiceIndex < endIndex; choiceIndex++) {
       const choice = this.#getFormattedChoice(choiceIndex);
       const isChoiceSelected = choiceIndex === this.activeIndex;
       const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
-      const showNextChoicesArrow = endIndex < this.choices.length && choiceIndex === endIndex - 1;
+      const showNextChoicesArrow = endIndex < this.filteredChoices.length && choiceIndex === endIndex - 1;
 
       let prefixArrow = " ";
       if (showPreviousChoicesArrow) {
@@ -112,18 +157,19 @@ export class SelectPrompt extends AbstractPrompt<string> {
 
       const prefix = `${prefixArrow}${isChoiceSelected ? `${SYMBOLS.Pointer} ` : "  "}`;
       const formattedLabel = choice.label.padEnd(
-        this.longestChoicelength < 10 ? this.longestChoicelength : 0
+        this.longestChoice < 10 ? this.longestChoice : 0
       );
       const formattedDescription = choice.description ? ` - ${choice.description}` : "";
       const color = isChoiceSelected ? kleur.white().bold : kleur.gray;
-      const str = color(`${prefix}${formattedLabel}${formattedDescription}${EOL}`);
+      const str = `${prefix}${color(`${formattedLabel}${formattedDescription}`)}${EOL}`;
 
       this.write(str);
     }
   }
 
   #showAnsweredQuestion(choice: Choice | string) {
-    const prefix = `${SYMBOLS.Tick} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
+    const symbolPrefix = choice === "" ? SYMBOLS.Cross : SYMBOLS.Tick;
+    const prefix = `${symbolPrefix} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
     const formattedChoice = kleur.yellow(typeof choice === "string" ? choice : choice.label);
 
     this.write(`${prefix} ${formattedChoice}${EOL}`);
@@ -138,22 +184,22 @@ export class SelectPrompt extends AbstractPrompt<string> {
 
   #onKeypress(...args) {
     const [resolve, render, , key] = args;
-
     if (key.name === "up") {
-      this.activeIndex = this.activeIndex === 0 ? this.choices.length - 1 : this.activeIndex - 1;
+      this.activeIndex = this.activeIndex === 0 ? this.filteredChoices.length - 1 : this.activeIndex - 1;
       render();
     }
     else if (key.name === "down") {
-      this.activeIndex = this.activeIndex === this.choices.length - 1 ? 0 : this.activeIndex + 1;
+      this.activeIndex = this.activeIndex === this.filteredChoices.length - 1 ? 0 : this.activeIndex + 1;
       render();
     }
     else if (key.name === "return") {
-      render({ clearRender: true });
+      const choice = this.filteredChoices[this.activeIndex] || "";
 
-      const currentChoice = this.choices[this.activeIndex];
-      const value = typeof currentChoice === "string" ? currentChoice : currentChoice.value;
+      const label = typeof choice === "string" ? choice : choice.label;
+      const value = typeof choice === "string" ? choice : choice.value;
+      render({ clearRender: true });
       if (!this.options.ignoreValues?.includes(value)) {
-        this.#showAnsweredQuestion(currentChoice);
+        this.#showAnsweredQuestion(label);
       }
 
       this.write(SYMBOLS.ShowCursor);
@@ -161,9 +207,20 @@ export class SelectPrompt extends AbstractPrompt<string> {
 
       this.#onProcessExit();
       process.off("exit", this.#boundExitEvent);
+
       resolve(value);
     }
     else {
+      if (!key.ctrl && this.options.autocomplete) {
+        // reset selected choices when user type
+        this.activeIndex = 0;
+        if (key.name === "backspace" && this.autocompleteValue.length > 0) {
+          this.autocompleteValue = this.autocompleteValue.slice(0, -1);
+        }
+        else if (key.name !== "backspace") {
+          this.autocompleteValue += key.sequence;
+        }
+      }
       render();
     }
   }
@@ -197,13 +254,21 @@ export class SelectPrompt extends AbstractPrompt<string> {
           this.clearLastLine();
           linesToClear--;
         }
+        if (this.options.autocomplete) {
+          let linesToClear = Math.ceil(
+            wcwidth(`${SYMBOLS.Pointer} ${this.autocompleteValue}`) / this.stdout.columns
+          );
+          while (linesToClear > 0) {
+            this.clearLastLine();
+            linesToClear--;
+          }
+        }
       }
 
       if (clearRender) {
         const questionLineCount = Math.ceil(
           wcwidth(stripAnsi(this.questionMessage)) / this.stdout.columns
         );
-
         this.stdout.moveCursor(-this.stdout.columns, -(1 + questionLineCount));
         this.stdout.clearScreenDown();
 
