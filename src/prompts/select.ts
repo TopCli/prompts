@@ -194,11 +194,12 @@ export class SelectPrompt extends AbstractPrompt<string> {
     else if (key.name === "return") {
       const choice = this.filteredChoices[this.activeIndex];
 
-      const value = typeof choice === "string" ? choice : choice.label;
+      const label = typeof choice === "string" ? choice : choice.label;
+      const value = typeof choice === "string" ? choice : choice.value;
 
       render({ clearRender: true });
 
-      this.#showAnsweredQuestion(value);
+      this.#showAnsweredQuestion(label);
 
       this.write(SYMBOLS.ShowCursor);
       this.destroy();
