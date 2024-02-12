@@ -74,6 +74,17 @@
         "test",
         "doc"
       ]
+    },
+    {
+      "login": "noxify",
+      "name": "Marcus Reinhardt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/521777?v=4",
+      "profile": "https://github.com/noxify",
+      "contributions": [
+        "code",
+        "test",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
