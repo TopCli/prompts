@@ -226,6 +226,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
 
   async select(): Promise<string> {
     const answer = this.agent.nextAnswers.shift();
+    console.log({ answer });
     if (answer !== undefined) {
       this.#showAnsweredQuestion(answer);
       this.destroy();
