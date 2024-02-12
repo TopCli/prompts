@@ -161,7 +161,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
       );
       const formattedDescription = choice.description ? ` - ${choice.description}` : "";
       const color = isChoiceSelected ? kleur.white().bold : kleur.gray;
-      const str = `${prefix} ${color(`${formattedLabel}${formattedDescription}`)}${EOL}`;
+      const str = `${prefix}${color(`${formattedLabel}${formattedDescription}`)}${EOL}`;
 
       this.write(str);
     }
@@ -194,7 +194,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
     else if (key.name === "return") {
       const choice = this.filteredChoices[this.activeIndex];
 
-      const value = typeof choice === "string" ? choice : choice.value;
+      const value = typeof choice === "string" ? choice : choice.label;
 
       render({ clearRender: true });
 
