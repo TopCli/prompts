@@ -197,9 +197,9 @@ export class SelectPrompt extends AbstractPrompt<string> {
       const label = typeof choice === "string" ? choice : choice.label;
       const value = typeof choice === "string" ? choice : choice.value;
 
-      render({ clearRender: true });
-
-      this.#showAnsweredQuestion(label);
+      if (!this.options.ignoreValues?.includes(value)) {
+        this.#showAnsweredQuestion(label);
+      }
 
       this.write(SYMBOLS.ShowCursor);
       this.destroy();
