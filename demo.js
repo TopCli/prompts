@@ -29,10 +29,10 @@ const os = await multiselect("Choose OS", {
   choices: stringSelect,
   preSelectedChoices: ["node"]
 });
-const os2 = await multiselect("Choose OS (autocomplete)", {
+const os_autocomplete = await multiselect("Choose OS (autocomplete)", {
   choices: choiceSelect,
   preSelectedChoices: ["tap"]
 });
 
 
-console.log({ name, runner, runner_complete, isCLI, os, os2 });
+console.log({ name, runner, runner_complete, isCLI, os, os_autocomplete });
