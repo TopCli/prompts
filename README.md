@@ -84,7 +84,10 @@ select(message: string, options: SelectOptions): Promise<string>
 ```
 
 Scrollable select depending `maxVisible` (default `8`).
+
 Use `ignoreValues` to skip result render & clear lines after a selected one.
+
+Use `validators` to handle user input.
 
 Use `autocomplete` to allow filtered choices. This can be useful for a large list of choices.
 
@@ -178,6 +181,7 @@ export interface SelectOptions extends SharedOptions  {
   choices: (Choice | string)[];
   maxVisible?: number;
   ignoreValues?: (string | number | boolean)[];
+  validators?: Validator[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
 }

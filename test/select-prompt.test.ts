@@ -7,7 +7,7 @@ import { SelectPrompt } from "../src/prompts/select.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
 import { mockProcess } from "./helpers/mock-process.js";
 import { PromptAgent } from "../src/prompt-agent.js";
-import { select } from "../index.js";
+import { select, required } from "../index.js";
 
 const kInputs = {
   down: { name: "down" },
@@ -648,5 +648,53 @@ describe("SelectPrompt", () => {
       "✖ Choose between foo, bar or baz › "
     ]);
     assert.equal(input, "");
+  });
+
+  it("should render with validation error.", async() => {
+    const logs: string[] = [];
+    const message = "Choose between foo, bar or baz";
+    const options = {
+      choices: ["foo", "bar", "baz"],
+      autocomplete: true,
+      validators: [required()]
+    };
+    const inputs = [
+      { sequence: "X" },
+      kInputs.return,
+      { name: "backspace" },
+      kInputs.return
+    ];
+    const selectPrompt = await TestingPrompt.SelectPrompt(
+      message,
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
+    );
+
+    const input = await selectPrompt.select();
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo, bar or baz",
+      "› ",
+      " › foo",
+      "   bar",
+      "   baz",
+      // we press <X> so it filters no value
+      "› X",
+      // we press <return> so it re-render question with error
+      "? Choose between foo, bar or baz [required]",
+      "› X",
+      // we press <backspace> so we get all choices
+      // we press <enter> so it select 'foo'
+      "› ",
+      " › foo",
+      "   bar",
+      "   baz",
+      // we press <return> so 'foo' is returned
+      "✔ Choose between foo, bar or baz › foo"
+    ]);
+    assert.equal(input, "foo");
   });
 });
