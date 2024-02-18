@@ -4,9 +4,19 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: npm
     directory: /
     versioning-strategy: widen
     schedule:
       interval: weekly
+    groups:
+      dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
