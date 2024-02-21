@@ -6,6 +6,8 @@ import { Writable } from "node:stream";
 // Import Internal Dependencies
 import { stripAnsi } from "../utils.js";
 import { PromptAgent } from "../prompt-agent.js";
+import { TimeoutError } from "../errors/timeout.js";
+import EventEmitter from "node:events";
 
 type Stdin = NodeJS.ReadStream & {
   fd: 0;
@@ -15,7 +17,14 @@ type Stdout = NodeJS.WriteStream & {
   fd: 1;
 }
 
-export class AbstractPrompt<T> {
+export interface AbstractPromptOptions {
+  stdin?: Stdin;
+  stdout?: Stdout;
+  message: string;
+  timeout?: number;
+}
+
+export class AbstractPrompt<T> extends EventEmitter {
   stdin: Stdin;
   stdout: Stdout;
   message: string;
@@ -23,11 +32,21 @@ export class AbstractPrompt<T> {
   agent: PromptAgent<T>;
   mute: boolean;
   rl: Interface;
+  #timeoutHandler: NodeJS.Timeout;
 
-  constructor(message: string, input = process.stdin, output = process.stdout) {
+  constructor(options: AbstractPromptOptions) {
+    super();
+
     if (this.constructor === AbstractPrompt) {
       throw new Error("AbstractPrompt can't be instantiated.");
     }
+
+    const {
+      stdin: input = process.stdin,
+      stdout: output = process.stdout,
+      message,
+      timeout
+    } = options;
 
     if (typeof message !== "string") {
       throw new TypeError(`message must be string, ${typeof message} given.`);
@@ -48,7 +67,7 @@ export class AbstractPrompt<T> {
       input,
       output: new Writable({
         write: (chunk: string, encoding: BufferEncoding, callback) => {
-          if (!this.mute) {
+          if (!this.mute && chunk) {
             this.stdout.write(chunk, encoding);
           }
           callback();
@@ -56,6 +75,23 @@ export class AbstractPrompt<T> {
       }),
       terminal: true
     });
+
+    if (timeout) {
+      if (typeof timeout !== "number") {
+        throw new TypeError(`timeout must be a number, ${typeof timeout} given.`);
+      }
+      else if (timeout < 0) {
+        throw new Error(`timeout must be a positive number, ${timeout} given.`);
+      }
+
+      this.#timeoutHandler = setTimeout(() => {
+        this.rl.close();
+        for (let i = 0; i < this.history.length; i++) {
+          this.clearLastLine();
+        }
+        this.emit("error", new TimeoutError("Prompt timeout reached"));
+      }, timeout);
+    }
   }
 
   write(data: string) {
@@ -81,5 +117,9 @@ export class AbstractPrompt<T> {
 
   destroy() {
     this.rl.close();
+
+    if (this.#timeoutHandler) {
+      clearTimeout(this.#timeoutHandler);
+    }
   }
 }

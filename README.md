@@ -49,8 +49,12 @@ question(message: string, options?: PromptOptions): Promise<string>
 ```
 
 Simple prompt, similar to `rl.question()` with an improved UI.
+
 Use `options.secure` if you need to hide both input and answer.
+
 Use `options.validators` to handle user input.
+
+Use `options.timeout` to set a timeout in milliseconds (throws a [TimeoutError](#timeouterror)).
 
 **Example**
 
@@ -93,6 +97,8 @@ Use `autocomplete` to allow filtered choices. This can be useful for a large lis
 
 Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`
 
+Use `options.timeout` to set a timeout in milliseconds (throws a [TimeoutError](#timeouterror)).
+
 ### `multiselect()`
 
 ```ts
@@ -106,18 +112,11 @@ Use `validators` to handle user input.
 
 Use `showHint: false` to disable hint (this option is truthy by default).
 
-**Example**
-
-```js
-const os = await multiselect('Choose OS', {
-  choices: ["linux", "mac", "windows"]
-  validators: [required()]
-});
-```
-
 Use `autocomplete` to allow filtered choices. This can be useful for a large list of choices.
 
-Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`
+Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`.
+
+Use `options.timeout` to set a timeout in milliseconds (throws a [TimeoutError](#timeouterror)).
 
 ### `confirm()`
 
@@ -126,6 +125,8 @@ confirm(message: string, options?: ConfirmOptions): Promise<boolean>
 ```
 
 Boolean prompt, return `options.initial` if user input is different from `y`/`yes`/`n`/`no` (case insensitive), (default `false`).
+
+Use `options.timeout` to set a timeout in milliseconds (throws a [TimeoutError](#timeouterror)).
 
 ### `PromptAgent`
 
@@ -148,16 +149,35 @@ assert.equal(input, "John");
 > - etc<br>
 > **Use with caution**
 
+## Errors
+
+### `TimeoutError`
+
+```ts
+class TimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "TimeoutError";
+  }
+}
+```
+
 ## Interfaces
 
 ```ts
-export interface SharedOptions {
-  stdin?: NodeJS.ReadStream & {
-    fd: 0;
-  };
-  stdout?: NodeJS.WriteStream & {
-    fd: 1;
-  };
+type Stdin = NodeJS.ReadStream & {
+  fd: 0;
+};
+
+type Stdout = NodeJS.WriteStream & {
+  fd: 1;
+}
+
+export interface AbstractPromptOptions {
+  stdin?: Stdin;
+  stdout?: Stdout;
+  message: string;
+  timeout?: number;
 }
 
 export interface PromptValidator<T = string | string[] | boolean> {

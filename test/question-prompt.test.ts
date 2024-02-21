@@ -15,7 +15,43 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("QuestionPrompt", () => {
   it("message should be string", () => {
-    assert.throws(() => new QuestionPrompt(12 as any), { name: "TypeError", message: "message must be string, number given." });
+    assert.throws(
+      () => new QuestionPrompt({ message: 12 as any } as any),
+      { name: "TypeError", message: "message must be string, number given." }
+    );
+  });
+
+  it("timeout should be number", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await question("What's your name?", { timeout: "50" as any, stdin, stdout });
+    }, {
+      name: "TypeError",
+      message: "timeout must be a number, string given."
+    });
+  });
+
+  it("timeout should not be negative", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await question("What's your name?", { timeout: -50, stdin, stdout });
+    }, {
+      name: "Error",
+      message: "timeout must be a positive number, -50 given."
+    });
+  });
+
+  it("should throw TimeoutError", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await question("What's your name?", { timeout: 50, stdin, stdout });
+    }, {
+      name: "TimeoutError",
+      message: "Prompt timeout reached"
+    });
   });
 
   it("should render with tick on valid input", async() => {

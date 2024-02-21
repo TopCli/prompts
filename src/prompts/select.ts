@@ -6,16 +6,16 @@ import kleur from "kleur";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
-import { AbstractPrompt } from "./abstract.js";
+import { AbstractPrompt, AbstractPromptOptions } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 import { PromptValidator } from "../validators.js";
-import { Choice, SharedOptions } from "../types.js";
+import { Choice } from "../types.js";
 
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
 
-export interface SelectOptions extends SharedOptions {
+export interface SelectOptions extends AbstractPromptOptions {
   choices: (Choice | string)[];
   maxVisible?: number;
   ignoreValues?: (string | number | boolean)[];
@@ -80,20 +80,14 @@ export class SelectPrompt extends AbstractPrompt<string> {
     }));
   }
 
-  constructor(message: string, options: SelectOptions) {
+  constructor(options: SelectOptions) {
     const {
-      stdin = process.stdin,
-      stdout = process.stdout,
       choices,
-      validators = []
-    } = options ?? {};
+      validators = [],
+      ...baseOptions
+    } = options;
 
-    super(message, stdin, stdout);
-
-    if (!options) {
-      this.destroy();
-      throw new TypeError("Missing required options");
-    }
+    super({ ...baseOptions });
 
     this.options = options;
 
@@ -241,71 +235,77 @@ export class SelectPrompt extends AbstractPrompt<string> {
     }
   }
 
-  async select(): Promise<string> {
-    const answer = this.agent.nextAnswers.shift();
-    if (answer !== undefined) {
-      this.#showAnsweredQuestion(answer);
-      this.destroy();
+  select(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const answer = this.agent.nextAnswers.shift();
+      if (answer !== undefined) {
+        this.#showAnsweredQuestion(answer);
+        this.destroy();
 
-      return answer;
-    }
-
-    this.write(SYMBOLS.HideCursor);
-    this.#showQuestion();
-
-    const render = (
-      options: {
-        initialRender?: boolean;
-        clearRender?: boolean;
-        error?: string
-      } = {}
-    ) => {
-      const {
-        initialRender = false,
-        clearRender = false,
-        error = null
-      } = options;
-
-      if (!initialRender) {
-        let linesToClear = this.lastRender.endIndex - this.lastRender.startIndex;
-        while (linesToClear > 0) {
-          this.clearLastLine();
-          linesToClear--;
-        }
-        if (this.options.autocomplete) {
-          let linesToClear = Math.ceil(
-            wcwidth(`${SYMBOLS.Pointer} ${this.autocompleteValue}`) / this.stdout.columns
-          );
-          while (linesToClear > 0) {
-            this.clearLastLine();
-            linesToClear--;
-          }
-        }
-      }
-
-      if (clearRender) {
-        const questionLineCount = Math.ceil(
-          wcwidth(stripAnsi(this.questionMessage)) / this.stdout.columns
-        );
-        this.stdout.moveCursor(-this.stdout.columns, -(1 + questionLineCount));
-        this.stdout.clearScreenDown();
+        resolve(answer);
 
         return;
       }
 
-      if (error) {
-        const linesToClear = Math.ceil(wcwidth(this.questionMessage) / this.stdout.columns) + 1;
-        this.stdout.moveCursor(0, -linesToClear);
-        this.stdout.clearScreenDown();
-        this.#showQuestion(error);
-      }
+      this.once("error", (error) => {
+        reject(error);
+      });
 
-      this.#showChoices();
-    };
+      this.write(SYMBOLS.HideCursor);
+      this.#showQuestion();
 
-    render({ initialRender: true });
+      const render = (
+        options: {
+        initialRender?: boolean;
+        clearRender?: boolean;
+        error?: string
+      } = {}
+      ) => {
+        const {
+          initialRender = false,
+          clearRender = false,
+          error = null
+        } = options;
 
-    return new Promise((resolve) => {
+        if (!initialRender) {
+          let linesToClear = this.lastRender.endIndex - this.lastRender.startIndex;
+          while (linesToClear > 0) {
+            this.clearLastLine();
+            linesToClear--;
+          }
+          if (this.options.autocomplete) {
+            let linesToClear = Math.ceil(
+              wcwidth(`${SYMBOLS.Pointer} ${this.autocompleteValue}`) / this.stdout.columns
+            );
+            while (linesToClear > 0) {
+              this.clearLastLine();
+              linesToClear--;
+            }
+          }
+        }
+
+        if (clearRender) {
+          const questionLineCount = Math.ceil(
+            wcwidth(stripAnsi(this.questionMessage)) / this.stdout.columns
+          );
+          this.stdout.moveCursor(-this.stdout.columns, -(1 + questionLineCount));
+          this.stdout.clearScreenDown();
+
+          return;
+        }
+
+        if (error) {
+          const linesToClear = Math.ceil(wcwidth(this.questionMessage) / this.stdout.columns) + 1;
+          this.stdout.moveCursor(0, -linesToClear);
+          this.stdout.clearScreenDown();
+          this.#showQuestion(error);
+        }
+
+        this.#showChoices();
+      };
+
+      render({ initialRender: true });
+
       this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve, render);
       this.stdin.on("keypress", this.#boundKeyPressEvent);
 

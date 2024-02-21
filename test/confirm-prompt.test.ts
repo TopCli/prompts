@@ -30,7 +30,43 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("ConfirmPrompt", () => {
   it("message should be required", () => {
-    assert.throws(() => new ConfirmPrompt(12 as any), { name: "TypeError", message: "message must be string, number given." });
+    assert.throws(
+      () => new ConfirmPrompt({ message: 12 as any }),
+      { name: "TypeError", message: "message must be string, number given." }
+    );
+  });
+
+  it("timeout should be number", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await confirm("Ready?", { timeout: "50" as any, stdin, stdout });
+    }, {
+      name: "TypeError",
+      message: "timeout must be a number, string given."
+    });
+  });
+
+  it("timeout should not be negative", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await confirm("Ready?", { timeout: -50, stdin, stdout });
+    }, {
+      name: "Error",
+      message: "timeout must be a positive number, -50 given."
+    });
+  });
+
+  it("should throw TimeoutError", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await confirm("Ready?", { timeout: 50, stdin, stdout });
+    }, {
+      name: "TimeoutError",
+      message: "Prompt timeout reached"
+    });
   });
 
   it("should return initial, which is equal to false by default", async() => {
