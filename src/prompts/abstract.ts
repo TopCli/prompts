@@ -2,12 +2,12 @@
 import { EOL } from "node:os";
 import { Interface, createInterface } from "node:readline";
 import { Writable } from "node:stream";
+import EventEmitter from "node:events";
 
 // Import Internal Dependencies
 import { stripAnsi } from "../utils.js";
 import { PromptAgent } from "../prompt-agent.js";
 import { AbortError } from "../errors/abort.js";
-import EventEmitter from "node:events";
 
 type Stdin = NodeJS.ReadStream & {
   fd: 0;
