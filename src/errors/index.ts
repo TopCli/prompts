@@ -1,1 +1,1 @@
-export { TimeoutError } from "./timeout.js";
+export { AbortError } from "./abort.js";

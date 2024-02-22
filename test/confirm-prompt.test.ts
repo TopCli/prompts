@@ -36,36 +36,14 @@ describe("ConfirmPrompt", () => {
     );
   });
 
-  it("timeout should be number", async() => {
+  it("should throw AbortError", async() => {
     const { stdin, stdout } = mockProcess();
 
     await assert.rejects(async() => {
-      await confirm("Ready?", { timeout: "50" as any, stdin, stdout });
+      await confirm("Ready?", { signal: AbortSignal.timeout(5), stdin, stdout });
     }, {
-      name: "TypeError",
-      message: "timeout must be a number, string given."
-    });
-  });
-
-  it("timeout should not be negative", async() => {
-    const { stdin, stdout } = mockProcess();
-
-    await assert.rejects(async() => {
-      await confirm("Ready?", { timeout: -50, stdin, stdout });
-    }, {
-      name: "Error",
-      message: "timeout must be a positive number, -50 given."
-    });
-  });
-
-  it("should throw TimeoutError", async() => {
-    const { stdin, stdout } = mockProcess();
-
-    await assert.rejects(async() => {
-      await confirm("Ready?", { timeout: 50, stdin, stdout });
-    }, {
-      name: "TimeoutError",
-      message: "Prompt timeout reached"
+      name: "AbortError",
+      message: "Prompt aborted"
     });
   });
 

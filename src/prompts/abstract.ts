@@ -6,7 +6,7 @@ import { Writable } from "node:stream";
 // Import Internal Dependencies
 import { stripAnsi } from "../utils.js";
 import { PromptAgent } from "../prompt-agent.js";
-import { TimeoutError } from "../errors/timeout.js";
+import { AbortError } from "../errors/abort.js";
 import EventEmitter from "node:events";
 
 type Stdin = NodeJS.ReadStream & {
@@ -21,18 +21,19 @@ export interface AbstractPromptOptions {
   stdin?: Stdin;
   stdout?: Stdout;
   message: string;
-  timeout?: number;
+  signal?: AbortSignal;
 }
 
 export class AbstractPrompt<T> extends EventEmitter {
   stdin: Stdin;
   stdout: Stdout;
   message: string;
+  signal?: AbortSignal;
   history: string[];
   agent: PromptAgent<T>;
   mute: boolean;
   rl: Interface;
-  #timeoutHandler: NodeJS.Timeout;
+  #signalHandler: () => void;
 
   constructor(options: AbstractPromptOptions) {
     super();
@@ -45,7 +46,7 @@ export class AbstractPrompt<T> extends EventEmitter {
       stdin: input = process.stdin,
       stdout: output = process.stdout,
       message,
-      timeout
+      signal
     } = options;
 
     if (typeof message !== "string") {
@@ -55,6 +56,7 @@ export class AbstractPrompt<T> extends EventEmitter {
     this.stdin = input;
     this.stdout = output;
     this.message = message;
+    this.signal = signal;
     this.history = [];
     this.agent = PromptAgent.agent<T>();
     this.mute = false;
@@ -76,21 +78,15 @@ export class AbstractPrompt<T> extends EventEmitter {
       terminal: true
     });
 
-    if (timeout) {
-      if (typeof timeout !== "number") {
-        throw new TypeError(`timeout must be a number, ${typeof timeout} given.`);
-      }
-      else if (timeout < 0) {
-        throw new Error(`timeout must be a positive number, ${timeout} given.`);
-      }
-
-      this.#timeoutHandler = setTimeout(() => {
+    if (this.signal) {
+      this.#signalHandler = () => {
         this.rl.close();
         for (let i = 0; i < this.history.length; i++) {
           this.clearLastLine();
         }
-        this.emit("error", new TimeoutError("Prompt timeout reached"));
-      }, timeout);
+        this.emit("error", new AbortError("Prompt aborted"));
+      };
+      this.signal.addEventListener("abort", this.#signalHandler, { once: true });
     }
   }
 
@@ -118,8 +114,8 @@ export class AbstractPrompt<T> extends EventEmitter {
   destroy() {
     this.rl.close();
 
-    if (this.#timeoutHandler) {
-      clearTimeout(this.#timeoutHandler);
+    if (this.signal) {
+      this.signal.removeEventListener("abort", this.#signalHandler);
     }
   }
 }

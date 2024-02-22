@@ -54,7 +54,7 @@ Use `options.secure` if you need to hide both input and answer.
 
 Use `options.validators` to handle user input.
 
-Use `options.timeout` to set a timeout in milliseconds (throws a [TimeoutError](#timeouterror)).
+Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 
 **Example**
 
@@ -97,7 +97,7 @@ Use `autocomplete` to allow filtered choices. This can be useful for a large lis
 
 Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`
 
-Use `options.timeout` to set a timeout in milliseconds (throws a [TimeoutError](#timeouterror)).
+Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 
 ### `multiselect()`
 
@@ -116,7 +116,7 @@ Use `autocomplete` to allow filtered choices. This can be useful for a large lis
 
 Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`.
 
-Use `options.timeout` to set a timeout in milliseconds (throws a [TimeoutError](#timeouterror)).
+Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 
 ### `confirm()`
 
@@ -126,7 +126,7 @@ confirm(message: string, options?: ConfirmOptions): Promise<boolean>
 
 Boolean prompt, return `options.initial` if user input is different from `y`/`yes`/`n`/`no` (case insensitive), (default `false`).
 
-Use `options.timeout` to set a timeout in milliseconds (throws a [TimeoutError](#timeouterror)).
+Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 
 ### `PromptAgent`
 
@@ -151,13 +151,13 @@ assert.equal(input, "John");
 
 ## Errors
 
-### `TimeoutError`
+### `AbortError`
 
 ```ts
-class TimeoutError extends Error {
+export class AbortError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "TimeoutError";
+    this.name = "AbortError";
   }
 }
 ```
@@ -177,7 +177,7 @@ export interface AbstractPromptOptions {
   stdin?: Stdin;
   stdout?: Stdout;
   message: string;
-  timeout?: number;
+  sginal?: AbortSignal;
 }
 
 export interface PromptValidator<T = string | string[] | boolean> {
