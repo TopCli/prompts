@@ -36,7 +36,7 @@ export class TestingPrompt {
     });
     const { stdin, stdout } = mockProcess([], (data) => onStdoutWrite(data));
 
-    return new QuestionPrompt(message, { stdin, stdout, defaultValue, validators, secure });
+    return new QuestionPrompt({ ...options, message, stdin, stdout, defaultValue, validators, secure });
   }
 
   static async SelectPrompt(message: string, options: TestingPromptOptions) {
@@ -52,7 +52,7 @@ export class TestingPrompt {
     });
     const { stdin, stdout } = mockProcess(inputs, (data) => onStdoutWrite(data));
 
-    return new SelectPrompt(message, { ...options, stdin, stdout });
+    return new SelectPrompt({ ...options, message, stdin, stdout });
   }
 
   static async MultiselectPrompt(message: string, options: TestingPromptOptions) {
@@ -68,7 +68,7 @@ export class TestingPrompt {
     });
     const { stdin, stdout } = mockProcess(inputs, (data) => onStdoutWrite(data));
 
-    return new MultiselectPrompt(message, { ...options, stdin, stdout });
+    return new MultiselectPrompt({ ...options, message, stdin, stdout });
   }
 
   static async ConfirmPrompt(message: string, options: TestingPromptOptions) {
@@ -84,6 +84,6 @@ export class TestingPrompt {
     });
     const { stdin, stdout } = mockProcess(inputs, (data) => onStdoutWrite(data));
 
-    return new ConfirmPrompt(message, { initial, stdin, stdout });
+    return new ConfirmPrompt({ ...options, message, initial, stdin, stdout });
   }
 }

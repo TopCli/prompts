@@ -15,7 +15,21 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("QuestionPrompt", () => {
   it("message should be string", () => {
-    assert.throws(() => new QuestionPrompt(12 as any), { name: "TypeError", message: "message must be string, number given." });
+    assert.throws(
+      () => new QuestionPrompt({ message: 12 as any } as any),
+      { name: "TypeError", message: "message must be string, number given." }
+    );
+  });
+
+  it("should throw AbortError", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await question("What's your name?", { signal: AbortSignal.timeout(5), stdin, stdout });
+    }, {
+      name: "AbortError",
+      message: "Prompt aborted"
+    });
   });
 
   it("should render with tick on valid input", async() => {

@@ -17,28 +17,22 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("SelectPrompt", () => {
   it("message should be required", () => {
-    assert.throws(() => new SelectPrompt(12 as any, undefined as any), {
+    assert.throws(() => new SelectPrompt({ message: 12 as any } as any), {
       name: "TypeError",
       message: "message must be string, number given."
     });
   });
 
-  it("Options should be required", () => {
-    assert.throws(() => new SelectPrompt("foo", undefined as any), {
-      name: "TypeError",
-      message: "Missing required options"
-    });
-  });
-
   it("choices should be required", () => {
-    assert.throws(() => new SelectPrompt("foo", {} as any), {
+    assert.throws(() => new SelectPrompt({ message: "foo" } as any), {
       name: "TypeError",
       message: "Missing required param: choices"
     });
   });
 
   it("choice.label should be required", () => {
-    assert.throws(() => new SelectPrompt("foo", {
+    assert.throws(() => new SelectPrompt({
+      message: "foo",
       choices: [{
         description: "foo",
         value: true
@@ -50,7 +44,8 @@ describe("SelectPrompt", () => {
   });
 
   it("choice.value should be required", () => {
-    assert.throws(() => new SelectPrompt("foo", {
+    assert.throws(() => new SelectPrompt({
+      message: "foo",
       choices: [{
         label: "foo",
         description: "bar"
@@ -60,6 +55,18 @@ describe("SelectPrompt", () => {
       message: "Missing value for choice {\"label\":\"foo\",\"description\":\"bar\"}"
     });
   });
+
+  it("should throw AbortError", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await select("Choose", { choices: ["foo"], signal: AbortSignal.timeout(5), stdin, stdout });
+    }, {
+      name: "AbortError",
+      message: "Prompt aborted"
+    });
+  });
+
 
   it("When press <return>, it should select the first choice.", async() => {
     const message = "Choose between foo & bar";

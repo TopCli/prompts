@@ -22,28 +22,22 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("MultiselectPrompt", () => {
   it("message should be required", () => {
-    assert.throws(() => new MultiselectPrompt(12 as any, undefined as any), {
+    assert.throws(() => new MultiselectPrompt({ message: 12 as any } as any), {
       name: "TypeError",
       message: "message must be string, number given."
     });
   });
 
-  it("Options should be required", () => {
-    assert.throws(() => new MultiselectPrompt("foo", undefined as any), {
-      name: "TypeError",
-      message: "Missing required options"
-    });
-  });
-
   it("choices should be required", () => {
-    assert.throws(() => new MultiselectPrompt("foo", {} as any), {
+    assert.throws(() => new MultiselectPrompt({ message: "foo" } as any), {
       name: "TypeError",
       message: "Missing required param: choices"
     });
   });
 
   it("choice.label should be required", () => {
-    assert.throws(() => new MultiselectPrompt("foo", {
+    assert.throws(() => new MultiselectPrompt({
+      message: "foo",
       choices: [{
         description: "foo",
         value: true
@@ -55,7 +49,8 @@ describe("MultiselectPrompt", () => {
   });
 
   it("choice.value should be required", () => {
-    assert.throws(() => new MultiselectPrompt("foo", {
+    assert.throws(() => new MultiselectPrompt({
+      message: "foo",
       choices: [{
         label: "foo",
         description: "bar"
@@ -63,6 +58,18 @@ describe("MultiselectPrompt", () => {
     }), {
       name: "TypeError",
       message: "Missing value for choice {\"label\":\"foo\",\"description\":\"bar\"}"
+    });
+  });
+
+
+  it("should throw AbortError", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await multiselect("Choose", { choices: ["foo"], signal: AbortSignal.timeout(5), stdin, stdout });
+    }, {
+      name: "AbortError",
+      message: "Prompt aborted"
     });
   });
 

@@ -30,7 +30,21 @@ const kPromptAgent = PromptAgent.agent();
 
 describe("ConfirmPrompt", () => {
   it("message should be required", () => {
-    assert.throws(() => new ConfirmPrompt(12 as any), { name: "TypeError", message: "message must be string, number given." });
+    assert.throws(
+      () => new ConfirmPrompt({ message: 12 as any }),
+      { name: "TypeError", message: "message must be string, number given." }
+    );
+  });
+
+  it("should throw AbortError", async() => {
+    const { stdin, stdout } = mockProcess();
+
+    await assert.rejects(async() => {
+      await confirm("Ready?", { signal: AbortSignal.timeout(5), stdin, stdout });
+    }, {
+      name: "AbortError",
+      message: "Prompt aborted"
+    });
   });
 
   it("should return initial, which is equal to false by default", async() => {

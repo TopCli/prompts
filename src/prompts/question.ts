@@ -6,13 +6,12 @@ import kleur from "kleur";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
-import { AbstractPrompt } from "./abstract.js";
+import { AbstractPrompt, AbstractPromptOptions } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 import { PromptValidator } from "../validators.js";
-import { SharedOptions } from "../types.js";
 
-export interface QuestionOptions extends SharedOptions {
+export interface QuestionOptions extends AbstractPromptOptions {
   defaultValue?: string;
   validators?: PromptValidator[];
   secure?: boolean;
@@ -27,16 +26,15 @@ export class QuestionPrompt extends AbstractPrompt<string> {
   #validators: PromptValidator[];
   #secure: boolean;
 
-  constructor(message: string, options: QuestionOptions = {}) {
+  constructor(options: QuestionOptions) {
     const {
-      stdin = process.stdin,
-      stdout = process.stdout,
       defaultValue,
       validators = [],
-      secure = false
+      secure = false,
+      ...baseOptions
     } = options;
 
-    super(message, stdin, stdout);
+    super({ ...baseOptions });
 
     if (defaultValue && typeof defaultValue !== "string") {
       throw new TypeError("defaultValue must be a string");
@@ -53,6 +51,7 @@ export class QuestionPrompt extends AbstractPrompt<string> {
     return new Promise((resolve) => {
       const questionQuery = this.#getQuestionQuery();
 
+      this.history.push(questionQuery);
       this.rl.question(questionQuery, (answer) => {
         this.history.push(questionQuery + answer);
         this.mute = false;
@@ -100,30 +99,39 @@ export class QuestionPrompt extends AbstractPrompt<string> {
     this.#writeAnswer();
   }
 
-  async question(): Promise<string> {
-    this.answer = this.agent.nextAnswers.shift();
-    if (this.answer !== undefined) {
-      this.#writeAnswer();
+  question(): Promise<string> {
+    return new Promise(async(resolve, reject) => {
+      this.answer = this.agent.nextAnswers.shift();
+      if (this.answer !== undefined) {
+        this.#writeAnswer();
+        this.destroy();
+
+        resolve(this.answer);
+
+        return;
+      }
+
+      this.once("error", (error) => {
+        reject(error);
+      });
+
+
+      this.answer = await this.#question();
+
+      if (this.answer === "" && this.defaultValue) {
+        this.answer = this.defaultValue;
+      }
+
+      this.#onQuestionAnswer();
+
+      while (this.answerBuffer !== undefined) {
+        this.answer = await this.answerBuffer;
+        this.#onQuestionAnswer();
+      }
+
       this.destroy();
 
-      return this.answer;
-    }
-
-    this.answer = await this.#question();
-
-    if (this.answer === "" && this.defaultValue) {
-      this.answer = this.defaultValue;
-    }
-
-    this.#onQuestionAnswer();
-
-    while (this.answerBuffer !== undefined) {
-      this.answer = await this.answerBuffer;
-      this.#onQuestionAnswer();
-    }
-
-    this.destroy();
-
-    return this.answer;
+      resolve(this.answer);
+    });
   }
 }

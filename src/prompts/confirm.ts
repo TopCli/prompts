@@ -7,12 +7,11 @@ import kleur from "kleur";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
-import { AbstractPrompt } from "./abstract.js";
+import { AbstractPrompt, AbstractPromptOptions } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
-import { SharedOptions } from "../types.js";
 
-export interface ConfirmOptions extends SharedOptions {
+export interface ConfirmOptions extends AbstractPromptOptions {
   initial?: boolean;
 }
 
@@ -38,13 +37,12 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
   #boundKeyPressEvent: (...args: any) => void;
   #boundExitEvent: (...args: any) => void;
 
-  constructor(message: string, options: ConfirmOptions = {}) {
+  constructor(options: ConfirmOptions) {
     const {
-      stdin = process.stdin,
-      stdout = process.stdout,
-      initial = false
+      initial = false,
+      ...baseOptions
     } = options;
-    super(message, stdin, stdout);
+    super({ ...baseOptions });
 
     this.initial = initial;
     this.selectedValue = initial;
@@ -128,31 +126,39 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${kleur.bold(this.message)}${EOL}`);
   }
 
-  async confirm(): Promise<boolean> {
-    const answer = this.agent.nextAnswers.shift();
-    if (answer !== undefined) {
-      this.selectedValue = answer;
-      this.#onQuestionAnswer();
-      this.destroy();
+  confirm(): Promise<boolean> {
+    return new Promise(async(resolve, reject) => {
+      const answer = this.agent.nextAnswers.shift();
+      if (answer !== undefined) {
+        this.selectedValue = answer;
+        this.#onQuestionAnswer();
+        this.destroy();
 
-      return answer;
-    }
+        resolve(answer);
 
-    this.write(SYMBOLS.HideCursor);
+        return;
+      }
 
-    try {
-      await this.#question();
-      this.#onQuestionAnswer();
+      this.once("error", (error) => {
+        reject(error);
+      });
 
-      return this.selectedValue;
-    }
-    finally {
-      this.write(SYMBOLS.ShowCursor);
+      this.write(SYMBOLS.HideCursor);
 
-      this.#onProcessExit();
-      process.off("exit", this.#boundExitEvent);
+      try {
+        await this.#question();
+        this.#onQuestionAnswer();
 
-      this.destroy();
-    }
+        resolve(this.selectedValue);
+      }
+      finally {
+        this.write(SYMBOLS.ShowCursor);
+
+        this.#onProcessExit();
+        process.off("exit", this.#boundExitEvent);
+
+        this.destroy();
+      }
+    });
   }
 }
