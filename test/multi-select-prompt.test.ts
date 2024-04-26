@@ -873,4 +873,48 @@ describe("MultiselectPrompt", () => {
     ]);
     assert.deepEqual(input, ["foo"]);
   });
+
+  it("should not have duplicates", async() => {
+    const logs: string[] = [];
+    const message = "Choose between foo & bar";
+    const options = {
+      choices: [
+        { value: "foo", label: "foo" },
+        { value: "bar", label: "bar" }
+      ]
+    };
+    const inputs = [
+      kInputs.right,
+      kInputs.right,
+      kInputs.right,
+      kInputs.return
+    ];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
+      message,
+      {
+        ...options,
+        inputs,
+        onStdoutWrite: (log) => logs.push(log)
+      }
+    );
+
+    const input = await multiselectPrompt.multiselect();
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
+      "  ○ foo",
+      "  ○ bar",
+      // we press <right> so the first choice 'foo' is selected
+      "  ● foo",
+      "  ○ bar",
+      // we press <right> multiple times, it should not add duplicates
+      "  ● foo",
+      "  ○ bar",
+      "  ● foo",
+      "  ○ bar",
+      // we press <return> so the first choice 'foo' is returned
+      "✔ Choose between foo & bar › foo"
+    ]);
+    assert.deepStrictEqual(input, ["foo"]);
+  })
 });

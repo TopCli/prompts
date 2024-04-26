@@ -32,7 +32,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
   #showHint: boolean;
 
   activeIndex = 0;
-  selectedIndexes: number[] = [];
+  selectedIndexes: Set<number> = new Set();
   questionMessage: string;
   autocompleteValue = "";
   options: MultiselectOptions;
@@ -136,7 +136,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
         throw new Error(`Invalid pre-selected choice: ${typeof choice === "string" ? choice : choice.value}`);
       }
 
-      this.selectedIndexes.push(choiceIndex);
+      this.selectedIndexes.add(choiceIndex);
     }
   }
 
@@ -172,7 +172,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
     for (let choiceIndex = startIndex; choiceIndex < endIndex; choiceIndex++) {
       const choice = this.#getFormattedChoice(choiceIndex);
       const isChoiceActive = choiceIndex === this.activeIndex;
-      const isChoiceSelected = this.selectedIndexes.includes(choiceIndex);
+      const isChoiceSelected = this.selectedIndexes.has(choiceIndex);
       const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
       const showNextChoicesArrow = endIndex < this.filteredChoices.length && choiceIndex === endIndex - 1;
 
@@ -197,7 +197,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
   }
 
   #showAnsweredQuestion(choices: string, isAgentAnswer = false) {
-    const prefixSymbol = this.selectedIndexes.length === 0 && !isAgentAnswer ? SYMBOLS.Cross : SYMBOLS.Tick;
+    const prefixSymbol = this.selectedIndexes.size === 0 && !isAgentAnswer ? SYMBOLS.Cross : SYMBOLS.Tick;
     const prefix = `${prefixSymbol} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
     const formattedChoice = kleur.yellow(choices);
 
@@ -223,24 +223,24 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
     }
     else if (key.ctrl && key.name === "a") {
       // eslint-disable-next-line max-len
-      this.selectedIndexes = this.selectedIndexes.length === this.filteredChoices.length ? [] : this.filteredChoices.map((_, index) => index);
+      this.selectedIndexes = this.selectedIndexes.size === this.filteredChoices.length ? new Set() : new Set(this.filteredChoices.map((_, index) => index));
       render();
     }
     else if (key.name === "right") {
-      this.selectedIndexes.push(this.activeIndex);
+      this.selectedIndexes.add(this.activeIndex);
       render();
     }
     else if (key.name === "left") {
-      this.selectedIndexes = this.selectedIndexes.filter((index) => index !== this.activeIndex);
+      this.selectedIndexes = new Set([...this.selectedIndexes].filter((index) => index !== this.activeIndex));
       render();
     }
     else if (key.name === "return") {
-      const labels = this.selectedIndexes.map((index) => {
+      const labels = [...this.selectedIndexes].map((index) => {
         const choice = this.filteredChoices[index];
 
         return typeof choice === "string" ? choice : choice.label;
       });
-      const values = this.selectedIndexes.map((index) => {
+      const values = [...this.selectedIndexes].map((index) => {
         const choice = this.filteredChoices[index];
 
         return typeof choice === "string" ? choice : choice.value;
@@ -270,7 +270,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
     else {
       if (!key.ctrl && this.options.autocomplete) {
         // reset selected choices when user type
-        this.selectedIndexes = [];
+        this.selectedIndexes.clear();
         this.activeIndex = 0;
         if (key.name === "backspace" && this.autocompleteValue.length > 0) {
           this.autocompleteValue = this.autocompleteValue.slice(0, -1);
