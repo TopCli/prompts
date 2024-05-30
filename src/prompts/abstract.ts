@@ -53,6 +53,14 @@ export class AbstractPrompt<T> extends EventEmitter {
       throw new TypeError(`message must be string, ${typeof message} given.`);
     }
 
+    if (!output.isTTY) {
+      // when process.stdout is not TTY (i.e within IDEs) theses methods does not exists and make the lib crashing
+      Object.assign(output, {
+        moveCursor: () => void 0,
+        clearScreenDown: () => void 0,
+      })
+    }
+
     this.stdin = input;
     this.stdout = output;
     this.message = message;
