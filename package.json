@@ -1,6 +1,6 @@
 {
   "name": "@topcli/prompts",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "Node.js user input library for command-line interfaces.",
   "scripts": {
     "build": "tsup index.ts --format cjs,esm --dts --clean",
