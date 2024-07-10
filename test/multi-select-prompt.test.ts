@@ -3,6 +3,7 @@
 // Import Node.js Dependencies
 import assert from "node:assert";
 import { describe, it } from "node:test";
+import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
 import { MultiselectPrompt } from "../src/prompts/multiselect.js";
@@ -65,8 +66,10 @@ describe("MultiselectPrompt", () => {
   it("should throw AbortError", async() => {
     const { stdin, stdout } = mockProcess();
 
+    const signal = AbortSignal.timeout(1);
+    await setTimeout(10);
     await assert.rejects(async() => {
-      await multiselect("Choose", { choices: ["foo"], signal: AbortSignal.timeout(5), stdin, stdout });
+      await multiselect("Choose", { choices: ["foo"], signal, stdin, stdout });
     }, {
       name: "AbortError",
       message: "Prompt aborted"
@@ -916,5 +919,5 @@ describe("MultiselectPrompt", () => {
       "✔ Choose between foo & bar › foo"
     ]);
     assert.deepStrictEqual(input, ["foo"]);
-  })
+  });
 });

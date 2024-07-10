@@ -1,6 +1,7 @@
 // Import Node.js Dependencies
 import assert from "node:assert";
 import { describe, it } from "node:test";
+import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
 import { ConfirmPrompt } from "../src/prompts/confirm.js";
@@ -39,8 +40,10 @@ describe("ConfirmPrompt", () => {
   it("should throw AbortError", async() => {
     const { stdin, stdout } = mockProcess();
 
+    const signal = AbortSignal.timeout(1);
+    await setTimeout(10);
     await assert.rejects(async() => {
-      await confirm("Ready?", { signal: AbortSignal.timeout(5), stdin, stdout });
+      await confirm("Ready?", { signal, stdin, stdout });
     }, {
       name: "AbortError",
       message: "Prompt aborted"

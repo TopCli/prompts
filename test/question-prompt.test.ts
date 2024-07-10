@@ -1,6 +1,7 @@
 // Import Node.js Dependencies
 import assert from "node:assert";
 import { describe, it } from "node:test";
+import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
 import { QuestionPrompt } from "../src/prompts/question.js";
@@ -24,8 +25,10 @@ describe("QuestionPrompt", () => {
   it("should throw AbortError", async() => {
     const { stdin, stdout } = mockProcess();
 
+    const signal = AbortSignal.timeout(1);
+    await setTimeout(10);
     await assert.rejects(async() => {
-      await question("What's your name?", { signal: AbortSignal.timeout(5), stdin, stdout });
+      await question("What's your name?", { signal, stdin, stdout });
     }, {
       name: "AbortError",
       message: "Prompt aborted"
