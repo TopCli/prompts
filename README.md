@@ -54,9 +54,9 @@ Simple prompt, similar to `rl.question()` with an improved UI.
 
 Use `options.secure` if you need to hide both input and answer.
 
-Use `options.validators` to handle user input.
-
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
+
+Use `options.validators` to handle user input.
 
 **Example**
 
@@ -64,8 +64,11 @@ Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)
 const packageName = await question('Package name', {
   validators: [
     {
-      validate: (value) => !existsSync(join(process.cwd(), value)),
-      error: (value) => `Folder ${value} already exists`
+      validate: (value) => {
+        if (!existsSync(join(process.cwd(), value))) {
+          return `Folder ${value} already exists`
+        }
+      }
     }
   ]
 });

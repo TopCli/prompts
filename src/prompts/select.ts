@@ -9,7 +9,7 @@ import wcwidth from "@topcli/wcwidth";
 import { AbstractPrompt, AbstractPromptOptions } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
-import { PromptValidator } from "../validators.js";
+import { isValid, PromptValidator, resultError } from "../validators.js";
 import { Choice } from "../types.js";
 
 // CONSTANTS
@@ -199,9 +199,10 @@ export class SelectPrompt extends AbstractPrompt<string> {
       const value = typeof choice === "string" ? choice : choice.value;
 
       for (const validator of this.#validators) {
-        if (!validator.validate(value)) {
-          const error = validator.error(value);
-          render({ error });
+        const validationResult = validator.validate(value);
+
+        if (isValid(validationResult) === false) {
+          render({ error: resultError(validationResult) });
 
           return;
         }
