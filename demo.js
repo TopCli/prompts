@@ -50,9 +50,9 @@ const multiselectResponse = await multiselect("Multiselect input", {
 });
 const multiselectAutocompleteResponse = await multiselect("Multiselect input /w autocomplete", {
   choices: choiceSelect,
-  preSelectedChoices: ["tap"]
+  preSelectedChoices: ["tap"],
+  autocomplete: true
 });
-
 
 console.log({
   questionResponse,

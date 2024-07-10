@@ -57,8 +57,8 @@ export class AbstractPrompt<T> extends EventEmitter {
       // when process.stdout is not TTY (i.e within IDEs) theses methods does not exists and make the lib crashing
       Object.assign(output, {
         moveCursor: () => void 0,
-        clearScreenDown: () => void 0,
-      })
+        clearScreenDown: () => void 0
+      });
     }
 
     this.stdin = input;
@@ -94,6 +94,10 @@ export class AbstractPrompt<T> extends EventEmitter {
         }
         this.emit("error", new AbortError("Prompt aborted"));
       };
+
+      if (this.signal.aborted) {
+        this.#signalHandler();
+      }
       this.signal.addEventListener("abort", this.#signalHandler, { once: true });
     }
   }
