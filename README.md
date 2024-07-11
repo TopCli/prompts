@@ -129,7 +129,10 @@ Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)
 confirm(message: string, options?: ConfirmOptions): Promise<boolean>
 ```
 
-Boolean prompt, return `options.initial` if user input is different from `y`/`yes`/`n`/`no` (case insensitive), (default `false`).
+Boolean prompt, default to `options.initial` (`false`).
+
+> [!TIP]
+> You can answer pressing <kbd>Y</kbd> or <kbd>N</kbd>
 
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 
