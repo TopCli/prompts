@@ -9,7 +9,7 @@ import wcwidth from "@topcli/wcwidth";
 import { AbstractPrompt, AbstractPromptOptions } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
-import { PromptValidator } from "../validators.js";
+import { isValid, PromptValidator, resultError } from "../validators.js";
 import { Choice } from "../types.js";
 
 // CONSTANTS
@@ -247,9 +247,10 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
       });
 
       for (const validator of this.#validators) {
-        if (!validator.validate(values)) {
-          const error = validator.error(values);
-          render({ error });
+        const validationResult = validator.validate(values);
+
+        if (isValid(validationResult) === false) {
+          render({ error: resultError(validationResult) });
 
           return;
         }

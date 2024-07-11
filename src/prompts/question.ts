@@ -9,7 +9,7 @@ import wcwidth from "@topcli/wcwidth";
 import { AbstractPrompt, AbstractPromptOptions } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
-import { PromptValidator } from "../validators.js";
+import { isValid, PromptValidator, resultError } from "../validators.js";
 
 export interface QuestionOptions extends AbstractPromptOptions {
   defaultValue?: string;
@@ -86,9 +86,10 @@ export class QuestionPrompt extends AbstractPrompt<string> {
     this.stdout.clearScreenDown();
 
     for (const validator of this.#validators) {
-      if (!validator.validate(this.answer!)) {
-        const error = validator.error(this.answer!);
-        this.#setQuestionSuffixError(error);
+      const validationResult = validator.validate(this.answer!);
+
+      if (isValid(validationResult) === false) {
+        this.#setQuestionSuffixError(resultError(validationResult));
         this.answerBuffer = this.#question();
 
         return;

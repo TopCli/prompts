@@ -66,8 +66,14 @@ describe("QuestionPrompt", () => {
     const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
       input: ["test1", "test10", "test2"],
       validators: [{
-        validate: (input) => !(input as string).startsWith("test1"),
-        error: (input) => `Value cannot start with 'test1', given ${input}.`
+        validate: (input) => {
+          const isValid = !(input as string).startsWith("test1");
+          if (!isValid) {
+            return { isValid, error: `Value cannot start with 'test1', given ${input}.` };
+          }
+
+          return void 0;
+        }
       }],
       onStdoutWrite: (log) => logs.push(log)
     });
