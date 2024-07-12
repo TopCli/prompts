@@ -1,8 +1,8 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
+import { styleText } from "node:util";
 
 // Import Third-party Dependencies
-import kleur from "kleur";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
@@ -63,18 +63,18 @@ export class QuestionPrompt extends AbstractPrompt<string> {
   }
 
   #getQuestionQuery() {
-    return `${kleur.bold(`${SYMBOLS.QuestionMark} ${this.message}${this.tip}`)} ${this.questionSuffixError}`;
+    return `${styleText("bold", `${SYMBOLS.QuestionMark} ${this.message}${this.tip}`)} ${this.questionSuffixError}`;
   }
 
   #setQuestionSuffixError(error: string) {
-    const suffix = kleur.red(`[${error}] `);
+    const suffix = styleText("red", `[${error}] `);
     this.questionSuffixError = suffix;
   }
 
   #writeAnswer() {
     const prefix = this.answer ? SYMBOLS.Tick : SYMBOLS.Cross;
-    const answer = kleur.yellow(this.#secure ? "CONFIDENTIAL" : this.answer ?? "");
-    this.write(`${prefix} ${kleur.bold(this.message)} ${SYMBOLS.Pointer} ${answer}${EOL}`);
+    const answer = styleText("yellow", this.#secure ? "CONFIDENTIAL" : this.answer ?? "");
+    this.write(`${prefix} ${styleText("bold", this.message)} ${SYMBOLS.Pointer} ${answer}${EOL}`);
   }
 
   #onQuestionAnswer() {

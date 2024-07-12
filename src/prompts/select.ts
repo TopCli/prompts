@@ -1,8 +1,8 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
+import { styleText } from "node:util";
 
 // Import Third-party Dependencies
-import kleur from "kleur";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
@@ -160,8 +160,8 @@ export class SelectPrompt extends AbstractPrompt<string> {
         this.longestChoice < 10 ? this.longestChoice : 0
       );
       const formattedDescription = choice.description ? ` - ${choice.description}` : "";
-      const color = isChoiceSelected ? kleur.white().bold : kleur.gray;
-      const str = `${prefix}${color(`${formattedLabel}${formattedDescription}`)}${EOL}`;
+      const styles = isChoiceSelected ? ["white" as const, "bold" as const] : ["gray" as const];
+      const str = `${prefix}${styleText(styles, `${formattedLabel}${formattedDescription}`)}${EOL}`;
 
       this.write(str);
     }
@@ -169,8 +169,8 @@ export class SelectPrompt extends AbstractPrompt<string> {
 
   #showAnsweredQuestion(choice: Choice | string) {
     const symbolPrefix = choice === "" ? SYMBOLS.Cross : SYMBOLS.Tick;
-    const prefix = `${symbolPrefix} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
-    const formattedChoice = kleur.yellow(typeof choice === "string" ? choice : choice.label);
+    const prefix = `${symbolPrefix} ${styleText("bold", this.message)} ${SYMBOLS.Pointer}`;
+    const formattedChoice = styleText("yellow", typeof choice === "string" ? choice : choice.label);
 
     this.write(`${prefix} ${formattedChoice}${EOL}`);
   }
@@ -318,9 +318,9 @@ export class SelectPrompt extends AbstractPrompt<string> {
   #showQuestion(error: string | null = null) {
     let hint = "";
     if (error) {
-      hint = ` ${hint.length > 0 ? " " : ""}${kleur.red().bold(`[${error}]`)}`;
+      hint = ` ${hint.length > 0 ? " " : ""}${styleText(["red", "bold"], `[${error}]`)}`;
     }
-    this.questionMessage = `${SYMBOLS.QuestionMark} ${kleur.bold(this.message)}${hint}`;
+    this.questionMessage = `${SYMBOLS.QuestionMark} ${styleText("bold", this.message)}${hint}`;
     this.write(`${this.questionMessage}${EOL}`);
   }
 }

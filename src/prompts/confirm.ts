@@ -1,9 +1,9 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
 import type { Key } from "node:readline";
+import { styleText } from "node:util";
 
 // Import Third-party Dependencies
-import kleur from "kleur";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
@@ -49,8 +49,8 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
   }
 
   #getHint() {
-    const Yes = kleur.bold().underline().cyan("Yes");
-    const No = kleur.bold().underline().cyan("No");
+    const Yes = styleText(["cyan", "bold", "underline"], "Yes");
+    const No = styleText(["cyan", "bold", "underline"], "No");
 
     return this.selectedValue ? `${Yes}/No` : `Yes/${No}`;
   }
@@ -111,7 +111,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
   }
 
   #getQuestionQuery() {
-    const query = kleur.bold(`${SYMBOLS.QuestionMark} ${this.message}`);
+    const query = styleText("bold", `${SYMBOLS.QuestionMark} ${this.message}`);
 
     return `${query} ${this.#getHint()}`;
   }
@@ -123,7 +123,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
       -Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns)
     );
     this.stdout.clearScreenDown();
-    this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${kleur.bold(this.message)}${EOL}`);
+    this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${styleText("bold", this.message)}${EOL}`);
   }
 
   confirm(): Promise<boolean> {

@@ -1,8 +1,8 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
+import { styleText } from "node:util";
 
 // Import Third-party Dependencies
-import kleur from "kleur";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
@@ -189,8 +189,8 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
         this.longestChoice < 10 ? this.longestChoice : 0
       );
       const formattedDescription = choice.description ? ` - ${choice.description}` : "";
-      const color = isChoiceActive ? kleur.white().bold : kleur.gray;
-      const str = `${prefix} ${color(`${formattedLabel}${formattedDescription}`)}${EOL}`;
+      const styles = isChoiceActive ? ["white" as const, "bold" as const] : ["gray" as const];
+      const str = `${prefix} ${styleText(styles, `${formattedLabel}${formattedDescription}`)}${EOL}`;
 
       this.write(str);
     }
@@ -198,8 +198,8 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
 
   #showAnsweredQuestion(choices: string, isAgentAnswer = false) {
     const prefixSymbol = this.selectedIndexes.size === 0 && !isAgentAnswer ? SYMBOLS.Cross : SYMBOLS.Tick;
-    const prefix = `${prefixSymbol} ${kleur.bold(this.message)} ${SYMBOLS.Pointer}`;
-    const formattedChoice = kleur.yellow(choices);
+    const prefix = `${prefixSymbol} ${styleText("bold", this.message)} ${SYMBOLS.Pointer}`;
+    const formattedChoice = styleText("yellow", choices);
 
     this.write(`${prefix}${choices ? ` ${formattedChoice}` : ""}${EOL}`);
   }
@@ -365,14 +365,14 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
   }
 
   #showQuestion(error: string | null = null) {
-    let hint = this.#showHint ? kleur.gray(
+    let hint = this.#showHint ? styleText("gray",
       // eslint-disable-next-line max-len
-      `(Press ${kleur.bold("<Ctrl+A>")} to toggle all, ${kleur.bold("<Left/Right>")} to toggle, ${kleur.bold("<Return>")} to submit)`
+      `(Press ${styleText("bold", "<Ctrl+A>")} to toggle all, ${styleText("bold", "<Left/Right>")} to toggle, ${styleText("bold", "<Return>")} to submit)`
     ) : "";
     if (error) {
-      hint += `${hint.length > 0 ? " " : ""}${kleur.red().bold(`[${error}]`)}`;
+      hint += `${hint.length > 0 ? " " : ""}${styleText(["red", "bold"], `[${error}]`)}`;
     }
-    this.questionMessage = `${SYMBOLS.QuestionMark} ${kleur.bold(this.message)}${hint.length > 0 ? ` ${hint}` : ""}`;
+    this.questionMessage = `${SYMBOLS.QuestionMark} ${styleText("bold", this.message)}${hint.length > 0 ? ` ${hint}` : ""}`;
 
     this.write(`${this.questionMessage}${EOL}`);
   }
