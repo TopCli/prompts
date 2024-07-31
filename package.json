@@ -32,7 +32,7 @@
   "type": "module",
   "devDependencies": {
     "@nodesecure/eslint-config": "^1.9.0",
-    "@types/node": "^20.14.10",
+    "@types/node": "^22.0.0",
     "c8": "^10.1.2",
     "esmock": "^2.6.6",
     "glob": "^11.0.0",
