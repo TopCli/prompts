@@ -10,11 +10,11 @@ export type TestingPromptOptions = Partial<QuestionOptions &
   SelectOptions &
   MultiselectOptions &
   ConfirmOptions & {
-  input: any;
-  inputs: any[];
-}> & {
-  onStdoutWrite: (value: string) => void;
-}
+    input: any;
+    inputs: any[];
+  }> & {
+    onStdoutWrite: (value: string) => void;
+  };
 
 export class TestingPrompt {
   static async QuestionPrompt(message: string, options: TestingPromptOptions) {

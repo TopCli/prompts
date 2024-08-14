@@ -4,6 +4,7 @@
   ![version](https://img.shields.io/badge/dynamic/json.svg?style=for-the-badge&url=https://raw.githubusercontent.com/TopCli/prompts/main/package.json&query=$.version&label=Version)
   [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://github.com/TopCli/prompts/commit-activity)
   [![isc](https://img.shields.io/badge/License-ISC-blue.svg?style=for-the-badge)](https://github.com/TopCli/prompts/blob/main/LICENSE)
+  [![scorecard](https://api.securityscorecards.dev/projects/github.com/TopCli/prompts/badge?style=for-the-badge)](https://ossf.github.io/scorecard-visualizer/#/projects/github.com/TopCli/prompts)
   ![build](https://img.shields.io/github/actions/workflow/status/TopCli/prompts/node.js.yml?style=for-the-badge)
 
   <img src="./public/topcli.gif" alt="demo">
@@ -228,6 +229,12 @@ export interface ConfirmOptions extends SharedOptions  {
   initial?: boolean;
 }
 ```
+
+## Contributing
+
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+Open an issue if you want to provide feedback such as bug reports or enchancements.
 
 ## Contributors
 

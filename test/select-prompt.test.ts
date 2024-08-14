@@ -70,7 +70,6 @@ describe("SelectPrompt", () => {
     });
   });
 
-
   it("When press <return>, it should select the first choice.", async() => {
     const message = "Choose between foo & bar";
     const options = {
@@ -573,7 +572,6 @@ describe("SelectPrompt", () => {
     ]);
     assert.equal(input, "bar");
   });
-
 
   it("autocomplete filters should be case sensitive", async() => {
     const logs: string[] = [];

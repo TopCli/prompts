@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-/* eslint-disable max-len */
+
 // Import Node.js Dependencies
 import assert from "node:assert";
 import { describe, it } from "node:test";
@@ -61,7 +61,6 @@ describe("MultiselectPrompt", () => {
       message: "Missing value for choice {\"label\":\"foo\",\"description\":\"bar\"}"
     });
   });
-
 
   it("should throw AbortError", async() => {
     const { stdin, stdout } = mockProcess();

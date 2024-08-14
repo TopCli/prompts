@@ -7,7 +7,7 @@ import { styleText } from "node:util";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
-import { AbstractPrompt, AbstractPromptOptions } from "./abstract.js";
+import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 
@@ -73,7 +73,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     });
   }
 
-  #onKeypress(resolve: (value: unknown) => void, value: never, key: Key) {
+  #onKeypress(resolve: (value: unknown) => void, value: any, key: Key) {
     this.stdout.moveCursor(
       -this.stdout.columns,
       -Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns)
@@ -127,6 +127,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
   }
 
   confirm(): Promise<boolean> {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async(resolve, reject) => {
       const answer = this.agent.nextAnswers.shift();
       if (answer !== undefined) {
