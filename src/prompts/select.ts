@@ -6,11 +6,11 @@ import { styleText } from "node:util";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
-import { AbstractPrompt, AbstractPromptOptions } from "./abstract.js";
+import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
-import { isValid, PromptValidator, resultError } from "../validators.js";
-import { Choice } from "../types.js";
+import { isValid, type PromptValidator, resultError } from "../validators.js";
+import { type Choice } from "../types.js";
 
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
@@ -24,9 +24,11 @@ export interface SelectOptions extends AbstractPromptOptions {
   caseSensitive?: boolean;
 }
 
+type VoidFn = () => void;
+
 export class SelectPrompt extends AbstractPrompt<string> {
-  #boundExitEvent = () => void 0;
-  #boundKeyPressEvent = () => void 0;
+  #boundExitEvent: VoidFn = () => void 0;
+  #boundKeyPressEvent: VoidFn = () => void 0;
   #validators: PromptValidator[];
   activeIndex = 0;
   questionMessage: string;
@@ -257,10 +259,10 @@ export class SelectPrompt extends AbstractPrompt<string> {
 
       const render = (
         options: {
-        initialRender?: boolean;
-        clearRender?: boolean;
-        error?: string
-      } = {}
+          initialRender?: boolean;
+          clearRender?: boolean;
+          error?: string;
+        } = {}
       ) => {
         const {
           initialRender = false,

@@ -1,10 +1,10 @@
 export type ValidResponseObject = {
   isValid?: true;
-}
+};
 export type InvalidResponseObject = {
   isValid: false;
   error: string;
-}
+};
 export type ValidationResponseObject = ValidResponseObject | InvalidResponseObject;
 export type ValidationResponse = InvalidResponse | ValidResponse;
 export type InvalidResponse = string | InvalidResponseObject;

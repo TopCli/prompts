@@ -15,7 +15,7 @@ type Stdin = NodeJS.ReadStream & {
 
 type Stdout = NodeJS.WriteStream & {
   fd: 1;
-}
+};
 
 export interface AbstractPromptOptions {
   stdin?: Stdin;

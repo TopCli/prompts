@@ -19,7 +19,7 @@ export async function select(message: string, options: Omit<SelectOptions, "mess
   return selectPrompt.select();
 }
 
-export async function confirm(message: string, options: Omit<ConfirmOptions, "message">) {
+export async function confirm(message: string, options: Omit<ConfirmOptions, "message"> = {}) {
   const confirmPrompt = new prompts.ConfirmPrompt({ ...options, message });
 
   return confirmPrompt.confirm();
@@ -31,14 +31,17 @@ export async function multiselect(message: string, options: Omit<MultiselectOpti
   return multiselectPrompt.multiselect();
 }
 
-export {
-  required,
+export type {
   PromptValidator,
-  PromptAgent,
   AbstractPromptOptions,
   QuestionOptions,
   ConfirmOptions,
   Choice,
   MultiselectOptions,
   SelectOptions
+};
+
+export {
+  required,
+  PromptAgent
 };

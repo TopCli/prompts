@@ -6,11 +6,11 @@ import { styleText } from "node:util";
 import wcwidth from "@topcli/wcwidth";
 
 // Import Internal Dependencies
-import { AbstractPrompt, AbstractPromptOptions } from "./abstract.js";
+import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
 import { stripAnsi } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
-import { isValid, PromptValidator, resultError } from "../validators.js";
-import { Choice } from "../types.js";
+import { isValid, type PromptValidator, resultError } from "../validators.js";
+import { type Choice } from "../types.js";
 
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
@@ -25,9 +25,11 @@ export interface MultiselectOptions extends AbstractPromptOptions {
   showHint?: boolean;
 }
 
+type VoidFn = () => void;
+
 export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
-  #boundExitEvent = () => void 0;
-  #boundKeyPressEvent = () => void 0;
+  #boundExitEvent: VoidFn = () => void 0;
+  #boundKeyPressEvent: VoidFn = () => void 0;
   #validators: PromptValidator[];
   #showHint: boolean;
 
@@ -222,8 +224,9 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
       render();
     }
     else if (key.ctrl && key.name === "a") {
-      // eslint-disable-next-line max-len
-      this.selectedIndexes = this.selectedIndexes.size === this.filteredChoices.length ? new Set() : new Set(this.filteredChoices.map((_, index) => index));
+      this.selectedIndexes = this.selectedIndexes.size === this.filteredChoices.length ?
+        new Set() :
+        new Set(this.filteredChoices.map((_, index) => index));
       render();
     }
     else if (key.name === "right") {
@@ -306,10 +309,10 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
 
       const render = (
         options: {
-        initialRender?: boolean;
-        clearRender?: boolean;
-        error?: string
-      } = {}
+          initialRender?: boolean;
+          clearRender?: boolean;
+          error?: string;
+        } = {}
       ) => {
         const {
           initialRender = false,
@@ -366,7 +369,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
 
   #showQuestion(error: string | null = null) {
     let hint = this.#showHint ? styleText("gray",
-      // eslint-disable-next-line max-len
+      // eslint-disable-next-line @stylistic/max-len
       `(Press ${styleText("bold", "<Ctrl+A>")} to toggle all, ${styleText("bold", "<Left/Right>")} to toggle, ${styleText("bold", "<Return>")} to submit)`
     ) : "";
     if (error) {
