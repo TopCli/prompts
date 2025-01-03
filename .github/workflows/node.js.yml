@@ -8,13 +8,13 @@ on:
 
 permissions:
   contents: read
-  
+
 jobs:
   test:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20.x, 22.x]
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
     steps:
