@@ -100,7 +100,13 @@ export class QuestionPrompt extends AbstractPrompt<string> {
     this.#writeAnswer();
   }
 
-  question(): Promise<string> {
+  async question(): Promise<string> {
+    if (this.skip) {
+      this.destroy();
+
+      return this.defaultValue ?? "";
+    }
+
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async(resolve, reject) => {
       this.answer = this.agent.nextAnswers.shift();

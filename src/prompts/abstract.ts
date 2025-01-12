@@ -21,6 +21,7 @@ export interface AbstractPromptOptions {
   stdin?: Stdin;
   stdout?: Stdout;
   message: string;
+  skip?: boolean;
   signal?: AbortSignal;
 }
 
@@ -29,6 +30,7 @@ export class AbstractPrompt<T> extends EventEmitter {
   stdout: Stdout;
   message: string;
   signal?: AbortSignal;
+  skip: boolean;
   history: string[];
   agent: PromptAgent<T>;
   mute: boolean;
@@ -46,7 +48,8 @@ export class AbstractPrompt<T> extends EventEmitter {
       stdin: input = process.stdin,
       stdout: output = process.stdout,
       message,
-      signal
+      signal,
+      skip = false
     } = options;
 
     if (typeof message !== "string") {
@@ -65,6 +68,7 @@ export class AbstractPrompt<T> extends EventEmitter {
     this.stdout = output;
     this.message = message;
     this.signal = signal;
+    this.skip = skip;
     this.history = [];
     this.agent = PromptAgent.agent<T>();
     this.mute = false;

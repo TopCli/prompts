@@ -89,7 +89,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
   constructor(options: MultiselectOptions) {
     const {
       choices,
-      preSelectedChoices,
+      preSelectedChoices = [],
       validators = [],
       showHint = true,
       ...baseOptions
@@ -118,10 +118,6 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
           throw new TypeError(`Missing ${prop} for choice ${JSON.stringify(choice)}`);
         }
       }
-    }
-
-    if (!preSelectedChoices) {
-      return;
     }
 
     for (const choice of preSelectedChoices) {
@@ -206,6 +202,29 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
     this.write(`${prefix}${choices ? ` ${formattedChoice}` : ""}${EOL}`);
   }
 
+  #selectedChoices() {
+    return [...this.selectedIndexes].reduce(
+      (acc, index) => {
+        const choice = this.filteredChoices[index];
+
+        if (typeof choice === "string") {
+          acc.values.push(choice);
+          acc.labels.push(choice);
+        }
+        else {
+          acc.values.push(choice.value);
+          acc.labels.push(choice.label);
+        }
+
+        return acc;
+      },
+      {
+        values: [] as string[],
+        labels: [] as string[]
+      }
+    );
+  }
+
   #onProcessExit() {
     this.stdin.off("keypress", this.#boundKeyPressEvent);
     this.stdout.moveCursor(-this.stdout.columns, 0);
@@ -238,16 +257,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
       render();
     }
     else if (key.name === "return") {
-      const labels = [...this.selectedIndexes].map((index) => {
-        const choice = this.filteredChoices[index];
-
-        return typeof choice === "string" ? choice : choice.label;
-      });
-      const values = [...this.selectedIndexes].map((index) => {
-        const choice = this.filteredChoices[index];
-
-        return typeof choice === "string" ? choice : choice.value;
-      });
+      const { values, labels } = this.#selectedChoices();
 
       for (const validator of this.#validators) {
         const validationResult = validator.validate(values);
@@ -287,7 +297,14 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
     }
   }
 
-  multiselect(): Promise<string[]> {
+  async multiselect(): Promise<string[]> {
+    if (this.skip) {
+      this.destroy();
+      const { values } = this.#selectedChoices();
+
+      return values;
+    }
+
     return new Promise((resolve, reject) => {
       const answer = this.agent.nextAnswers.shift();
       if (answer !== undefined) {
