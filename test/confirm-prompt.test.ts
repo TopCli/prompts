@@ -179,4 +179,22 @@ describe("ConfirmPrompt", () => {
       "✖ Foo"
     ]);
   });
+
+  it("should return initial value (true) when skipping prompt", async() => {
+    const input = await confirm("Foo", {
+      skip: true,
+      initial: true
+    });
+
+    assert.strictEqual(input, true);
+  });
+
+  it("should return initial value (false) when skipping prompt", async() => {
+    const input = await confirm("Foo", {
+      skip: true,
+      initial: false
+    });
+
+    assert.strictEqual(input, false);
+  });
 });

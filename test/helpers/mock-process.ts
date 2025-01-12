@@ -8,7 +8,7 @@ import { AbstractPromptOptions } from "../../src/prompts/abstract.js";
 export function mockProcess(inputs: string[] = [], writeCb: (value: string) => void = () => void 0) {
   const stdout = {
     write: (msg: string | Buffer) => {
-      if (msg instanceof Buffer) {
+      if (typeof msg === "object") {
         return;
       }
 
@@ -22,7 +22,7 @@ export function mockProcess(inputs: string[] = [], writeCb: (value: string) => v
     clearLine: () => true
   };
   const stdin = {
-    on: (event, cb) => {
+    on: (_event, cb) => {
       for (const input of inputs) {
         cb(null, input);
       }

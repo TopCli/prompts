@@ -705,4 +705,15 @@ describe("SelectPrompt", () => {
     ]);
     assert.equal(input, "foo");
   });
+
+  it("should return first choice when skipping prompt", async() => {
+    const message = "Choose between foo, bar or baz";
+    const options = {
+      choices: ["foo", "bar", "baz"],
+      skip: true
+    };
+    const input = await select(message, options);
+
+    assert.equal(input, "foo");
+  });
 });

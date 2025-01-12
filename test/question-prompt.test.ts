@@ -160,4 +160,21 @@ describe("QuestionPrompt", () => {
       "✔ What's your name? › CONFIDENTIAL"
     ]);
   });
+
+  it("should return '' when skipping prompt", async() => {
+    const input = await question("What's your name?", {
+      skip: true
+    });
+
+    assert.equal(input, "");
+  });
+
+  it("should return default value when skipping prompt", async() => {
+    const input = await question("What's your name?", {
+      defaultValue: "John Doe",
+      skip: true
+    });
+
+    assert.equal(input, "John Doe");
+  });
 });

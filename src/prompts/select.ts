@@ -238,7 +238,14 @@ export class SelectPrompt extends AbstractPrompt<string> {
     }
   }
 
-  select(): Promise<string> {
+  async select(): Promise<string> {
+    if (this.skip) {
+      this.destroy();
+      const answer = this.options.choices[0];
+
+      return typeof answer === "string" ? answer : answer.value;
+    }
+
     return new Promise((resolve, reject) => {
       const answer = this.agent.nextAnswers.shift();
       if (answer !== undefined) {

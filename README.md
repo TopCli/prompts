@@ -53,11 +53,15 @@ question(message: string, options?: PromptOptions): Promise<string>
 
 Simple prompt, similar to `rl.question()` with an improved UI.
 
+Use `options.defaultValue` to set a default value.
+
 Use `options.secure` if you need to hide both input and answer.
 
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 
 Use `options.validators` to handle user input.
+
+Use `options.skip` to skip prompt. It will return `options.defaultValue` if given, `""` otherwise.
 
 **Example**
 
@@ -95,15 +99,17 @@ select(message: string, options: SelectOptions): Promise<string>
 
 Scrollable select depending `maxVisible` (default `8`).
 
-Use `ignoreValues` to skip result render & clear lines after a selected one.
+Use `options.ignoreValues` to skip result render & clear lines after a selected one.
 
-Use `validators` to handle user input.
+Use `options.validators` to handle user input.
 
-Use `autocomplete` to allow filtered choices. This can be useful for a large list of choices.
+Use `options.autocomplete` to allow filtered choices. This can be useful for a large list of choices.
 
-Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`
+Use `options.caseSensitive` to make autocomplete filters case sensitive. Default `false`
 
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
+
+Use `options.skip` to skip prompt. It will return the first choice.
 
 ### `multiselect()`
 
@@ -111,18 +117,20 @@ Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)
 multiselect(message: string, options: MultiselectOptions): Promise<[string]>
 ```
 
-Scrollable multiselect depending `maxVisible` (default `8`).<br>
-Use `preSelectedChoices` to pre-select choices.
+Scrollable multiselect depending `options.maxVisible` (default `8`).<br>
+Use `options.preSelectedChoices` to pre-select choices.
 
-Use `validators` to handle user input.
+Use `options.validators` to handle user input.
 
-Use `showHint: false` to disable hint (this option is truthy by default).
+Use `options.showHint: false` to disable hint (this option is truthy by default).
 
-Use `autocomplete` to allow filtered choices. This can be useful for a large list of choices.
+Use `options.autocomplete` to allow filtered choices. This can be useful for a large list of choices.
 
-Use `caseSensitive` to make autocomplete filters case sensitive. Default `false`.
+Use `options.caseSensitive` to make autocomplete filters case sensitive. Default `false`.
 
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
+
+Use `options.skip` to skip prompt. It will return `options.preSelectedChoices` if given, `[]` otherwise.
 
 ### `confirm()`
 
@@ -136,6 +144,8 @@ Boolean prompt, default to `options.initial` (`false`).
 > You can answer pressing <kbd>Y</kbd> or <kbd>N</kbd>
 
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
+
+Use `options.skip` to skip prompt. It will return `options.initial` (`false` by default)
 
 ### `PromptAgent`
 

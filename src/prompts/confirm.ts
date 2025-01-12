@@ -73,7 +73,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     });
   }
 
-  #onKeypress(resolve: (value: unknown) => void, value: any, key: Key) {
+  #onKeypress(resolve: (value: unknown) => void, _value: any, key: Key) {
     this.stdout.moveCursor(
       -this.stdout.columns,
       -Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns)
@@ -126,7 +126,13 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${styleText("bold", this.message)}${EOL}`);
   }
 
-  confirm(): Promise<boolean> {
+  async confirm(): Promise<boolean> {
+    if (this.skip) {
+      this.destroy();
+
+      return this.initial;
+    }
+
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async(resolve, reject) => {
       const answer = this.agent.nextAnswers.shift();

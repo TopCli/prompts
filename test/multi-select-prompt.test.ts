@@ -919,4 +919,29 @@ describe("MultiselectPrompt", () => {
     ]);
     assert.deepStrictEqual(input, ["foo"]);
   });
+
+  it("should return pre-selected choices when skipping prompt", async() => {
+    const message = "Choose between foo & bar";
+    const options = {
+      choices: ["foo", "bar"],
+      preSelectedChoices: ["bar"],
+      skip: true
+    };
+
+    const input = await multiselect(message, options);
+
+    assert.deepEqual(input, ["bar"]);
+  });
+
+  it("should return '[]' when skipping prompt and no pre-selected choices", async() => {
+    const message = "Choose between foo & bar";
+    const options = {
+      choices: ["foo", "bar"],
+      skip: true
+    };
+
+    const input = await multiselect(message, options);
+
+    assert.deepEqual(input, []);
+  });
 });
