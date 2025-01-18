@@ -2,7 +2,7 @@
 
 // Import Node.js Dependencies
 import assert from "node:assert";
-import { describe, it } from "node:test";
+import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
@@ -22,6 +22,10 @@ const kInputs = {
 const kPromptAgent = PromptAgent.agent();
 
 describe("MultiselectPrompt", () => {
+  after(() => {
+    mock.reset();
+  });
+
   it("message should be required", () => {
     assert.throws(() => new MultiselectPrompt({ message: 12 as any } as any), {
       name: "TypeError",
@@ -76,19 +80,16 @@ describe("MultiselectPrompt", () => {
   });
 
   it("When press <return> with 0 selected choice, it should return empty list.", async() => {
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"]
     };
     const logs: string[] = [];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs: [kInputs.return],
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs: [kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -102,20 +103,17 @@ describe("MultiselectPrompt", () => {
   });
 
   it("When press <right> then <return>, it should return an array with first choice.", async() => {
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"]
     };
     const inputs = [kInputs.right, kInputs.return];
     const logs: string[] = [];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -134,8 +132,8 @@ describe("MultiselectPrompt", () => {
 
   it("When press <down> then <right> then <return>, it should return an array with the second choice.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"]
     };
     const inputs = [
@@ -143,14 +141,11 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -172,8 +167,8 @@ describe("MultiselectPrompt", () => {
 
   it("When press <right> then <down> then <right> then <return>, it should return an array with all choice.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"]
     };
     const inputs = [
@@ -182,14 +177,11 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -214,8 +206,8 @@ describe("MultiselectPrompt", () => {
 
   it("When press <right> then <left> then <return>, it should return an empty array.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"]
     };
     const inputs = [
@@ -223,14 +215,11 @@ describe("MultiselectPrompt", () => {
       kInputs.left,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -252,8 +241,8 @@ describe("MultiselectPrompt", () => {
 
   it("When press <ctrl+a>, it should toggle all.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar & baz";
     const options = {
+      message: "Choose between foo, bar & baz",
       choices: ["foo", "bar", "baz"]
     };
     const inputs = [
@@ -261,14 +250,11 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -293,8 +279,8 @@ describe("MultiselectPrompt", () => {
 
   it("should work with choice objects.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: [
         { value: "foo", label: "foo" },
         { value: "bar", label: "bar" }
@@ -304,14 +290,11 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -330,8 +313,8 @@ describe("MultiselectPrompt", () => {
 
   it("When the first item is selected and the up arrow is pressed, the last item should be selected.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: [
         { value: "foo", label: "foo" },
         { value: "bar", label: "bar" }
@@ -342,14 +325,11 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -371,8 +351,8 @@ describe("MultiselectPrompt", () => {
 
   it("Should display 5 choices and allow scrolling.", async() => {
     const logs: string[] = [];
-    const message = "Choose option";
     const options = {
+      message: "Choose option",
       choices: [
         { value: "option1", label: "Option 1" },
         { value: "option2", label: "Option 2" },
@@ -394,14 +374,11 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -447,42 +424,36 @@ describe("MultiselectPrompt", () => {
   });
 
   it("Unknown pre-selected choice should throw", async() => {
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"],
       preSelectedChoices: ["toto"]
     };
     const logs: string[] = [];
     await assert.rejects(async() => {
-      await TestingPrompt.MultiselectPrompt(
-        message,
-        {
-          ...options,
-          inputs: [kInputs.return],
-          onStdoutWrite: (log) => logs.push(log)
-        }
-      );
+      await TestingPrompt.MultiselectPrompt({
+        ...options,
+        inputs: [kInputs.return],
+        onStdoutWrite: (log) => logs.push(log)
+      });
     });
   });
 
   it("should pre-selected choices", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"],
       preSelectedChoices: ["bar"]
     };
     const inputs = [
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -520,8 +491,8 @@ describe("MultiselectPrompt", () => {
 
   it("should render with validation error.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"],
       validators: [required()]
     };
@@ -530,14 +501,11 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -560,8 +528,8 @@ describe("MultiselectPrompt", () => {
 
   it("should filter values with autocomplete", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar & baz";
     const options = {
+      message: "Choose between foo, bar & baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true
     };
@@ -571,14 +539,11 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -608,8 +573,8 @@ describe("MultiselectPrompt", () => {
 
   it("should filter all choices with autocomplete when using backspace", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar & baz";
     const options = {
+      message: "Choose between foo, bar & baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true
     };
@@ -621,14 +586,11 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -668,8 +630,8 @@ describe("MultiselectPrompt", () => {
 
   it("validators should works with autocomplete", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar & baz";
     const options = {
+      message: "Choose between foo, bar & baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true,
       validators: [required()]
@@ -681,14 +643,11 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -723,8 +682,8 @@ describe("MultiselectPrompt", () => {
 
   it("autocomplete filters should be case insensitive by default", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar & baz";
     const options = {
+      message: "Choose between foo, bar & baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true
     };
@@ -733,14 +692,11 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -766,8 +722,8 @@ describe("MultiselectPrompt", () => {
 
   it("autocomplete filters should be case sensitive", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar & baz";
     const options = {
+      message: "Choose between foo, bar & baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true,
       caseSensitive: true
@@ -777,14 +733,11 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -806,22 +759,19 @@ describe("MultiselectPrompt", () => {
 
   it("should not show hint.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"],
       showHint: false
     };
     const inputs = [
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -837,8 +787,8 @@ describe("MultiselectPrompt", () => {
 
   it("should render error without hint.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"],
       validators: [required()],
       showHint: false
@@ -848,14 +798,11 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 
@@ -878,8 +825,8 @@ describe("MultiselectPrompt", () => {
 
   it("should not have duplicates", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: [
         { value: "foo", label: "foo" },
         { value: "bar", label: "bar" }
@@ -891,14 +838,11 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await multiselectPrompt.multiselect();
 

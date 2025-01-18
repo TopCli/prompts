@@ -1,6 +1,6 @@
 // Import Node.js Dependencies
 import assert from "node:assert";
-import { describe, it } from "node:test";
+import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
@@ -15,6 +15,10 @@ import { mockProcess } from "./helpers/mock-process.js";
 const kPromptAgent = PromptAgent.agent();
 
 describe("QuestionPrompt", () => {
+  after(() => {
+    mock.reset();
+  });
+
   it("message should be string", () => {
     assert.throws(
       () => new QuestionPrompt({ message: 12 as any } as any),
@@ -63,8 +67,9 @@ describe("QuestionPrompt", () => {
 
   it("validator should not pass", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
-      input: ["test1", "test10", "test2"],
+    const questionPrompt = await TestingPrompt.QuestionPrompt({
+      message: "What's your name?",
+      inputs: ["test1", "test10", "test2"],
       validators: [{
         validate: (input) => {
           const isValid = !(input as string).startsWith("test1");
@@ -89,8 +94,9 @@ describe("QuestionPrompt", () => {
 
   it("input should be required", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
-      input: ["", "toto"],
+    const questionPrompt = await TestingPrompt.QuestionPrompt({
+      message: "What's your name?",
+      inputs: ["", "toto"],
       validators: [required()],
       onStdoutWrite: (log) => logs.push(log)
     });
@@ -106,8 +112,9 @@ describe("QuestionPrompt", () => {
 
   it("should return the default value", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
-      input: [""],
+    const questionPrompt = await TestingPrompt.QuestionPrompt({
+      message: "What's your name?",
+      inputs: [""],
       defaultValue: "John Doe",
       onStdoutWrite: (log) => logs.push(log)
     });
@@ -122,7 +129,8 @@ describe("QuestionPrompt", () => {
 
   it("should throw when given defaultValue is not a string", async() => {
     await assert.rejects(async() => {
-      await TestingPrompt.QuestionPrompt("What's your name?", {
+      await TestingPrompt.QuestionPrompt({
+        message: "What's your name?",
         input: [""],
         defaultValue: { foo: "bar" }
       } as any);
@@ -134,8 +142,9 @@ describe("QuestionPrompt", () => {
 
   it("should not display answer when prompt is secure", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt("What's your name?", {
-      input: ["John Deeoe"],
+    const questionPrompt = await TestingPrompt.QuestionPrompt({
+      message: "What's your name?",
+      inputs: ["John Deeoe"],
       secure: true,
       onStdoutWrite: (log) => logs.push(log)
     });

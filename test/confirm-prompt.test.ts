@@ -1,6 +1,6 @@
 // Import Node.js Dependencies
 import assert from "node:assert";
-import { describe, it } from "node:test";
+import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
@@ -30,6 +30,10 @@ const kInputs = {
 const kPromptAgent = PromptAgent.agent();
 
 describe("ConfirmPrompt", () => {
+  after(() => {
+    mock.reset();
+  });
+
   it("message should be required", () => {
     assert.throws(
       () => new ConfirmPrompt({ message: 12 as any }),
@@ -52,7 +56,8 @@ describe("ConfirmPrompt", () => {
 
   it("should return initial, which is equal to false by default", async() => {
     const logs: string[] = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+      message: "Foo",
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
     });
@@ -67,7 +72,8 @@ describe("ConfirmPrompt", () => {
 
   it("should return true when instant return with initial 'true'", async() => {
     const logs: string[] = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+      message: "Foo",
       inputs: [kInputs.return],
       initial: true,
       onStdoutWrite: (log) => logs.push(log)
@@ -88,7 +94,8 @@ describe("ConfirmPrompt", () => {
 
     it(`should switch value when pressing "${key}"`, async() => {
       const logs: string[] = [];
-      const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+        message: "Foo",
         inputs: [kInputs[key], kInputs.return],
         onStdoutWrite: (log) => logs.push(log)
       });
@@ -104,7 +111,8 @@ describe("ConfirmPrompt", () => {
 
     it(`should switch value multiple time when pressing "${key}"`, async() => {
       const logs: string[] = [];
-      const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+      const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+        message: "Foo",
         inputs: [kInputs[key], kInputs[key], kInputs.return],
         onStdoutWrite: (log) => logs.push(log)
       });
@@ -148,7 +156,8 @@ describe("ConfirmPrompt", () => {
 
   it("should return true when pressing 'y'", async() => {
     const logs: string[] = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+      message: "Foo",
       inputs: [kInputs.y],
       onStdoutWrite: (log) => {
         logs.push(log);
@@ -165,7 +174,8 @@ describe("ConfirmPrompt", () => {
 
   it("should return false when pressing 'n'", async() => {
     const logs: string[] = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt("Foo", {
+    const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+      message: "Foo",
       inputs: [kInputs.n],
       onStdoutWrite: (log) => {
         logs.push(log);
