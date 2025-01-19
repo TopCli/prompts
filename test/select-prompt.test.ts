@@ -1,6 +1,6 @@
 // Import Node.js Dependencies
 import assert from "node:assert";
-import { describe, it } from "node:test";
+import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
@@ -17,6 +17,10 @@ const kInputs = {
 const kPromptAgent = PromptAgent.agent();
 
 describe("SelectPrompt", () => {
+  after(() => {
+    mock.reset();
+  });
+
   it("message should be required", () => {
     assert.throws(() => new SelectPrompt({ message: 12 as any } as any), {
       name: "TypeError",
@@ -71,20 +75,17 @@ describe("SelectPrompt", () => {
   });
 
   it("When press <return>, it should select the first choice.", async() => {
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"]
     };
     const inputs = [kInputs.return];
     const logs: string[] = [];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -99,22 +100,19 @@ describe("SelectPrompt", () => {
 
   it("When press <down> then <return>, it should select the second choice.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: ["foo", "bar"]
     };
     const inputs = [
       kInputs.down,
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -131,21 +129,18 @@ describe("SelectPrompt", () => {
 
   it("should work with choice objects.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: [
         { value: "foo", label: "foo" },
         { value: "bar", label: "bar" }
       ]
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs: [kInputs.return],
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs: [kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -160,8 +155,8 @@ describe("SelectPrompt", () => {
 
   it("When the first item is selected and the up arrow is pressed, the last item should be selected.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: [
         { value: "foo", label: "foo" },
         { value: "bar", label: "bar" }
@@ -171,14 +166,11 @@ describe("SelectPrompt", () => {
       kInputs.down,
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -195,8 +187,8 @@ describe("SelectPrompt", () => {
 
   it("When the first item is selected and the up arrow is pressed, the last item should be selected.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: [
         { value: "foo", label: "foo" },
         { value: "bar", label: "bar" }
@@ -207,14 +199,11 @@ describe("SelectPrompt", () => {
       kInputs.down,
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -233,22 +222,19 @@ describe("SelectPrompt", () => {
 
   it("should ignore foo.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo & bar";
     const options = {
+      message: "Choose between foo & bar",
       choices: [
         { value: "foo", label: "foo" },
         { value: "bar", label: "bar" }
       ],
       ignoreValues: ["foo"]
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs: [kInputs.return],
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs: [kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -263,8 +249,8 @@ describe("SelectPrompt", () => {
 
   it("Should display 5 choices and allow scrolling.", async() => {
     const logs: string[] = [];
-    const message = "Choose option";
     const options = {
+      message: "Choose option",
       choices: [
         { value: "option1", label: "Option 1" },
         { value: "option2", label: "Option 2" },
@@ -285,14 +271,11 @@ describe("SelectPrompt", () => {
       kInputs.down,
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -335,22 +318,19 @@ describe("SelectPrompt", () => {
 
   it("Choices descriptions should be aligned.", async() => {
     const logs: string[] = [];
-    const message = "Choose option";
     const options = {
+      message: "Choose option",
       choices: [
         { value: "option1", label: "one", description: "foo" },
         { value: "option2", label: "Option 2", description: "foo" }
       ],
       maxVisible: 5
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs: [kInputs.return],
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs: [kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -365,8 +345,8 @@ describe("SelectPrompt", () => {
 
   it("Choices descriptions should not be aligned as longest choice is too long.", async() => {
     const logs: string[] = [];
-    const message = "Choose option";
     const options = {
+      message: "Choose option",
       choices: [
         { value: "option1", label: "one", description: "foo" },
         { value: "option2", label: "Option 2", description: "foo" },
@@ -374,14 +354,11 @@ describe("SelectPrompt", () => {
       ],
       maxVisible: 5
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs: [kInputs.return],
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs: [kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -440,8 +417,8 @@ describe("SelectPrompt", () => {
 
   it("should filter values with autocomplete", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar or baz";
     const options = {
+      message: "Choose between foo, bar or baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true
     };
@@ -450,14 +427,11 @@ describe("SelectPrompt", () => {
       { sequence: "a" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -483,8 +457,8 @@ describe("SelectPrompt", () => {
 
   it("should filter all choices with autocomplete when using backspace", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar or baz";
     const options = {
+      message: "Choose between foo, bar or baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true
     };
@@ -495,14 +469,11 @@ describe("SelectPrompt", () => {
       { name: "backspace" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -537,8 +508,8 @@ describe("SelectPrompt", () => {
 
   it("autocomplete filters should be case insensitive by default", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar or baz";
     const options = {
+      message: "Choose between foo, bar or baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true
     };
@@ -546,14 +517,11 @@ describe("SelectPrompt", () => {
       { sequence: "B" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -575,8 +543,8 @@ describe("SelectPrompt", () => {
 
   it("autocomplete filters should be case sensitive", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar or baz";
     const options = {
+      message: "Choose between foo, bar or baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true,
       caseSensitive: true
@@ -587,14 +555,11 @@ describe("SelectPrompt", () => {
       { sequence: "b" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -623,8 +588,8 @@ describe("SelectPrompt", () => {
 
   it("should fallback to empty string if filter returns empty choice list", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar or baz";
     const options = {
+      message: "Choose between foo, bar or baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true,
       caseSensitive: true
@@ -633,14 +598,11 @@ describe("SelectPrompt", () => {
       { sequence: "B" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 
@@ -660,8 +622,8 @@ describe("SelectPrompt", () => {
 
   it("should render with validation error.", async() => {
     const logs: string[] = [];
-    const message = "Choose between foo, bar or baz";
     const options = {
+      message: "Choose between foo, bar or baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true,
       validators: [required()]
@@ -672,14 +634,11 @@ describe("SelectPrompt", () => {
       { name: "backspace" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt(
-      message,
-      {
-        ...options,
-        inputs,
-        onStdoutWrite: (log) => logs.push(log)
-      }
-    );
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
 
     const input = await selectPrompt.select();
 

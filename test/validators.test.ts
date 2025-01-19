@@ -2,7 +2,13 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
 
-import { InvalidResponseObject, isValid, resultError, ValidationResponseObject } from "../src/validators.js";
+// Import Internal Dependencies
+import {
+  InvalidResponseObject,
+  isValid,
+  resultError,
+  ValidationResponseObject
+} from "../src/validators.js";
 
 describe("Validators", () => {
   describe("isValid", () => {

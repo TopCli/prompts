@@ -1,6 +1,6 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
-import { Interface, createInterface } from "node:readline";
+import readline from "node:readline";
 import { Writable } from "node:stream";
 import EventEmitter from "node:events";
 
@@ -34,7 +34,7 @@ export class AbstractPrompt<T> extends EventEmitter {
   history: string[];
   agent: PromptAgent<T>;
   mute: boolean;
-  rl: Interface;
+  rl: readline.Interface;
   #signalHandler: () => void;
 
   constructor(options: AbstractPromptOptions) {
@@ -77,7 +77,7 @@ export class AbstractPrompt<T> extends EventEmitter {
       this.stdin.setRawMode(true);
     }
 
-    this.rl = createInterface({
+    this.rl = readline.createInterface({
       input,
       output: new Writable({
         write: (chunk: string, encoding: BufferEncoding, callback) => {
