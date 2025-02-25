@@ -9,26 +9,29 @@ import type { ConfirmOptions } from "./src/prompts/confirm.js";
 import type { MultiselectOptions } from "./src/prompts/multiselect.js";
 import type { SelectOptions } from "./src/prompts/select.js";
 
-export async function question(message: string, options: Omit<QuestionOptions, "message"> = {}) {
+export function question(message: string, options: Omit<QuestionOptions, "message"> = {}) {
   return new prompts.QuestionPrompt({ ...options, message }).question();
 }
 
-export async function select(message: string, options: Omit<SelectOptions, "message">) {
+export function select<T extends string>(message: string, options: Omit<SelectOptions<T>, "message">) {
   const selectPrompt = new prompts.SelectPrompt({ ...options, message });
 
-  return selectPrompt.select();
+  return selectPrompt.select() as Promise<T>;
 }
 
-export async function confirm(message: string, options: Omit<ConfirmOptions, "message"> = {}) {
+export function confirm(message: string, options: Omit<ConfirmOptions, "message"> = {}) {
   const confirmPrompt = new prompts.ConfirmPrompt({ ...options, message });
 
   return confirmPrompt.confirm();
 }
 
-export async function multiselect(message: string, options: Omit<MultiselectOptions, "message">) {
+export function multiselect<T extends string>(
+  message: string,
+  options: Omit<MultiselectOptions<T>, "message">
+) {
   const multiselectPrompt = new prompts.MultiselectPrompt({ ...options, message });
 
-  return multiselectPrompt.multiselect();
+  return multiselectPrompt.multiselect() as Promise<T[]>;
 }
 
 export type {

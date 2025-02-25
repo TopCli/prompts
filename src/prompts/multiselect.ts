@@ -15,8 +15,8 @@ import { type Choice } from "../types.js";
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
 
-export interface MultiselectOptions extends AbstractPromptOptions {
-  choices: (Choice | string)[];
+export interface MultiselectOptions<T extends string = string> extends AbstractPromptOptions {
+  choices: (Choice | T)[];
   maxVisible?: number;
   preSelectedChoices?: (Choice | string)[];
   validators?: PromptValidator[];
