@@ -70,8 +70,8 @@ const packageName = await question('Package name', {
   validators: [
     {
       validate: (value) => {
-        if (!existsSync(join(process.cwd(), value))) {
-          return `Folder ${value} already exists`
+        if (fs.existsSync(path.join(process.cwd(), value))) {
+          return `Folder ${value} already exists`;
         }
       }
     }
