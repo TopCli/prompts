@@ -14,9 +14,9 @@ export function question(message: string, options: Omit<QuestionOptions, "messag
 }
 
 export function select<T extends string>(message: string, options: Omit<SelectOptions<T>, "message">) {
-  const selectPrompt = new prompts.SelectPrompt({ ...options, message });
+  const selectPrompt = new prompts.SelectPrompt<T>({ ...options, message });
 
-  return selectPrompt.select() as Promise<T>;
+  return selectPrompt.select();
 }
 
 export function confirm(message: string, options: Omit<ConfirmOptions, "message"> = {}) {
@@ -29,9 +29,9 @@ export function multiselect<T extends string>(
   message: string,
   options: Omit<MultiselectOptions<T>, "message">
 ) {
-  const multiselectPrompt = new prompts.MultiselectPrompt({ ...options, message });
+  const multiselectPrompt = new prompts.MultiselectPrompt<T>({ ...options, message });
 
-  return multiselectPrompt.multiselect() as Promise<T[]>;
+  return multiselectPrompt.multiselect();
 }
 
 export type {
