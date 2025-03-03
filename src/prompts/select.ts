@@ -15,25 +15,25 @@ import { type Choice } from "../types.js";
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
 
-export interface SelectOptions<T extends string = string> extends AbstractPromptOptions {
+export interface SelectOptions<T extends string> extends AbstractPromptOptions {
   choices: (Choice | T)[];
   maxVisible?: number;
-  ignoreValues?: (string | number | boolean)[];
-  validators?: PromptValidator[];
+  ignoreValues?: (T | number | boolean)[];
+  validators?: PromptValidator<T>[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
 }
 
 type VoidFn = () => void;
 
-export class SelectPrompt extends AbstractPrompt<string> {
+export class SelectPrompt<T extends string = string> extends AbstractPrompt<string> {
   #boundExitEvent: VoidFn = () => void 0;
   #boundKeyPressEvent: VoidFn = () => void 0;
-  #validators: PromptValidator[];
+  #validators: PromptValidator<T>[];
   activeIndex = 0;
   questionMessage: string;
   autocompleteValue = "";
-  options: SelectOptions;
+  options: SelectOptions<T>;
   lastRender: { startIndex: number; endIndex: number; };
 
   get choices() {
@@ -82,7 +82,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
     }));
   }
 
-  constructor(options: SelectOptions) {
+  constructor(options: SelectOptions<T>) {
     const {
       choices,
       validators = [],
