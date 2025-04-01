@@ -15,25 +15,25 @@ import { type Choice } from "../types.js";
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
 
-export interface SelectOptions<T extends string = string> extends AbstractPromptOptions {
-  choices: (Choice | T)[];
+export interface SelectOptions<T extends string> extends AbstractPromptOptions {
+  choices: (Choice<T> | T)[];
   maxVisible?: number;
-  ignoreValues?: (string | number | boolean)[];
-  validators?: PromptValidator[];
+  ignoreValues?: (T | number | boolean)[];
+  validators?: PromptValidator<T>[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
 }
 
 type VoidFn = () => void;
 
-export class SelectPrompt extends AbstractPrompt<string> {
+export class SelectPrompt<T extends string = string> extends AbstractPrompt<T> {
   #boundExitEvent: VoidFn = () => void 0;
   #boundKeyPressEvent: VoidFn = () => void 0;
-  #validators: PromptValidator[];
+  #validators: PromptValidator<T>[];
   activeIndex = 0;
   questionMessage: string;
   autocompleteValue = "";
-  options: SelectOptions;
+  options: SelectOptions<T>;
   lastRender: { startIndex: number; endIndex: number; };
 
   get choices() {
@@ -82,7 +82,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
     }));
   }
 
-  constructor(options: SelectOptions) {
+  constructor(options: SelectOptions<T>) {
     const {
       choices,
       validators = [],
@@ -169,10 +169,10 @@ export class SelectPrompt extends AbstractPrompt<string> {
     }
   }
 
-  #showAnsweredQuestion(choice: Choice | string) {
-    const symbolPrefix = choice === "" ? SYMBOLS.Cross : SYMBOLS.Tick;
+  #showAnsweredQuestion(label: string) {
+    const symbolPrefix = label === "" ? SYMBOLS.Cross : SYMBOLS.Tick;
     const prefix = `${symbolPrefix} ${styleText("bold", this.message)} ${SYMBOLS.Pointer}`;
-    const formattedChoice = styleText("yellow", typeof choice === "string" ? choice : choice.label);
+    const formattedChoice = styleText("yellow", label);
 
     this.write(`${prefix} ${formattedChoice}${EOL}`);
   }
@@ -195,7 +195,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
       render();
     }
     else if (key.name === "return") {
-      const choice = this.filteredChoices[this.activeIndex] || "";
+      const choice = this.filteredChoices[this.activeIndex] || ("" as T);
 
       const label = typeof choice === "string" ? choice : choice.label;
       const value = typeof choice === "string" ? choice : choice.value;
@@ -238,7 +238,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
     }
   }
 
-  async select(): Promise<string> {
+  async select(): Promise<T> {
     if (this.skip) {
       this.destroy();
       const answer = this.options.choices[0];
@@ -246,7 +246,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
       return typeof answer === "string" ? answer : answer.value;
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       const answer = this.agent.nextAnswers.shift();
       if (answer !== undefined) {
         this.#showAnsweredQuestion(answer);
