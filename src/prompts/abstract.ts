@@ -3,9 +3,9 @@ import { EOL } from "node:os";
 import readline from "node:readline";
 import { Writable } from "node:stream";
 import EventEmitter from "node:events";
+import { stripVTControlCharacters } from "node:util";
 
 // Import Internal Dependencies
-import { stripAnsi } from "../utils.js";
 import { PromptAgent } from "../prompt-agent.js";
 import { AbortError } from "../errors/abort.js";
 
@@ -107,7 +107,7 @@ export class AbstractPrompt<T> extends EventEmitter {
   }
 
   write(data: string) {
-    const formattedData = stripAnsi(data).replace(EOL, "");
+    const formattedData = stripVTControlCharacters(data).replace(EOL, "");
     if (formattedData) {
       this.history.push(formattedData);
     }
@@ -121,7 +121,7 @@ export class AbstractPrompt<T> extends EventEmitter {
       return;
     }
 
-    const lastLineRows = Math.ceil(stripAnsi(lastLine).length / this.stdout.columns);
+    const lastLineRows = Math.ceil(stripVTControlCharacters(lastLine).length / this.stdout.columns);
 
     this.stdout.moveCursor(-this.stdout.columns, -lastLineRows);
     this.stdout.clearScreenDown();

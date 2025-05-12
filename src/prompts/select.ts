@@ -2,12 +2,9 @@
 import { EOL } from "node:os";
 import { styleText } from "node:util";
 
-// Import Third-party Dependencies
-import wcwidth from "@topcli/wcwidth";
-
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
-import { stripAnsi } from "../utils.js";
+import { stringLength } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 import { isValid, type PromptValidator, resultError } from "../validators.js";
 import { type Choice } from "../types.js";
@@ -285,7 +282,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
           }
           if (this.options.autocomplete) {
             let linesToClear = Math.ceil(
-              wcwidth(`${SYMBOLS.Pointer} ${this.autocompleteValue}`) / this.stdout.columns
+              stringLength(`${SYMBOLS.Pointer} ${this.autocompleteValue}`) / this.stdout.columns
             );
             while (linesToClear > 0) {
               this.clearLastLine();
@@ -296,7 +293,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
 
         if (clearRender) {
           const questionLineCount = Math.ceil(
-            wcwidth(stripAnsi(this.questionMessage)) / this.stdout.columns
+            stringLength(this.questionMessage) / this.stdout.columns
           );
           this.stdout.moveCursor(-this.stdout.columns, -(1 + questionLineCount));
           this.stdout.clearScreenDown();
@@ -305,7 +302,7 @@ export class SelectPrompt extends AbstractPrompt<string> {
         }
 
         if (error) {
-          const linesToClear = Math.ceil(wcwidth(this.questionMessage) / this.stdout.columns) + 1;
+          const linesToClear = Math.ceil(stringLength(this.questionMessage) / this.stdout.columns) + 1;
           this.stdout.moveCursor(0, -linesToClear);
           this.stdout.clearScreenDown();
           this.#showQuestion(error);
