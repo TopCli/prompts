@@ -1,9 +1,9 @@
 // Import Node.js Dependencies
 import { mock } from "node:test";
 import readline from "node:readline";
+import { stripVTControlCharacters } from "node:util";
 
 // Import Internal Dependencies
-import { stripAnsi } from "../../src/utils.js";
 import { QuestionOptions, SelectOptions, MultiselectOptions, ConfirmOptions } from "../../index.js";
 import { mockProcess } from "./mock-process.js";
 import {
@@ -26,7 +26,7 @@ export class TestingPrompt {
       return {
         question: (query, onInput) => {
           onInput(inputs.shift());
-          onStdoutWrite(stripAnsi(query).trim());
+          onStdoutWrite(stripVTControlCharacters(query).trim());
         },
         close: () => true
       };

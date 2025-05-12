@@ -1,8 +1,8 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
+import { stripVTControlCharacters } from "node:util";
 
 // Import Internal Dependencies
-import { stripAnsi } from "../../src/utils.js";
 import { AbstractPromptOptions } from "../../src/prompts/abstract.js";
 
 export function mockProcess(inputs: string[] = [], writeCb: (value: string) => void = () => void 0) {
@@ -12,7 +12,7 @@ export function mockProcess(inputs: string[] = [], writeCb: (value: string) => v
         return;
       }
 
-      const noAnsiMsg = stripAnsi(msg);
+      const noAnsiMsg = stripVTControlCharacters(msg);
       if (noAnsiMsg) {
         writeCb(noAnsiMsg.replace(EOL, ""));
       }

@@ -2,12 +2,9 @@
 import { EOL } from "node:os";
 import { styleText } from "node:util";
 
-// Import Third-party Dependencies
-import wcwidth from "@topcli/wcwidth";
-
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
-import { stripAnsi } from "../utils.js";
+import { stringLength } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 import { isValid, type PromptValidator, resultError } from "../validators.js";
 
@@ -79,7 +76,7 @@ export class QuestionPrompt extends AbstractPrompt<string> {
 
   #onQuestionAnswer() {
     const questionLineCount = Math.ceil(
-      wcwidth(stripAnsi(this.#getQuestionQuery() + this.answer)) / this.stdout.columns
+      stringLength(this.#getQuestionQuery() + this.answer) / this.stdout.columns
     );
 
     this.stdout.moveCursor(-this.stdout.columns, -questionLineCount);

@@ -3,12 +3,9 @@ import { EOL } from "node:os";
 import type { Key } from "node:readline";
 import { styleText } from "node:util";
 
-// Import Third-party Dependencies
-import wcwidth from "@topcli/wcwidth";
-
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
-import { stripAnsi } from "../utils.js";
+import { stringLength } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 
 export interface ConfirmOptions extends AbstractPromptOptions {
@@ -76,7 +73,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
   #onKeypress(resolve: (value: unknown) => void, _value: any, key: Key) {
     this.stdout.moveCursor(
       -this.stdout.columns,
-      -Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns)
+      -Math.floor(stringLength(this.#getQuestionQuery()) / this.stdout.columns)
     );
     this.stdout.clearScreenDown();
 
@@ -120,7 +117,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     this.clearLastLine();
     this.stdout.moveCursor(
       -this.stdout.columns,
-      -Math.floor(wcwidth(stripAnsi(this.#getQuestionQuery())) / this.stdout.columns)
+      -Math.floor(stringLength(this.#getQuestionQuery()) / this.stdout.columns)
     );
     this.stdout.clearScreenDown();
     this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${styleText("bold", this.message)}${EOL}`);

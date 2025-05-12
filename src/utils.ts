@@ -1,25 +1,9 @@
 // Import Node.js Dependencies
 import process from "node:process";
+import { stripVTControlCharacters } from "node:util";
 
 // CONSTANTS
-const kAnsiRegex = ansiRegex();
-
-/**
- * @see https://github.com/chalk/ansi-regex
- */
-export function ansiRegex({ onlyFirst = false } = {}) {
-  const pattern = [
-    // eslint-disable-next-line @stylistic/max-len
-    "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
-    "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))"
-  ].join("|");
-
-  return new RegExp(pattern, onlyFirst ? undefined : "g");
-}
-
-export function stripAnsi(string: string) {
-  return string.replace(kAnsiRegex, "");
-}
+const kLenSegmenter = new Intl.Segmenter();
 
 /**
  * @see https://github.com/sindresorhus/is-unicode-supported
@@ -41,4 +25,21 @@ export function isUnicodeSupported() {
     || process.env.TERM === "xterm-256color"
     || process.env.TERM === "alacritty"
     || process.env.TERMINAL_EMULATOR === "JetBrains-JediTerm";
+}
+
+export function stringLength(
+  string: string
+): number {
+  if (string === "") {
+    return 0;
+  }
+
+  let length = 0;
+  for (const _ of kLenSegmenter.segment(
+    stripVTControlCharacters(string)
+  )) {
+    length++;
+  }
+
+  return length;
 }
