@@ -12,11 +12,11 @@ import { type Choice } from "../types.js";
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
 
-export interface MultiselectOptions<T extends string = string> extends AbstractPromptOptions {
-  choices: (Choice | T)[];
+export interface MultiselectOptions<T extends string> extends AbstractPromptOptions {
+  choices: (Choice<T> | T)[];
   maxVisible?: number;
-  preSelectedChoices?: (Choice | string)[];
-  validators?: PromptValidator[];
+  preSelectedChoices?: (Choice | T)[];
+  validators?: PromptValidator<T[]>[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
   showHint?: boolean;
@@ -24,17 +24,17 @@ export interface MultiselectOptions<T extends string = string> extends AbstractP
 
 type VoidFn = () => void;
 
-export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
+export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
   #boundExitEvent: VoidFn = () => void 0;
   #boundKeyPressEvent: VoidFn = () => void 0;
-  #validators: PromptValidator[];
+  #validators: PromptValidator<T[]>[];
   #showHint: boolean;
 
   activeIndex = 0;
   selectedIndexes: Set<number> = new Set();
   questionMessage: string;
   autocompleteValue = "";
-  options: MultiselectOptions;
+  options: MultiselectOptions<T>;
   lastRender: { startIndex: number; endIndex: number; };
 
   get choices() {
@@ -52,7 +52,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
     return this.choices.filter((choice) => this.#filterChoice(choice, autocompleteValue, isCaseSensitive));
   }
 
-  #filterChoice(choice: Choice | string, autocompleteValue: string, isCaseSensitive = false) {
+  #filterChoice(choice: T | Choice | string, autocompleteValue: string, isCaseSensitive = false) {
     // eslint-disable-next-line no-nested-ternary
     const choiceValue = typeof choice === "string" ?
       (isCaseSensitive ? choice : choice.toLowerCase()) :
@@ -79,11 +79,11 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
         return choice.length;
       }
 
-      return choice.label.length;
+      return (choice as Choice<T>).label.length;
     }));
   }
 
-  constructor(options: MultiselectOptions) {
+  constructor(options: MultiselectOptions<T>) {
     const {
       choices,
       preSelectedChoices = [],
@@ -210,14 +210,14 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
         }
         else {
           acc.values.push(choice.value);
-          acc.labels.push(choice.label);
+          acc.labels.push(choice.label as T);
         }
 
         return acc;
       },
       {
-        values: [] as string[],
-        labels: [] as string[]
+        values: [] as T[],
+        labels: [] as T[]
       }
     );
   }
@@ -294,7 +294,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
     }
   }
 
-  async multiselect(): Promise<string[]> {
+  async multiselect(): Promise<T[]> {
     if (this.skip) {
       this.destroy();
       const { values } = this.#selectedChoices();
@@ -302,7 +302,7 @@ export class MultiselectPrompt extends AbstractPrompt<string | string[]> {
       return values;
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<T[]>((resolve, reject) => {
       const answer = this.agent.nextAnswers.shift();
       if (answer !== undefined) {
         const formatedAnser = Array.isArray(answer) ? answer.join(", ") : answer;
