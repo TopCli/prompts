@@ -33,7 +33,7 @@
   "devDependencies": {
     "@openally/config.eslint": "^2.0.0",
     "@openally/config.typescript": "^1.0.3",
-    "@types/node": "^22.10.5",
+    "@types/node": "^24.0.3",
     "c8": "^10.1.3",
     "glob": "^11.0.0",
     "tsup": "^8.3.5",
