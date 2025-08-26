@@ -55,7 +55,7 @@ Simple prompt, similar to `rl.question()` with an improved UI.
 
 Use `options.defaultValue` to set a default value.
 
-Use `options.secure` if you need to hide both input and answer.
+Use `options.secure` if you need to hide both input and answer. You can provide either a **boolean** or an **object** which allows to configure a `placeholder` such as `*`.
 
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 

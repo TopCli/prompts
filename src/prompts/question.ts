@@ -11,7 +11,9 @@ import { isValid, type PromptValidator, resultError } from "../validators.js";
 export interface QuestionOptions extends AbstractPromptOptions {
   defaultValue?: string;
   validators?: PromptValidator[];
-  secure?: boolean;
+  secure?: boolean | {
+    placeholder: string;
+  };
 }
 
 export class QuestionPrompt extends AbstractPrompt<string> {
@@ -22,6 +24,7 @@ export class QuestionPrompt extends AbstractPrompt<string> {
   answerBuffer?: Promise<string>;
   #validators: PromptValidator[];
   #secure: boolean;
+  #securePlaceholder: string | null = null;
 
   constructor(options: QuestionOptions) {
     const {
@@ -40,7 +43,14 @@ export class QuestionPrompt extends AbstractPrompt<string> {
     this.defaultValue = defaultValue;
     this.tip = this.defaultValue ? ` (${this.defaultValue})` : "";
     this.#validators = validators;
-    this.#secure = Boolean(secure);
+
+    if (typeof secure === "object") {
+      this.#secure = true;
+      this.#securePlaceholder = secure.placeholder;
+    }
+    else {
+      this.#secure = Boolean(secure);
+    }
     this.questionSuffixError = "";
   }
 
@@ -51,11 +61,14 @@ export class QuestionPrompt extends AbstractPrompt<string> {
       this.history.push(questionQuery);
       this.rl.question(questionQuery, (answer) => {
         this.history.push(questionQuery + answer);
-        this.mute = false;
+        this.reset();
 
         resolve(answer);
       });
-      this.mute = this.#secure;
+
+      if (this.#securePlaceholder !== null) {
+        this.transformer = (input) => Buffer.from(this.#securePlaceholder!.repeat(input.length), "utf-8");
+      }
     });
   }
 
@@ -70,8 +83,17 @@ export class QuestionPrompt extends AbstractPrompt<string> {
 
   #writeAnswer() {
     const prefix = this.answer ? SYMBOLS.Tick : SYMBOLS.Cross;
-    const answer = styleText("yellow", this.#secure ? "CONFIDENTIAL" : this.answer ?? "");
-    this.write(`${prefix} ${styleText("bold", this.message)} ${SYMBOLS.Pointer} ${answer}${EOL}`);
+    const answer = this.answer ?? "";
+    const maskedAnswer = this.#securePlaceholder ?
+      this.#securePlaceholder.repeat(answer.length) :
+      answer;
+
+    const stylizedAnswer = styleText(
+      "yellow",
+      this.#secure && this.#securePlaceholder === null ?
+        "CONFIDENTIAL" : maskedAnswer
+    );
+    this.write(`${prefix} ${styleText("bold", this.message)} ${SYMBOLS.Pointer} ${stylizedAnswer}${EOL}`);
   }
 
   #onQuestionAnswer() {
