@@ -157,6 +157,28 @@ describe("QuestionPrompt", () => {
     ]);
   });
 
+  it("should not display answer when prompt is secure with a placeholder", async() => {
+    const logs: string[] = [];
+    const placeholder = "*";
+    const expectedInput = "John Deeoe";
+
+    const questionPrompt = await TestingPrompt.QuestionPrompt({
+      message: "What's your name?",
+      inputs: [expectedInput],
+      secure: {
+        placeholder
+      },
+      onStdoutWrite: (log) => logs.push(log)
+    });
+    const input = await questionPrompt.question();
+
+    assert.equal(input, expectedInput);
+    assert.deepStrictEqual(logs, [
+      "? What's your name?",
+      `✔ What's your name? › ${placeholder.repeat(expectedInput.length)}`
+    ]);
+  });
+
   it("should not display answer when prompt is secure and using PromptAgent", async() => {
     const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));

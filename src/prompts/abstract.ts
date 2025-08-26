@@ -9,6 +9,11 @@ import { stripVTControlCharacters } from "node:util";
 import { PromptAgent } from "../prompt-agent.js";
 import { AbortError } from "../errors/abort.js";
 
+// CONSTANTS
+function kNoopTransformer(input: Buffer) {
+  return input;
+}
+
 type Stdin = NodeJS.ReadStream & {
   fd: 0;
 };
@@ -33,7 +38,7 @@ export class AbstractPrompt<T> extends EventEmitter {
   skip: boolean;
   history: string[];
   agent: PromptAgent<T>;
-  mute: boolean;
+  transformer: (input: Buffer) => Buffer | null = kNoopTransformer;
   rl: readline.Interface;
   #signalHandler: () => void;
 
@@ -71,7 +76,6 @@ export class AbstractPrompt<T> extends EventEmitter {
     this.skip = skip;
     this.history = [];
     this.agent = PromptAgent.agent<T>();
-    this.mute = false;
 
     if (this.stdout.isTTY) {
       this.stdin.setRawMode(true);
@@ -80,9 +84,14 @@ export class AbstractPrompt<T> extends EventEmitter {
     this.rl = readline.createInterface({
       input,
       output: new Writable({
-        write: (chunk: string, encoding: BufferEncoding, callback) => {
-          if (!this.mute && chunk) {
-            this.stdout.write(chunk, encoding);
+        write: (chunk: Buffer | string, encoding: BufferEncoding, callback) => {
+          if (chunk) {
+            const transformed = this.transformer(
+              Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+            );
+            if (transformed !== null) {
+              this.stdout.write(transformed, encoding);
+            }
           }
           callback();
         }
@@ -104,6 +113,10 @@ export class AbstractPrompt<T> extends EventEmitter {
       }
       this.signal.addEventListener("abort", this.#signalHandler, { once: true });
     }
+  }
+
+  reset() {
+    this.transformer = kNoopTransformer;
   }
 
   write(data: string) {
