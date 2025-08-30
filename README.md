@@ -84,9 +84,9 @@ const packageName = await question('Package name', {
 - required
 
 ```js
-import { prompt, required } from "@topcli/prompts";
+import { question, required } from "@topcli/prompts";
 
-const name = await prompt("What's your name ?", {
+const name = await question("What's your name ?", {
   validators: [required()]
 });
 ```
