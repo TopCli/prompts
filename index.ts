@@ -1,6 +1,15 @@
 // Import Internal Dependencies
 import * as prompts from "./src/prompts/index.js";
-import { required, type PromptValidator } from "./src/validators.js";
+import {
+  required,
+  type PromptValidator,
+  type ValidResponseObject,
+  type InvalidResponseObject,
+  type ValidationResponseObject,
+  type ValidationResponse,
+  type InvalidResponse,
+  type ValidResponse
+} from "./src/validators.js";
 import { PromptAgent } from "./src/prompt-agent.js";
 import type { AbstractPromptOptions } from "./src/prompts/abstract.js";
 import type { Choice } from "./src/types.js";
@@ -41,7 +50,13 @@ export type {
   ConfirmOptions,
   Choice,
   MultiselectOptions,
-  SelectOptions
+  SelectOptions,
+  ValidResponseObject,
+  InvalidResponseObject,
+  ValidationResponseObject,
+  ValidationResponse,
+  InvalidResponse,
+  ValidResponse
 };
 
 export {
