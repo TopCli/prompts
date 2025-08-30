@@ -264,6 +264,7 @@ Open an issue if you want to provide feedback such as bug reports or enchancemen
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/noxify"><img src="https://avatars.githubusercontent.com/u/521777?v=4?s=100" width="100px;" alt="Marcus Reinhardt"/><br /><sub><b>Marcus Reinhardt</b></sub></a><br /><a href="https://github.com/TopCli/prompts/commits?author=noxify" title="Code">💻</a> <a href="https://github.com/TopCli/prompts/commits?author=noxify" title="Tests">⚠️</a> <a href="https://github.com/TopCli/prompts/commits?author=noxify" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ItsHarper"><img src="https://avatars.githubusercontent.com/u/10224994?v=4?s=100" width="100px;" alt="Harper Andrews"/><br /><sub><b>Harper Andrews</b></sub></a><br /><a href="https://github.com/TopCli/prompts/commits?author=ItsHarper" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
