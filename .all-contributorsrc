@@ -85,6 +85,15 @@
         "test",
         "doc"
       ]
+    },
+    {
+      "login": "ItsHarper",
+      "name": "Harper Andrews",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10224994?v=4",
+      "profile": "https://github.com/ItsHarper",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
