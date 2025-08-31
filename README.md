@@ -94,7 +94,7 @@ const name = await question("What's your name ?", {
 ### `select()`
 
 ```ts
-select(message: string, options: SelectOptions): Promise<string>
+select<T extends string>(message: string, options: SelectOptions<T>): Promise<T>
 ```
 
 Scrollable select depending `maxVisible` (default `8`).
@@ -114,7 +114,7 @@ Use `options.skip` to skip prompt. It will return the first choice.
 ### `multiselect()`
 
 ```ts
-multiselect(message: string, options: MultiselectOptions): Promise<[string]>
+multiselect<T extends string>(message: string, options: MultiselectOptions<T>): Promise<T[]>
 ```
 
 Scrollable multiselect depending `options.maxVisible` (default `8`).<br>
@@ -196,46 +196,46 @@ export interface AbstractPromptOptions {
   stdin?: Stdin;
   stdout?: Stdout;
   message: string;
-  sginal?: AbortSignal;
+  skip?: boolean;
+  signal?: AbortSignal;
 }
 
-export interface PromptValidator<T = string | string[] | boolean> {
-    validate: (input: T) => boolean;
-    error: (input: T) => string;
+export interface PromptValidator<T extends string | string[]> {
+  validate: (input: T) => boolean;
 }
 
 export interface QuestionOptions extends SharedOptions {
   defaultValue?: string;
-  validators?: Validator[];
+  validators?: PromptValidator<string>[];
   secure?: boolean;
 }
 
-export interface Choice {
-  value: any;
+export interface Choice<T = any> {
+  value: T;
   label: string;
   description?: string;
 }
 
-export interface SelectOptions extends SharedOptions  {
-  choices: (Choice | string)[];
+export interface SelectOptions<T extends string> extends AbstractPromptOptions {
+  choices: (Choice<T> | T)[];
   maxVisible?: number;
-  ignoreValues?: (string | number | boolean)[];
-  validators?: Validator[];
+  ignoreValues?: (T | number | boolean)[];
+  validators?: PromptValidator<string>[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
 }
 
-export interface MultiselectOptions extends SharedOptions  {
-  choices: (Choice | string)[];
+export interface MultiselectOptions<T extends string> extends AbstractPromptOptions {
+  choices: (Choice<T> | T)[];
   maxVisible?: number;
-  preSelectedChoices?: (Choice | string)[];
-  validators?: Validator[];
+  preSelectedChoices?: (Choice<T> | T)[];
+  validators?: PromptValidator<string[]>[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
   showHint?: boolean;
 }
 
-export interface ConfirmOptions extends SharedOptions  {
+export interface ConfirmOptions extends AbstractPromptOptions {
   initial?: boolean;
 }
 ```
