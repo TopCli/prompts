@@ -4,11 +4,10 @@ import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
-import { SelectPrompt } from "../src/prompts/select.js";
+import { SelectPrompt } from "../src/prompts/index.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
 import { mockProcess } from "./helpers/mock-process.js";
-import { PromptAgent } from "../src/prompt-agent.js";
-import { select, required } from "../index.js";
+import { select, required, PromptAgent } from "../src/index.js";
 
 const kInputs = {
   down: { name: "down" },

@@ -2,11 +2,12 @@
   "name": "@topcli/prompts",
   "version": "2.4.0",
   "description": "Node.js user input library for command-line interfaces.",
+  "type": "module",
   "scripts": {
-    "build": "tsup index.ts --format cjs,esm --dts --clean",
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "prepublishOnly": "npm run build",
     "test-only": "glob -c \"tsx --test\" \"./test/**/*.test.ts\"",
-    "test-types": "npm run build && tsd",
+    "test-types": "npm run build && tsd && attw --pack .",
     "test": "c8 -r html npm run test-only && npm run test-types",
     "lint": "eslint src test",
     "lint:fix": "eslint . --fix"
@@ -15,9 +16,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "keywords": [
@@ -30,8 +30,8 @@
   ],
   "author": "PierreDemailly <pierredemailly.pro@gmail.com>",
   "license": "ISC",
-  "type": "module",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@openally/config.eslint": "^2.0.0",
     "@openally/config.typescript": "^1.0.3",
     "@types/node": "^24.0.3",
