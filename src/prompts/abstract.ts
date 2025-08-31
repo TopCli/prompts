@@ -30,7 +30,7 @@ export interface AbstractPromptOptions {
   signal?: AbortSignal;
 }
 
-export class AbstractPrompt<T> extends EventEmitter {
+export class AbstractPrompt<T extends string | boolean> extends EventEmitter {
   stdin: Stdin;
   stdout: Stdout;
   message: string;

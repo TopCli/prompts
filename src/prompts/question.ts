@@ -10,7 +10,7 @@ import { isValid, type PromptValidator, resultError } from "../validators.js";
 
 export interface QuestionOptions extends AbstractPromptOptions {
   defaultValue?: string;
-  validators?: PromptValidator[];
+  validators?: PromptValidator<string>[];
   secure?: boolean | {
     placeholder: string;
   };
@@ -22,7 +22,7 @@ export class QuestionPrompt extends AbstractPrompt<string> {
   questionSuffixError: string;
   answer?: string;
   answerBuffer?: Promise<string>;
-  #validators: PromptValidator[];
+  #validators: PromptValidator<string>[];
   #secure: boolean;
   #securePlaceholder: string | null = null;
 

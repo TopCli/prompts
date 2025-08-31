@@ -16,17 +16,17 @@ export interface SelectOptions<T extends string> extends AbstractPromptOptions {
   choices: (Choice<T> | T)[];
   maxVisible?: number;
   ignoreValues?: (T | number | boolean)[];
-  validators?: PromptValidator<T>[];
+  validators?: PromptValidator<string>[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
 }
 
 type VoidFn = () => void;
 
-export class SelectPrompt<T extends string = string> extends AbstractPrompt<T> {
+export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
   #boundExitEvent: VoidFn = () => void 0;
   #boundKeyPressEvent: VoidFn = () => void 0;
-  #validators: PromptValidator<T>[];
+  #validators: PromptValidator<string>[];
   activeIndex = 0;
   questionMessage: string;
   autocompleteValue = "";
@@ -48,7 +48,11 @@ export class SelectPrompt<T extends string = string> extends AbstractPrompt<T> {
     return this.choices.filter((choice) => this.#filterChoice(choice, autocompleteValue, isCaseSensitive));
   }
 
-  #filterChoice(choice: Choice | string, autocompleteValue: string, isCaseSensitive = false) {
+  #filterChoice(
+    choice: Choice<T> | string,
+    autocompleteValue: string,
+    isCaseSensitive = false
+  ) {
     // eslint-disable-next-line no-nested-ternary
     const choiceValue = typeof choice === "string" ?
       (isCaseSensitive ? choice : choice.toLowerCase()) :

@@ -10,11 +10,11 @@ export type ValidationResponse = InvalidResponse | ValidResponse;
 export type InvalidResponse = string | InvalidResponseObject;
 export type ValidResponse = null | undefined | true | ValidResponseObject;
 
-export interface PromptValidator<T = string | string[] | boolean> {
+export interface PromptValidator<T extends string | string[]> {
   validate: (input: T) => ValidationResponse;
 }
 
-export function required<T = string | string[] | boolean>(): PromptValidator<T> {
+export function required(): PromptValidator<any> {
   return {
     validate: (input) => {
       const isValid = (Array.isArray(input) ? input.length > 0 : Boolean(input));

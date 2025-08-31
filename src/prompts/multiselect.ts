@@ -15,8 +15,8 @@ const kRequiredChoiceProperties = ["label", "value"];
 export interface MultiselectOptions<T extends string> extends AbstractPromptOptions {
   choices: (Choice<T> | T)[];
   maxVisible?: number;
-  preSelectedChoices?: (Choice | T)[];
-  validators?: PromptValidator<T[]>[];
+  preSelectedChoices?: (Choice<T> | T)[];
+  validators?: PromptValidator<string[]>[];
   autocomplete?: boolean;
   caseSensitive?: boolean;
   showHint?: boolean;
@@ -27,7 +27,7 @@ type VoidFn = () => void;
 export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
   #boundExitEvent: VoidFn = () => void 0;
   #boundKeyPressEvent: VoidFn = () => void 0;
-  #validators: PromptValidator<T[]>[];
+  #validators: PromptValidator<string[]>[];
   #showHint: boolean;
 
   activeIndex = 0;
@@ -52,7 +52,11 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     return this.choices.filter((choice) => this.#filterChoice(choice, autocompleteValue, isCaseSensitive));
   }
 
-  #filterChoice(choice: T | Choice | string, autocompleteValue: string, isCaseSensitive = false) {
+  #filterChoice(
+    choice: T | Choice<T> | string,
+    autocompleteValue: string,
+    isCaseSensitive = false
+  ) {
     // eslint-disable-next-line no-nested-ternary
     const choiceValue = typeof choice === "string" ?
       (isCaseSensitive ? choice : choice.toLowerCase()) :
