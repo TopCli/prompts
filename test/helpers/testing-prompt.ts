@@ -4,7 +4,7 @@ import readline from "node:readline";
 import { stripVTControlCharacters } from "node:util";
 
 // Import Internal Dependencies
-import { QuestionOptions, SelectOptions, MultiselectOptions, ConfirmOptions } from "../../index.js";
+import { QuestionOptions, SelectOptions, MultiselectOptions, ConfirmOptions } from "../../src/index.js";
 import { mockProcess } from "./mock-process.js";
 import {
   ConfirmPrompt,
@@ -40,7 +40,7 @@ export class TestingPrompt {
     });
   }
 
-  static async SelectPrompt(options: TestingPromptOptions<SelectOptions>) {
+  static async SelectPrompt(options: TestingPromptOptions<SelectOptions<string>>) {
     const { inputs = [], onStdoutWrite } = options;
     mock.method(readline, "createInterface", () => {
       return {
@@ -52,7 +52,7 @@ export class TestingPrompt {
     return new SelectPrompt({ ...options, stdin, stdout });
   }
 
-  static async MultiselectPrompt(options: TestingPromptOptions<MultiselectOptions>) {
+  static async MultiselectPrompt(options: TestingPromptOptions<MultiselectOptions<string>>) {
     const { inputs = [], onStdoutWrite } = options;
     mock.method(readline, "createInterface", () => {
       return {

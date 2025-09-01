@@ -4,11 +4,9 @@ import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
-import { QuestionPrompt } from "../src/prompts/question.js";
+import { QuestionPrompt } from "../src/prompts/index.js";
+import { question, required, PromptAgent } from "../src/index.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
-import { required } from "../src/validators.js";
-import { PromptAgent } from "../src/prompt-agent.js";
-import { question } from "../index.js";
 import { mockProcess } from "./helpers/mock-process.js";
 
 // CONSTANTS

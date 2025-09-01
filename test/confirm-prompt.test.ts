@@ -4,11 +4,10 @@ import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
-import { ConfirmPrompt } from "../src/prompts/confirm.js";
+import { ConfirmPrompt } from "../src/prompts/index.js";
+import { confirm, PromptAgent } from "../src/index.js";
 import { TestingPrompt } from "./helpers/testing-prompt.js";
-import { confirm } from "../index.js";
 import { mockProcess } from "./helpers/mock-process.js";
-import { PromptAgent } from "../src/prompt-agent.js";
 
 // CONSTANTS
 const kInputs = {
