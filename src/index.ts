@@ -37,15 +37,20 @@ export async function question(
     { ...options, message }
   );
 
+  const onErrorSignal = new AbortController();
+  const onError = once(
+    prompt, "error", { signal: onErrorSignal.signal }
+  ) as Promise<[AbortError]>;
   const result = await Promise.race([
     prompt.listen(),
-    once(prompt, "error") as Promise<[AbortError]>
+    onError
   ]);
   if (isAbortError(result)) {
     prompt.destroy();
 
     throw result[0];
   }
+  onErrorSignal.abort();
 
   return result;
 }
@@ -58,15 +63,20 @@ export async function select<T extends string>(
     { ...options, message }
   );
 
+  const onErrorSignal = new AbortController();
+  const onError = once(
+    prompt, "error", { signal: onErrorSignal.signal }
+  ) as Promise<[AbortError]>;
   const result = await Promise.race([
     prompt.listen(),
-    once(prompt, "error") as Promise<[AbortError]>
+    onError
   ]);
   if (isAbortError(result)) {
     prompt.destroy();
 
     throw result[0];
   }
+  onErrorSignal.abort();
 
   return result;
 }
@@ -79,15 +89,20 @@ export async function confirm(
     { ...options, message }
   );
 
+  const onErrorSignal = new AbortController();
+  const onError = once(
+    prompt, "error", { signal: onErrorSignal.signal }
+  ) as Promise<[AbortError]>;
   const result = await Promise.race([
     prompt.listen(),
-    once(prompt, "error") as Promise<[AbortError]>
+    onError
   ]);
   if (isAbortError(result)) {
     prompt.destroy();
 
     throw result[0];
   }
+  onErrorSignal.abort();
 
   return result;
 }
@@ -100,15 +115,20 @@ export async function multiselect<T extends string>(
     { ...options, message }
   );
 
+  const onErrorSignal = new AbortController();
+  const onError = once(
+    prompt, "error", { signal: onErrorSignal.signal }
+  ) as Promise<[AbortError]>;
   const result = await Promise.race([
     prompt.listen(),
-    once(prompt, "error") as Promise<[AbortError]>
+    onError
   ]);
   if (isAbortError(result)) {
     prompt.destroy();
 
     throw result[0];
   }
+  onErrorSignal.abort();
 
   return result;
 }
