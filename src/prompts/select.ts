@@ -4,7 +4,7 @@ import { styleText } from "node:util";
 
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
-import { stringLength } from "../utils.js";
+import { stringLength, withResolvers } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 import { isValid, type PromptValidator, resultError } from "../validators.js";
 import { type Choice } from "../types.js";
@@ -247,78 +247,77 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       return typeof answer === "string" ? answer : answer.value;
     }
 
-    return new Promise<T>((resolve) => {
-      const answer = this.agent.nextAnswers.shift();
-      if (answer !== undefined) {
-        this.#showAnsweredQuestion(answer);
-        this.destroy();
+    const answer = this.agent.nextAnswers.shift();
+    if (answer !== undefined) {
+      this.#showAnsweredQuestion(answer);
+      this.destroy();
 
-        resolve(answer);
+      return answer;
+    }
 
-        return;
-      }
+    this.write(SYMBOLS.HideCursor);
+    this.#showQuestion();
 
-      this.write(SYMBOLS.HideCursor);
-      this.#showQuestion();
+    const render = (
+      options: {
+        initialRender?: boolean;
+        clearRender?: boolean;
+        error?: string;
+      } = {}
+    ) => {
+      const {
+        initialRender = false,
+        clearRender = false,
+        error = null
+      } = options;
 
-      const render = (
-        options: {
-          initialRender?: boolean;
-          clearRender?: boolean;
-          error?: string;
-        } = {}
-      ) => {
-        const {
-          initialRender = false,
-          clearRender = false,
-          error = null
-        } = options;
-
-        if (!initialRender) {
-          let linesToClear = this.lastRender.endIndex - this.lastRender.startIndex;
+      if (!initialRender) {
+        let linesToClear = this.lastRender.endIndex - this.lastRender.startIndex;
+        while (linesToClear > 0) {
+          this.clearLastLine();
+          linesToClear--;
+        }
+        if (this.options.autocomplete) {
+          let linesToClear = Math.ceil(
+            stringLength(`${SYMBOLS.Pointer} ${this.autocompleteValue}`) / this.stdout.columns
+          );
           while (linesToClear > 0) {
             this.clearLastLine();
             linesToClear--;
           }
-          if (this.options.autocomplete) {
-            let linesToClear = Math.ceil(
-              stringLength(`${SYMBOLS.Pointer} ${this.autocompleteValue}`) / this.stdout.columns
-            );
-            while (linesToClear > 0) {
-              this.clearLastLine();
-              linesToClear--;
-            }
-          }
         }
+      }
 
-        if (clearRender) {
-          const questionLineCount = Math.ceil(
-            stringLength(this.questionMessage) / this.stdout.columns
-          );
-          this.stdout.moveCursor(-this.stdout.columns, -(1 + questionLineCount));
-          this.stdout.clearScreenDown();
+      if (clearRender) {
+        const questionLineCount = Math.ceil(
+          stringLength(this.questionMessage) / this.stdout.columns
+        );
+        this.stdout.moveCursor(-this.stdout.columns, -(1 + questionLineCount));
+        this.stdout.clearScreenDown();
 
-          return;
-        }
+        return;
+      }
 
-        if (error) {
-          const linesToClear = Math.ceil(stringLength(this.questionMessage) / this.stdout.columns) + 1;
-          this.stdout.moveCursor(0, -linesToClear);
-          this.stdout.clearScreenDown();
-          this.#showQuestion(error);
-        }
+      if (error) {
+        const linesToClear = Math.ceil(stringLength(this.questionMessage) / this.stdout.columns) + 1;
+        this.stdout.moveCursor(0, -linesToClear);
+        this.stdout.clearScreenDown();
+        this.#showQuestion(error);
+      }
 
-        this.#showChoices();
-      };
+      this.#showChoices();
+    };
 
-      render({ initialRender: true });
+    render({ initialRender: true });
 
-      this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve, render);
-      this.stdin.on("keypress", this.#boundKeyPressEvent);
+    const { resolve, promise } = withResolvers<T>();
+    this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve, render);
+    this.stdin.on("keypress", this.#boundKeyPressEvent);
 
-      this.#boundExitEvent = this.#onProcessExit.bind(this);
-      process.once("exit", this.#boundExitEvent);
-    });
+    this.#boundExitEvent = this.#onProcessExit.bind(this);
+    process.once("exit", this.#boundExitEvent);
+
+    return promise;
   }
 
   #showQuestion(error: string | null = null) {
