@@ -127,7 +127,7 @@ export class QuestionPrompt extends AbstractPrompt<string> {
     }
 
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async(resolve) => {
       this.answer = this.agent.nextAnswers.shift();
       if (this.answer !== undefined) {
         this.#writeAnswer();
@@ -137,10 +137,6 @@ export class QuestionPrompt extends AbstractPrompt<string> {
 
         return;
       }
-
-      this.once("error", (error) => {
-        reject(error);
-      });
 
       this.answer = await this.#question();
 

@@ -131,7 +131,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     }
 
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async(resolve) => {
       const answer = this.agent.nextAnswers.shift();
       if (answer !== undefined) {
         this.selectedValue = answer;
@@ -142,10 +142,6 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
 
         return;
       }
-
-      this.once("error", (error) => {
-        reject(error);
-      });
 
       this.write(SYMBOLS.HideCursor);
 

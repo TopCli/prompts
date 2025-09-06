@@ -62,10 +62,10 @@ describe("Validators", () => {
   });
 });
 
-function formatInput(input) {
+function formatInput(input: unknown): string {
   if (typeof input === "object") {
     return JSON.stringify(input);
   }
 
-  return input;
+  return String(input);
 }

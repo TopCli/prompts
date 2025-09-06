@@ -247,7 +247,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       return typeof answer === "string" ? answer : answer.value;
     }
 
-    return new Promise<T>((resolve, reject) => {
+    return new Promise<T>((resolve) => {
       const answer = this.agent.nextAnswers.shift();
       if (answer !== undefined) {
         this.#showAnsweredQuestion(answer);
@@ -257,10 +257,6 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
         return;
       }
-
-      this.once("error", (error) => {
-        reject(error);
-      });
 
       this.write(SYMBOLS.HideCursor);
       this.#showQuestion();

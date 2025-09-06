@@ -306,7 +306,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       return values;
     }
 
-    return new Promise<T[]>((resolve, reject) => {
+    return new Promise<T[]>((resolve) => {
       const answer = this.agent.nextAnswers.shift();
       if (answer !== undefined) {
         const formatedAnser = Array.isArray(answer) ? answer.join(", ") : answer;
@@ -317,10 +317,6 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
 
         return;
       }
-
-      this.once("error", (error) => {
-        reject(error);
-      });
 
       this.write(SYMBOLS.HideCursor);
       this.#showQuestion();
