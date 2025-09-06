@@ -31,7 +31,7 @@ export function question(
 ) {
   return new QuestionPrompt(
     { ...options, message }
-  ).question();
+  ).listen();
 }
 
 export function select<T extends string>(
@@ -40,7 +40,7 @@ export function select<T extends string>(
 ) {
   return new SelectPrompt<T>(
     { ...options, message }
-  ).select();
+  ).listen();
 }
 
 export function confirm(
@@ -49,7 +49,7 @@ export function confirm(
 ) {
   return new ConfirmPrompt(
     { ...options, message }
-  ).confirm();
+  ).listen();
 }
 
 export function multiselect<T extends string>(
@@ -58,7 +58,7 @@ export function multiselect<T extends string>(
 ) {
   return new MultiselectPrompt<T>(
     { ...options, message }
-  ).multiselect();
+  ).listen();
 }
 
 export type {

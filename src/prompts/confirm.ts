@@ -123,7 +123,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${styleText("bold", this.message)}${EOL}`);
   }
 
-  async confirm(): Promise<boolean> {
+  async listen(): Promise<boolean> {
     if (this.skip) {
       this.destroy();
 

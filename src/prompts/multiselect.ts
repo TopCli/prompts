@@ -298,7 +298,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     }
   }
 
-  async multiselect(): Promise<T[]> {
+  async listen(): Promise<T[]> {
     if (this.skip) {
       this.destroy();
       const { values } = this.#selectedChoices();

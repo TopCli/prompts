@@ -80,7 +80,7 @@ describe("QuestionPrompt", () => {
       }],
       onStdoutWrite: (log) => logs.push(log)
     });
-    const input = await questionPrompt.question();
+    const input = await questionPrompt.listen();
     assert.equal(input, "test2");
     assert.deepStrictEqual(logs, [
       "? What's your name?",
@@ -98,7 +98,7 @@ describe("QuestionPrompt", () => {
       validators: [required()],
       onStdoutWrite: (log) => logs.push(log)
     });
-    const input = await questionPrompt.question();
+    const input = await questionPrompt.listen();
 
     assert.equal(input, "toto");
     assert.deepStrictEqual(logs, [
@@ -116,7 +116,7 @@ describe("QuestionPrompt", () => {
       defaultValue: "John Doe",
       onStdoutWrite: (log) => logs.push(log)
     });
-    const input = await questionPrompt.question();
+    const input = await questionPrompt.listen();
 
     assert.equal(input, "John Doe");
     assert.deepStrictEqual(logs, [
@@ -146,7 +146,7 @@ describe("QuestionPrompt", () => {
       secure: true,
       onStdoutWrite: (log) => logs.push(log)
     });
-    const input = await questionPrompt.question();
+    const input = await questionPrompt.listen();
 
     assert.equal(input, "John Deeoe");
     assert.deepStrictEqual(logs, [
@@ -168,7 +168,7 @@ describe("QuestionPrompt", () => {
       },
       onStdoutWrite: (log) => logs.push(log)
     });
-    const input = await questionPrompt.question();
+    const input = await questionPrompt.listen();
 
     assert.equal(input, expectedInput);
     assert.deepStrictEqual(logs, [

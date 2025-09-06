@@ -119,7 +119,7 @@ export class QuestionPrompt extends AbstractPrompt<string> {
     this.#writeAnswer();
   }
 
-  async question(): Promise<string> {
+  async listen(): Promise<string> {
     if (this.skip) {
       this.destroy();
 

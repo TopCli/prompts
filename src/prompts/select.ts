@@ -239,7 +239,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     }
   }
 
-  async select(): Promise<T> {
+  async listen(): Promise<T> {
     if (this.skip) {
       this.destroy();
       const answer = this.options.choices[0];
