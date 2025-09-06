@@ -90,7 +90,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepEqual(input, []);
     assert.deepStrictEqual(logs, [
@@ -114,7 +114,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepEqual(input, ["foo"]);
     assert.deepStrictEqual(logs, [
@@ -146,7 +146,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -182,7 +182,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -220,7 +220,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -255,7 +255,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -295,7 +295,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -330,7 +330,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -379,7 +379,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose option (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -454,7 +454,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -506,7 +506,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -544,7 +544,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -591,7 +591,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -648,7 +648,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -697,7 +697,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -738,7 +738,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar & baz (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
@@ -772,7 +772,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
@@ -803,7 +803,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
@@ -843,7 +843,7 @@ describe("MultiselectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await multiselectPrompt.multiselect();
+    const input = await multiselectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",

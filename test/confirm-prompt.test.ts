@@ -60,7 +60,7 @@ describe("ConfirmPrompt", () => {
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
     });
-    const input = await confirmPrompt.confirm();
+    const input = await confirmPrompt.listen();
 
     assert.deepEqual(input, false);
     assert.deepEqual(logs, [
@@ -77,7 +77,7 @@ describe("ConfirmPrompt", () => {
       initial: true,
       onStdoutWrite: (log) => logs.push(log)
     });
-    const input = await confirmPrompt.confirm();
+    const input = await confirmPrompt.listen();
 
     assert.deepEqual(input, true);
     assert.deepEqual(logs, [
@@ -98,7 +98,7 @@ describe("ConfirmPrompt", () => {
         inputs: [kInputs[key], kInputs.return],
         onStdoutWrite: (log) => logs.push(log)
       });
-      const input = await confirmPrompt.confirm();
+      const input = await confirmPrompt.listen();
 
       assert.deepEqual(input, true);
       assert.deepEqual(logs, [
@@ -115,7 +115,7 @@ describe("ConfirmPrompt", () => {
         inputs: [kInputs[key], kInputs[key], kInputs.return],
         onStdoutWrite: (log) => logs.push(log)
       });
-      const input = await confirmPrompt.confirm();
+      const input = await confirmPrompt.listen();
 
       assert.deepEqual(input, false);
       assert.deepEqual(logs, [
@@ -162,7 +162,7 @@ describe("ConfirmPrompt", () => {
         logs.push(log);
       }
     });
-    const input = await confirmPrompt.confirm();
+    const input = await confirmPrompt.listen();
 
     assert.deepEqual(input, true);
     assert.deepEqual(logs, [
@@ -180,7 +180,7 @@ describe("ConfirmPrompt", () => {
         logs.push(log);
       }
     });
-    const input = await confirmPrompt.confirm();
+    const input = await confirmPrompt.listen();
 
     assert.deepEqual(input, false);
     assert.deepEqual(logs, [
