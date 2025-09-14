@@ -86,7 +86,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.equal(input, "foo");
     assert.deepStrictEqual(logs, [
@@ -113,7 +113,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
@@ -141,7 +141,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
@@ -171,7 +171,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
@@ -204,7 +204,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo & bar",
@@ -235,7 +235,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.equal(input, "foo");
     assert.deepStrictEqual(logs, [
@@ -276,7 +276,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose option",
@@ -331,7 +331,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose option",
@@ -359,7 +359,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepEqual(logs, [
       "? Choose option",
@@ -432,7 +432,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar or baz",
@@ -474,7 +474,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar or baz",
@@ -522,7 +522,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar or baz",
@@ -560,7 +560,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar or baz",
@@ -603,7 +603,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar or baz",
@@ -639,7 +639,7 @@ describe("SelectPrompt", () => {
       onStdoutWrite: (log) => logs.push(log)
     });
 
-    const input = await selectPrompt.select();
+    const input = await selectPrompt.listen();
 
     assert.deepStrictEqual(logs, [
       "? Choose between foo, bar or baz",

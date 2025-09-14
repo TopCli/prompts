@@ -5,7 +5,7 @@ import { styleText } from "node:util";
 
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
-import { stringLength } from "../utils.js";
+import { stringLength, withResolvers } from "../utils.js";
 import { SYMBOLS } from "../constants.js";
 
 export interface ConfirmOptions extends AbstractPromptOptions {
@@ -56,21 +56,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     this.write(this.#getQuestionQuery());
   }
 
-  #question() {
-    return new Promise((resolve) => {
-      const questionQuery = this.#getQuestionQuery();
-
-      this.write(questionQuery);
-
-      this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve);
-      this.stdin.on("keypress", this.#boundKeyPressEvent);
-
-      this.#boundExitEvent = this.#onProcessExit.bind(this);
-      process.once("exit", this.#boundExitEvent);
-    });
-  }
-
-  #onKeypress(resolve: (value: unknown) => void, _value: any, key: Key) {
+  #onKeypress(resolve: (value: boolean) => void, _value: any, key: Key) {
     this.stdout.moveCursor(
       -this.stdout.columns,
       -Math.floor(stringLength(this.#getQuestionQuery()) / this.stdout.columns)
@@ -123,46 +109,47 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     this.write(`${this.selectedValue ? SYMBOLS.Tick : SYMBOLS.Cross} ${styleText("bold", this.message)}${EOL}`);
   }
 
-  async confirm(): Promise<boolean> {
+  async listen(): Promise<boolean> {
     if (this.skip) {
       this.destroy();
 
       return this.initial;
     }
 
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async(resolve, reject) => {
-      const answer = this.agent.nextAnswers.shift();
-      if (answer !== undefined) {
-        this.selectedValue = answer;
-        this.#onQuestionAnswer();
-        this.destroy();
+    const answer = this.agent.nextAnswers.shift();
+    if (answer !== undefined) {
+      this.selectedValue = answer;
+      this.#onQuestionAnswer();
+      this.destroy();
 
-        resolve(answer);
+      return answer;
+    }
 
-        return;
-      }
+    this.write(SYMBOLS.HideCursor);
 
-      this.once("error", (error) => {
-        reject(error);
-      });
+    try {
+      const { resolve, promise } = withResolvers<boolean>();
+      const questionQuery = this.#getQuestionQuery();
 
-      this.write(SYMBOLS.HideCursor);
+      this.write(questionQuery);
 
-      try {
-        await this.#question();
-        this.#onQuestionAnswer();
+      this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve);
+      this.stdin.on("keypress", this.#boundKeyPressEvent);
 
-        resolve(this.selectedValue);
-      }
-      finally {
-        this.write(SYMBOLS.ShowCursor);
+      this.#boundExitEvent = this.#onProcessExit.bind(this);
+      process.once("exit", this.#boundExitEvent);
 
-        this.#onProcessExit();
-        process.off("exit", this.#boundExitEvent);
+      this.#onQuestionAnswer();
 
-        this.destroy();
-      }
-    });
+      return promise;
+    }
+    finally {
+      this.write(SYMBOLS.ShowCursor);
+
+      this.#onProcessExit();
+      process.off("exit", this.#boundExitEvent);
+
+      this.destroy();
+    }
   }
 }

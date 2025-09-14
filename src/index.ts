@@ -1,3 +1,6 @@
+// Import Node.js Dependencies
+import { once } from "node:events";
+
 // Import Internal Dependencies
 import {
   required,
@@ -24,41 +27,116 @@ import {
   type ConfirmOptions,
   type MultiselectOptions
 } from "./prompts/index.js";
+import type { AbortError } from "./errors/abort.js";
 
-export function question(
+export async function question(
   message: string,
   options: Omit<QuestionOptions, "message"> = {}
-) {
-  return new QuestionPrompt(
+): Promise<string> {
+  const prompt = new QuestionPrompt(
     { ...options, message }
-  ).question();
+  );
+
+  const onErrorSignal = new AbortController();
+  const onError = once(
+    prompt, "error", { signal: onErrorSignal.signal }
+  ) as Promise<[AbortError]>;
+  const result = await Promise.race([
+    prompt.listen(),
+    onError
+  ]);
+  if (isAbortError(result)) {
+    prompt.destroy();
+
+    throw result[0];
+  }
+  onErrorSignal.abort();
+
+  return result;
 }
 
-export function select<T extends string>(
+export async function select<T extends string>(
   message: string,
   options: Omit<SelectOptions<T>, "message">
-) {
-  return new SelectPrompt<T>(
+): Promise<T> {
+  const prompt = new SelectPrompt<T>(
     { ...options, message }
-  ).select();
+  );
+
+  const onErrorSignal = new AbortController();
+  const onError = once(
+    prompt, "error", { signal: onErrorSignal.signal }
+  ) as Promise<[AbortError]>;
+  const result = await Promise.race([
+    prompt.listen(),
+    onError
+  ]);
+  if (isAbortError(result)) {
+    prompt.destroy();
+
+    throw result[0];
+  }
+  onErrorSignal.abort();
+
+  return result;
 }
 
-export function confirm(
+export async function confirm(
   message: string,
   options: Omit<ConfirmOptions, "message"> = {}
-) {
-  return new ConfirmPrompt(
+): Promise<boolean> {
+  const prompt = new ConfirmPrompt(
     { ...options, message }
-  ).confirm();
+  );
+
+  const onErrorSignal = new AbortController();
+  const onError = once(
+    prompt, "error", { signal: onErrorSignal.signal }
+  ) as Promise<[AbortError]>;
+  const result = await Promise.race([
+    prompt.listen(),
+    onError
+  ]);
+  if (isAbortError(result)) {
+    prompt.destroy();
+
+    throw result[0];
+  }
+  onErrorSignal.abort();
+
+  return result;
 }
 
-export function multiselect<T extends string>(
+export async function multiselect<T extends string>(
   message: string,
   options: Omit<MultiselectOptions<T>, "message">
-) {
-  return new MultiselectPrompt<T>(
+): Promise<T[]> {
+  const prompt = new MultiselectPrompt<T>(
     { ...options, message }
-  ).multiselect();
+  );
+
+  const onErrorSignal = new AbortController();
+  const onError = once(
+    prompt, "error", { signal: onErrorSignal.signal }
+  ) as Promise<[AbortError]>;
+  const result = await Promise.race([
+    prompt.listen(),
+    onError
+  ]);
+  if (isAbortError(result)) {
+    prompt.destroy();
+
+    throw result[0];
+  }
+  onErrorSignal.abort();
+
+  return result;
+}
+
+function isAbortError(
+  error: unknown
+): error is [AbortError] {
+  return Array.isArray(error) && error.length > 0 && error[0] instanceof Error;
 }
 
 export type {
