@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "prepublishOnly": "npm run build",
-    "test-only": "glob -c \"tsx --test\" \"./test/**/*.test.ts\"",
+    "test-only": "tsx --test ./test/**/*.test.ts",
     "test-types": "npm run build && tsd && attw --pack .",
     "test": "c8 -r html npm run test-only && npm run test-types",
     "lint": "eslint src test",
@@ -36,7 +36,6 @@
     "@openally/config.typescript": "^1.0.3",
     "@types/node": "^24.0.3",
     "c8": "^10.1.3",
-    "glob": "^11.0.0",
     "tsd": "^0.33.0",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
