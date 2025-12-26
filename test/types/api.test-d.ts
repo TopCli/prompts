@@ -8,7 +8,7 @@ import {
   select,
   multiselect,
   type PromptValidator
-} from "../../src/index.js";
+} from "../../src/index.ts";
 
 const stringNotEmptyValidator: PromptValidator<string> = {
   validate(input) {

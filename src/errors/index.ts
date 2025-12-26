@@ -1,1 +1,1 @@
-export { AbortError } from "./abort.js";
+export { AbortError } from "./abort.ts";

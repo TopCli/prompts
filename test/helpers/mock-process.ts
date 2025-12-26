@@ -3,7 +3,7 @@ import { EOL } from "node:os";
 import { stripVTControlCharacters } from "node:util";
 
 // Import Internal Dependencies
-import { AbstractPromptOptions } from "../../src/prompts/abstract.js";
+import type { AbstractPromptOptions } from "../../src/prompts/abstract.ts";
 
 export function mockProcess(inputs: string[] = [], writeCb: (value: string) => void = () => void 0) {
   const stdout = {
@@ -22,7 +22,7 @@ export function mockProcess(inputs: string[] = [], writeCb: (value: string) => v
     clearLine: () => true
   };
   const stdin = {
-    on: (_event, cb) => {
+    on: (_: any, cb: (err: Error | null, data: string) => void) => {
       for (const input of inputs) {
         cb(null, input);
       }

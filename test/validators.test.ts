@@ -4,11 +4,11 @@ import { describe, it } from "node:test";
 
 // Import Internal Dependencies
 import {
-  InvalidResponseObject,
+  type InvalidResponseObject,
+  type ValidationResponseObject,
   isValid,
-  resultError,
-  ValidationResponseObject
-} from "../src/validators.js";
+  resultError
+} from "../src/validators.ts";
 
 describe("Validators", () => {
   describe("isValid", () => {

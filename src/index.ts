@@ -11,9 +11,9 @@ import {
   type ValidationResponse,
   type InvalidResponse,
   type ValidResponse
-} from "./validators.js";
-import { PromptAgent } from "./prompt-agent.js";
-import type { Choice } from "./types.js";
+} from "./validators.ts";
+import { PromptAgent } from "./prompt-agent.ts";
+import type { Choice } from "./types.ts";
 
 import {
   QuestionPrompt,
@@ -26,8 +26,8 @@ import {
   type QuestionOptions,
   type ConfirmOptions,
   type MultiselectOptions
-} from "./prompts/index.js";
-import type { AbortError } from "./errors/abort.js";
+} from "./prompts/index.ts";
+import type { AbortError } from "./errors/abort.ts";
 
 export async function question(
   message: string,

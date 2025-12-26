@@ -4,14 +4,19 @@ import readline from "node:readline";
 import { stripVTControlCharacters } from "node:util";
 
 // Import Internal Dependencies
-import { QuestionOptions, SelectOptions, MultiselectOptions, ConfirmOptions } from "../../src/index.js";
-import { mockProcess } from "./mock-process.js";
+import type {
+  QuestionOptions,
+  SelectOptions,
+  MultiselectOptions,
+  ConfirmOptions
+} from "../../src/index.ts";
+import { mockProcess } from "./mock-process.ts";
 import {
   ConfirmPrompt,
   MultiselectPrompt,
   QuestionPrompt,
   SelectPrompt
-} from "../../src/prompts/index.js";
+} from "../../src/prompts/index.ts";
 
 export type TestingPromptOptions<T> = T & {
   inputs: any[];
@@ -24,7 +29,7 @@ export class TestingPrompt {
 
     mock.method(readline, "createInterface", () => {
       return {
-        question: (query, onInput) => {
+        question: (query: string, onInput: (input: string) => void) => {
           onInput(inputs.shift());
           onStdoutWrite(stripVTControlCharacters(query).trim());
         },
