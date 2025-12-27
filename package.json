@@ -12,6 +12,11 @@
     "lint": "eslint src test",
     "lint:fix": "eslint . --fix"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public",
+    "provenance": true
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
