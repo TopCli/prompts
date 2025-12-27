@@ -4,9 +4,9 @@ import type { Key } from "node:readline";
 import { styleText } from "node:util";
 
 // Import Internal Dependencies
-import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
-import { stringLength, withResolvers } from "../utils.js";
-import { SYMBOLS } from "../constants.js";
+import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
+import { stringLength, withResolvers } from "../utils.ts";
+import { SYMBOLS } from "../constants.ts";
 
 export interface ConfirmOptions extends AbstractPromptOptions {
   initial?: boolean;

@@ -6,10 +6,10 @@ import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
-import { MultiselectPrompt } from "../src/prompts/index.js";
-import { multiselect, required, PromptAgent } from "../src/index.js";
-import { TestingPrompt } from "./helpers/testing-prompt.js";
-import { mockProcess } from "./helpers/mock-process.js";
+import { MultiselectPrompt } from "../src/prompts/index.ts";
+import { multiselect, required, PromptAgent } from "../src/index.ts";
+import { TestingPrompt } from "./helpers/testing-prompt.ts";
+import { mockProcess } from "./helpers/mock-process.ts";
 
 const kInputs = {
   toggleAll: { name: "a", ctrl: true },

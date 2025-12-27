@@ -6,8 +6,8 @@ import EventEmitter from "node:events";
 import { stripVTControlCharacters } from "node:util";
 
 // Import Internal Dependencies
-import { PromptAgent } from "../prompt-agent.js";
-import { AbortError } from "../errors/abort.js";
+import { PromptAgent } from "../prompt-agent.ts";
+import { AbortError } from "../errors/abort.ts";
 
 // CONSTANTS
 function kNoopTransformer(input: Buffer) {

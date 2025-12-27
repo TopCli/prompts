@@ -2,7 +2,7 @@
 import { styleText } from "node:util";
 
 // Import Internal Dependencies
-import { isUnicodeSupported } from "./utils.js";
+import { isUnicodeSupported } from "./utils.ts";
 
 const kMainSymbols = {
   tick: "✔",

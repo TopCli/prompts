@@ -3,10 +3,10 @@ import { EOL } from "node:os";
 import { styleText } from "node:util";
 
 // Import Internal Dependencies
-import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.js";
-import { stringLength, withResolvers } from "../utils.js";
-import { SYMBOLS } from "../constants.js";
-import { isValid, type PromptValidator, resultError } from "../validators.js";
+import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
+import { stringLength, withResolvers } from "../utils.ts";
+import { SYMBOLS } from "../constants.ts";
+import { isValid, type PromptValidator, resultError } from "../validators.ts";
 
 export interface QuestionOptions extends AbstractPromptOptions {
   defaultValue?: string;
