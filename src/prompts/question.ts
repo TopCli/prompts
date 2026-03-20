@@ -4,7 +4,7 @@ import { styleText } from "node:util";
 
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
-import { stringLength, withResolvers } from "../utils.ts";
+import { stringLength } from "../utils.ts";
 import { SYMBOLS } from "../constants.ts";
 import { isValid, type PromptValidator, resultError } from "../validators.ts";
 
@@ -55,7 +55,7 @@ export class QuestionPrompt extends AbstractPrompt<string> {
   }
 
   #question(): Promise<string> {
-    const { resolve, promise } = withResolvers<string>();
+    const { resolve, promise } = Promise.withResolvers<string>();
 
     const questionQuery = this.#getQuestionQuery();
 

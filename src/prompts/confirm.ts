@@ -5,7 +5,7 @@ import { styleText } from "node:util";
 
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
-import { stringLength, withResolvers } from "../utils.ts";
+import { stringLength } from "../utils.ts";
 import { SYMBOLS } from "../constants.ts";
 
 export interface ConfirmOptions extends AbstractPromptOptions {
@@ -128,7 +128,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     this.write(SYMBOLS.HideCursor);
 
     try {
-      const { resolve, promise } = withResolvers<boolean>();
+      const { resolve, promise } = Promise.withResolvers<boolean>();
       const questionQuery = this.#getQuestionQuery();
 
       this.write(questionQuery);
