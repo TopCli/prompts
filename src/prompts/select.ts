@@ -4,7 +4,7 @@ import { styleText } from "node:util";
 
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
-import { stringLength, withResolvers } from "../utils.ts";
+import { stringLength } from "../utils.ts";
 import { SYMBOLS } from "../constants.ts";
 import { isValid, type PromptValidator, resultError } from "../validators.ts";
 import { type Choice } from "../types.ts";
@@ -310,7 +310,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
     render({ initialRender: true });
 
-    const { resolve, promise } = withResolvers<T>();
+    const { resolve, promise } = Promise.withResolvers<T>();
     this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve, render);
     this.stdin.on("keypress", this.#boundKeyPressEvent);
 
