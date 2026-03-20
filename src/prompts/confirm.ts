@@ -139,9 +139,9 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
       this.#boundExitEvent = this.#onProcessExit.bind(this);
       process.once("exit", this.#boundExitEvent);
 
-      this.#onQuestionAnswer();
+      await promise;
 
-      return promise;
+      this.#onQuestionAnswer();
     }
     finally {
       this.write(SYMBOLS.ShowCursor);
@@ -151,5 +151,7 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
 
       this.destroy();
     }
+
+    return this.selectedValue;
   }
 }
