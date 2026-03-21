@@ -5,14 +5,18 @@ import { once } from "node:events";
 import {
   required,
   type PromptValidator,
+  type PromptTransformer,
   type ValidResponseObject,
   type InvalidResponseObject,
   type ValidationResponseObject,
   type ValidationResponse,
   type InvalidResponse,
-  type ValidResponse
+  type ValidResponse,
+  type ValidTransformationResponse,
+  type TransformationResponse
 } from "./validators.ts";
 import { PromptAgent } from "./prompt-agent.ts";
+import { number, integer, url } from "./transformers.ts";
 import type { Choice } from "./types.ts";
 
 import {
@@ -29,11 +33,11 @@ import {
 } from "./prompts/index.ts";
 import type { AbortError } from "./errors/abort.ts";
 
-export async function question(
+export async function question<T = string>(
   message: string,
-  options: Omit<QuestionOptions, "message"> = {}
-): Promise<string> {
-  const prompt = new QuestionPrompt(
+  options: Omit<QuestionOptions<T>, "message"> = {}
+): Promise<T> {
+  const prompt = new QuestionPrompt<T>(
     { ...options, message }
   );
 
@@ -52,7 +56,7 @@ export async function question(
   }
   onErrorSignal.abort();
 
-  return result;
+  return result as T;
 }
 
 export async function select<T extends string>(
@@ -141,6 +145,7 @@ function isAbortError(
 
 export type {
   PromptValidator,
+  PromptTransformer,
   AbstractPromptOptions,
   QuestionOptions,
   ConfirmOptions,
@@ -152,10 +157,12 @@ export type {
   ValidationResponseObject,
   ValidationResponse,
   InvalidResponse,
-  ValidResponse
+  ValidResponse,
+  ValidTransformationResponse,
+  TransformationResponse
 };
 
-export {
-  required,
-  PromptAgent
-};
+export const validators = { required };
+export const transformers = { number, integer, url };
+
+export { PromptAgent };

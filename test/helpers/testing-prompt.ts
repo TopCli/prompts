@@ -24,7 +24,7 @@ export type TestingPromptOptions<T> = T & {
 };
 
 export class TestingPrompt {
-  static async QuestionPrompt(options: TestingPromptOptions<QuestionOptions>) {
+  static async QuestionPrompt<T = string>(options: TestingPromptOptions<QuestionOptions<T>>) {
     const { inputs, onStdoutWrite } = options;
 
     mock.method(readline, "createInterface", () => {
@@ -38,7 +38,7 @@ export class TestingPrompt {
     });
     const { stdin, stdout } = mockProcess([], (data) => onStdoutWrite(data));
 
-    return new QuestionPrompt({
+    return new QuestionPrompt<T>({
       ...options,
       stdin,
       stdout

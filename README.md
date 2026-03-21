@@ -48,7 +48,7 @@ console.log(name, runner, isCLI, os);
 ### `question()`
 
 ```ts
-question(message: string, options?: PromptOptions): Promise<string>
+question<T = string>(message: string, options?: QuestionOptions<T>): Promise<T>
 ```
 
 Simple prompt, similar to `rl.question()` with an improved UI.
@@ -59,11 +59,13 @@ Use `options.secure` if you need to hide both input and answer. You can provide 
 
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 
-Use `options.validators` to handle user input.
+Use `options.validators` to validate user input and re-prompt on failure.
+
+Use `options.transformer` to parse and validate user input in a single step, returning a typed value. **Mutually exclusive with `validators`.**
 
 Use `options.skip` to skip prompt. It will return `options.defaultValue` if given, `""` otherwise.
 
-**Example**
+**Validators examples**
 
 ```js
 const packageName = await question('Package name', {
@@ -90,7 +92,7 @@ const userId = await question('User ID', {
         if (!res.ok) {
           return {
             isValid: false,
-            error: `User '${userId}' not found`;
+            error: `User '${userId}' not found`
           }
         }
       }
@@ -99,16 +101,55 @@ const userId = await question('User ID', {
 });
 ```
 
-**This package provide some validators for common usage**
-
-- required
+**Transformers examples**
 
 ```js
-import { question, required } from "@topcli/prompts";
+import { question, transformers } from "@topcli/prompts";
+
+const port = await question("Port", { transformer: transformers.number() });
+```
+
+Custom transformer:
+
+```js
+const date = await question("Choose date (YYYY-MM-DD)", {
+  transformer: {
+    transform: (input) => {
+      const date = new Date(input);
+
+      if (isNaN(date.getTime())) {
+        return { isValid: false, error: "invalid date" };
+      }
+
+      return { isValid: true, transformed: date };
+    }
+  }
+});
+```
+
+**Built-in validators**
+
+- `validators.required()` : rejects empty input
+
+```js
+import { question, validators } from "@topcli/prompts";
 
 const name = await question("What's your name ?", {
-  validators: [required()]
+  validators: [validators.required()]
 });
+```
+
+**Built-in transformers**
+
+- `transformers.number()`: parses input as a number, rejects non-numeric and empty strings
+- `transformers.integer()`: parses input as an integer, rejects floats, non-numeric and empty strings
+- `transformers.url()`: parses input as a `URL` object, rejects invalid URLs
+
+```js
+import { question, transformers } from "@topcli/prompts";
+
+const count = await question("Count", { transformer: transformers.integer() });
+const url = await question("Url", { transformer: transformers.url() });
 ```
 
 ### `select()`
@@ -224,10 +265,22 @@ export interface PromptValidator<T extends string | string[]> {
   validate: (input: T) => ValidationResponse | Promise<ValidationResponse>;
 }
 
-export interface QuestionOptions extends SharedOptions {
+export interface PromptTransformer<T> {
+  transform: (input: string) => TransformationResponse<T> | Promise<TransformationResponse<T>>;
+}
+
+export type ValidTransformationResponse<T> = {
+  isValid: true;
+  transformed: T;
+};
+
+export type TransformationResponse<T> = InvalidResponse | ValidTransformationResponse<T>;
+
+export interface QuestionOptions<T = string> extends AbstractPromptOptions {
   defaultValue?: string;
   validators?: PromptValidator<string>[];
-  secure?: boolean;
+  transformer?: PromptTransformer<T>;
+  secure?: boolean | { placeholder: string };
 }
 
 export interface Choice<T = any> {

@@ -8,7 +8,7 @@ import readline from "node:readline";
 
 // Import Internal Dependencies
 import { MultiselectPrompt } from "../src/prompts/index.ts";
-import { multiselect, required, PromptAgent } from "../src/index.ts";
+import { multiselect, validators, PromptAgent } from "../src/index.ts";
 import { TestingPrompt } from "./helpers/testing-prompt.ts";
 import { mockProcess } from "./helpers/mock-process.ts";
 
@@ -605,7 +605,7 @@ describe("MultiselectPrompt", () => {
     const options = {
       message: "Choose between foo & bar",
       choices: ["foo", "bar"],
-      validators: [required()]
+      validators: [validators.required()]
     };
     const inputs = [
       kInputs.return,
@@ -745,7 +745,7 @@ describe("MultiselectPrompt", () => {
       message: "Choose between foo, bar & baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true,
-      validators: [required()]
+      validators: [validators.required()]
     };
     const inputs = [
       { sequence: "b" },
@@ -901,7 +901,7 @@ describe("MultiselectPrompt", () => {
     const options = {
       message: "Choose between foo & bar",
       choices: ["foo", "bar"],
-      validators: [required()],
+      validators: [validators.required()],
       showHint: false
     };
     const inputs = [

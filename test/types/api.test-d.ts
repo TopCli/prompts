@@ -7,6 +7,8 @@ import {
   confirm,
   select,
   multiselect,
+  validators,
+  transformers,
   type PromptValidator
 } from "../../src/index.ts";
 
@@ -22,6 +24,21 @@ expectType<Promise<string>>(
   question("message", {
     validators: [stringNotEmptyValidator]
   })
+);
+expectType<Promise<string>>(
+  question("message", {
+    validators: [validators.required()]
+  })
+);
+
+expectType<Promise<number>>(
+  question("message", { transformer: transformers.number() })
+);
+expectType<Promise<number>>(
+  question("message", { transformer: transformers.integer() })
+);
+expectType<Promise<URL>>(
+  question("message", { transformer: transformers.url() })
 );
 
 expectType<Promise<"A" | "B">>(
