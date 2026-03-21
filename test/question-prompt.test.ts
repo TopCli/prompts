@@ -5,9 +5,10 @@ import { setTimeout } from "node:timers/promises";
 
 // Import Internal Dependencies
 import { QuestionPrompt } from "../src/prompts/index.ts";
-import { question, required, PromptAgent } from "../src/index.ts";
+import { question, validators, PromptAgent } from "../src/index.ts";
 import { TestingPrompt } from "./helpers/testing-prompt.ts";
 import { mockProcess } from "./helpers/mock-process.ts";
+import { number } from "../src/transformers.ts";
 
 // CONSTANTS
 const kPromptAgent = PromptAgent.agent();
@@ -159,7 +160,7 @@ describe("QuestionPrompt", () => {
     const questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "What's your name?",
       inputs: ["", "toto"],
-      validators: [required()],
+      validators: [validators.required()],
       onStdoutWrite: (log) => logs.push(log)
     });
     const input = await questionPrompt.listen();
@@ -269,5 +270,33 @@ describe("QuestionPrompt", () => {
     });
 
     assert.equal(input, "John Doe");
+  });
+
+  it("should throw when both validators and transformer are provided", () => {
+    assert.throws(
+      () => new QuestionPrompt({
+        message: "Enter a number",
+        validators: [validators.required()],
+        transformer: number()
+      }),
+      { message: "validators and transformer are mutually exclusive" }
+    );
+  });
+
+  it("transformer should transform valid input", async() => {
+    const logs: string[] = [];
+    const questionPrompt = await TestingPrompt.QuestionPrompt({
+      message: "Enter a number",
+      inputs: ["123"],
+      transformer: number(),
+      onStdoutWrite: (log) => logs.push(log)
+    });
+    const result = await questionPrompt.listen();
+
+    assert.equal(result, 123);
+    assert.deepStrictEqual(logs, [
+      "? Enter a number",
+      "✔ Enter a number › 123"
+    ]);
   });
 });

@@ -8,7 +8,7 @@ import readline from "node:readline";
 import { SelectPrompt } from "../src/prompts/index.ts";
 import { TestingPrompt } from "./helpers/testing-prompt.ts";
 import { mockProcess } from "./helpers/mock-process.ts";
-import { select, required, PromptAgent } from "../src/index.ts";
+import { select, validators, PromptAgent } from "../src/index.ts";
 
 const kInputs = {
   down: { name: "down" },
@@ -626,7 +626,7 @@ describe("SelectPrompt", () => {
       message: "Choose between foo, bar or baz",
       choices: ["foo", "bar", "baz"],
       autocomplete: true,
-      validators: [required()]
+      validators: [validators.required()]
     };
     const inputs = [
       { sequence: "X" },

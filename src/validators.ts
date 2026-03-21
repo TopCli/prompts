@@ -10,8 +10,18 @@ export type ValidationResponse = InvalidResponse | ValidResponse;
 export type InvalidResponse = string | InvalidResponseObject;
 export type ValidResponse = null | undefined | true | ValidResponseObject;
 
+export type ValidTransformationResponse<T> = {
+  isValid: true;
+  transformed: T;
+};
+export type TransformationResponse<T> = InvalidResponse | ValidTransformationResponse<T>;
+
 export interface PromptValidator<T extends string | string[]> {
   validate: (input: T) => ValidationResponse | Promise<ValidationResponse>;
+}
+
+export interface PromptTransformer<T> {
+  transform: (input: string) => TransformationResponse<T> | Promise<TransformationResponse<T>>;
 }
 
 export function required(): PromptValidator<any> {
@@ -34,6 +44,10 @@ export function isValid(result: ValidationResponse): result is ValidResponse {
   }
 
   return true;
+}
+
+export function isValidTransformation<T>(result: TransformationResponse<T>): result is ValidTransformationResponse<T> {
+  return typeof result === "object" && result.isValid === true;
 }
 
 export function resultError(result: InvalidResponse) {
