@@ -5,8 +5,8 @@ import { styleText } from "node:util";
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
 import { stringLength } from "../utils.ts";
-import { SYMBOLS } from "../constants.ts";
-import { isValid, type PromptValidator, resultError } from "../validators.ts";
+import { SYMBOLS, VALIDATION_SPINNER_INTERVAL } from "../constants.ts";
+import { isValid, type PromptValidator, type ValidationResponse, resultError } from "../validators.ts";
 
 export interface QuestionOptions extends AbstractPromptOptions {
   defaultValue?: string;
@@ -98,7 +98,14 @@ export class QuestionPrompt extends AbstractPrompt<string> {
     this.write(`${prefix} ${styleText("bold", this.message)} ${SYMBOLS.Pointer} ${stylizedAnswer}${EOL}`);
   }
 
-  #onQuestionAnswer() {
+  #getValidatingQuery(dotCount: number) {
+    const question = styleText("bold", `${SYMBOLS.QuestionMark} ${this.message}${this.tip}`);
+    const hint = styleText("yellow", `[validating${".".repeat(dotCount)}]`);
+
+    return `${question} ${hint}${EOL}`;
+  }
+
+  async #onQuestionAnswer() {
     const questionLineCount = Math.ceil(
       stringLength(this.#getQuestionQuery() + this.answer) / this.stdout.columns
     );
@@ -107,7 +114,31 @@ export class QuestionPrompt extends AbstractPrompt<string> {
     this.stdout.clearScreenDown();
 
     for (const validator of this.#validators) {
-      const validationResult = validator.validate(this.answer!);
+      let validationResult: ValidationResponse;
+      const result = validator.validate(this.answer!);
+
+      if (result instanceof Promise) {
+        let dotCount = 1;
+
+        this.write(this.#getValidatingQuery(dotCount));
+
+        const spinnerInterval = setInterval(() => {
+          dotCount = (dotCount % 3) + 1;
+          this.clearLastLine();
+          this.write(this.#getValidatingQuery(dotCount));
+        }, VALIDATION_SPINNER_INTERVAL);
+
+        try {
+          validationResult = await result;
+        }
+        finally {
+          clearInterval(spinnerInterval);
+          this.clearLastLine();
+        }
+      }
+      else {
+        validationResult = result;
+      }
 
       if (isValid(validationResult) === false) {
         this.#setQuestionSuffixError(resultError(validationResult));
@@ -142,11 +173,11 @@ export class QuestionPrompt extends AbstractPrompt<string> {
       this.answer = this.defaultValue;
     }
 
-    this.#onQuestionAnswer();
+    await this.#onQuestionAnswer();
 
     while (this.answerBuffer !== undefined) {
       this.answer = await this.answerBuffer;
-      this.#onQuestionAnswer();
+      await this.#onQuestionAnswer();
     }
 
     this.destroy();

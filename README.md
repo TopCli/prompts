@@ -79,6 +79,26 @@ const packageName = await question('Package name', {
 });
 ```
 
+Validators can also be async, for example to validate against an API:
+
+```js
+const userId = await question('User ID', {
+  validators: [
+    {
+      validate: async(userId) => {
+        const res = await fetch(`https://api.com/users/${userId}`);
+        if (!res.ok) {
+          return {
+            isValid: false,
+            error: `User '${userId}' not found`;
+          }
+        }
+      }
+    }
+  ]
+});
+```
+
 **This package provide some validators for common usage**
 
 - required
@@ -201,7 +221,7 @@ export interface AbstractPromptOptions {
 }
 
 export interface PromptValidator<T extends string | string[]> {
-  validate: (input: T) => boolean;
+  validate: (input: T) => ValidationResponse | Promise<ValidationResponse>;
 }
 
 export interface QuestionOptions extends SharedOptions {

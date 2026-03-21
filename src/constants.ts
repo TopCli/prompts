@@ -37,3 +37,5 @@ export const SYMBOLS = {
   Active: styleText("cyan", kSymbols.active),
   Inactive: styleText("gray", kSymbols.inactive)
 };
+
+export const VALIDATION_SPINNER_INTERVAL = 300;

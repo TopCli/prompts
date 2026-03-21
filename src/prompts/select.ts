@@ -5,8 +5,9 @@ import { styleText } from "node:util";
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
 import { stringLength } from "../utils.ts";
-import { SYMBOLS } from "../constants.ts";
+import { SYMBOLS, VALIDATION_SPINNER_INTERVAL } from "../constants.ts";
 import { isValid, type PromptValidator, resultError } from "../validators.ts";
+import { type ValidationResponse } from "./../validators.ts";
 import { type Choice } from "../types.ts";
 
 // CONSTANTS
@@ -22,11 +23,18 @@ export interface SelectOptions<T extends string> extends AbstractPromptOptions {
 }
 
 type VoidFn = () => void;
+type RenderOptions = {
+  initialRender?: boolean;
+  clearRender?: boolean;
+  error?: string;
+  validating?: string;
+};
 
 export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
   #boundExitEvent: VoidFn = () => void 0;
   #boundKeyPressEvent: VoidFn = () => void 0;
   #validators: PromptValidator<string>[];
+  #isValidating = false;
   activeIndex = 0;
   questionMessage: string;
   autocompleteValue = "";
@@ -170,6 +178,66 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     }
   }
 
+  async #handleReturn(resolve: (value: T) => void, render: (options: RenderOptions) => void) {
+    this.#isValidating = true;
+
+    try {
+      const choice = this.filteredChoices[this.activeIndex] || ("" as T);
+
+      const label = typeof choice === "string" ? choice : choice.label;
+      const value = typeof choice === "string" ? choice : choice.value;
+
+      for (const validator of this.#validators) {
+        let validationResult: ValidationResponse;
+        const result = validator.validate(value);
+
+        if (result instanceof Promise) {
+          let dotCount = 1;
+
+          render({ validating: `validating${".".repeat(dotCount)}` });
+
+          const spinnerInterval = setInterval(() => {
+            dotCount = (dotCount % 3) + 1;
+            render({ validating: `validating${".".repeat(dotCount)}` });
+          }, VALIDATION_SPINNER_INTERVAL);
+
+          try {
+            validationResult = await result;
+          }
+          finally {
+            clearInterval(spinnerInterval);
+          }
+        }
+        else {
+          validationResult = result;
+        }
+
+        if (isValid(validationResult) === false) {
+          render({ error: resultError(validationResult) });
+
+          return;
+        }
+      }
+
+      render({ clearRender: true });
+
+      if (!this.options.ignoreValues?.includes(value)) {
+        this.#showAnsweredQuestion(label);
+      }
+
+      this.write(SYMBOLS.ShowCursor);
+      this.destroy();
+
+      this.#onProcessExit();
+      process.off("exit", this.#boundExitEvent);
+
+      resolve(value);
+    }
+    finally {
+      this.#isValidating = false;
+    }
+  }
+
   #showAnsweredQuestion(label: string) {
     const symbolPrefix = label === "" ? SYMBOLS.Cross : SYMBOLS.Tick;
     const prefix = `${symbolPrefix} ${styleText("bold", this.message)} ${SYMBOLS.Pointer}`;
@@ -187,6 +255,9 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
   #onKeypress(...args) {
     const [resolve, render, , key] = args;
+    if (this.#isValidating) {
+      return;
+    }
     if (key.name === "up") {
       this.activeIndex = this.activeIndex === 0 ? this.filteredChoices.length - 1 : this.activeIndex - 1;
       render();
@@ -196,33 +267,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       render();
     }
     else if (key.name === "return") {
-      const choice = this.filteredChoices[this.activeIndex] || ("" as T);
-
-      const label = typeof choice === "string" ? choice : choice.label;
-      const value = typeof choice === "string" ? choice : choice.value;
-
-      for (const validator of this.#validators) {
-        const validationResult = validator.validate(value);
-
-        if (isValid(validationResult) === false) {
-          render({ error: resultError(validationResult) });
-
-          return;
-        }
-      }
-
-      render({ clearRender: true });
-      if (!this.options.ignoreValues?.includes(value)) {
-        this.#showAnsweredQuestion(label);
-      }
-
-      this.write(SYMBOLS.ShowCursor);
-      this.destroy();
-
-      this.#onProcessExit();
-      process.off("exit", this.#boundExitEvent);
-
-      resolve(value);
+      void this.#handleReturn(resolve, render);
     }
     else {
       if (!key.ctrl && this.options.autocomplete) {
@@ -255,20 +300,18 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       return answer;
     }
 
+    this.transformer = () => null;
     this.write(SYMBOLS.HideCursor);
     this.#showQuestion();
 
     const render = (
-      options: {
-        initialRender?: boolean;
-        clearRender?: boolean;
-        error?: string;
-      } = {}
+      options: RenderOptions = {}
     ) => {
       const {
         initialRender = false,
         clearRender = false,
-        error = null
+        error = null,
+        validating = null
       } = options;
 
       if (!initialRender) {
@@ -289,20 +332,14 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       }
 
       if (clearRender) {
-        const questionLineCount = Math.ceil(
-          stringLength(this.questionMessage) / this.stdout.columns
-        );
-        this.stdout.moveCursor(-this.stdout.columns, -(1 + questionLineCount));
-        this.stdout.clearScreenDown();
+        this.clearLastLine();
 
         return;
       }
 
-      if (error) {
-        const linesToClear = Math.ceil(stringLength(this.questionMessage) / this.stdout.columns) + 1;
-        this.stdout.moveCursor(0, -linesToClear);
-        this.stdout.clearScreenDown();
-        this.#showQuestion(error);
+      if (error || validating) {
+        this.clearLastLine();
+        this.#showQuestion(error, validating);
       }
 
       this.#showChoices();
@@ -310,22 +347,27 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
     render({ initialRender: true });
 
+    this.#boundExitEvent = this.#onProcessExit.bind(this);
+    process.once("exit", this.#boundExitEvent);
+
     const { resolve, promise } = Promise.withResolvers<T>();
     this.#boundKeyPressEvent = this.#onKeypress.bind(this, resolve, render);
     this.stdin.on("keypress", this.#boundKeyPressEvent);
 
-    this.#boundExitEvent = this.#onProcessExit.bind(this);
-    process.once("exit", this.#boundExitEvent);
-
     return promise;
   }
 
-  #showQuestion(error: string | null = null) {
+  #showQuestion(error: string | null = null, validating: string | null = null) {
     let hint = "";
-    if (error) {
-      hint = ` ${hint.length > 0 ? " " : ""}${styleText(["red", "bold"], `[${error}]`)}`;
+    if (validating) {
+      hint = styleText("yellow", `[${validating}]`);
     }
-    this.questionMessage = `${SYMBOLS.QuestionMark} ${styleText("bold", this.message)}${hint}`;
+    else if (error) {
+      hint += `${hint.length > 0 ? " " : ""}${styleText(["red", "bold"], `[${error}]`)}`;
+    }
+
+    this.questionMessage = `${SYMBOLS.QuestionMark} ${styleText("bold", this.message)}${hint.length > 0 ? ` ${hint}` : ""}`;
+
     this.write(`${this.questionMessage}${EOL}`);
   }
 }

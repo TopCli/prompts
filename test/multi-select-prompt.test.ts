@@ -4,6 +4,7 @@
 import assert from "node:assert";
 import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
+import readline from "node:readline";
 
 // Import Internal Dependencies
 import { MultiselectPrompt } from "../src/prompts/index.ts";
@@ -485,6 +486,117 @@ describe("MultiselectPrompt", () => {
     assert.equal(input, "option1");
     assert.deepStrictEqual(logs, [
       "✔ Choose option › option1"
+    ]);
+  });
+
+  it("async validator should not pass.", async() => {
+    const logs: string[] = [];
+    mock.method(readline, "createInterface", () => {
+      return { close: () => true };
+    });
+    const { stdin, stdout, sendInput } = mockProcess([kInputs.return], (log) => logs.push(log));
+
+    const multiselectPrompt = new MultiselectPrompt({
+      message: "Choose between foo & bar",
+      choices: ["foo", "bar"],
+      validators: [{
+        validate: async(values) => {
+          if (values.length === 0) {
+            return {
+              isValid: false,
+              error: "required"
+            };
+          }
+
+          return null;
+        }
+      }],
+      stdin,
+      stdout
+    });
+
+    const resultPromise = multiselectPrompt.listen();
+
+    // Wait for async validation to complete and error to be rendered
+    await setTimeout(0);
+
+    // Navigation and re-submit after async validation done
+    sendInput(kInputs.right);
+    sendInput(kInputs.return);
+
+    const input = await resultPromise;
+
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
+      "  ○ foo",
+      "  ○ bar",
+      // async validator starts
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit) [validating.]",
+      "  ○ foo",
+      "  ○ bar",
+      // async validator resolves: empty selection is invalid
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit) [required]",
+      "  ○ foo",
+      "  ○ bar",
+      // user selects foo (question not re-rendered)
+      "  ● foo",
+      "  ○ bar",
+      // user re-submits: async validator starts again
+      "? Choose between foo & bar (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit) [validating.]",
+      "  ● foo",
+      "  ○ bar",
+      // ['foo'] is valid
+      "✔ Choose between foo & bar › foo"
+    ]);
+    assert.deepEqual(input, ["foo"]);
+  });
+
+  it("async validator should animate all validating ticks.", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Pick some",
+      choices: ["foo", "bar"],
+      validators: [{
+        validate: async() => {
+          await setTimeout(1_000);
+
+          return null;
+        }
+      }]
+    };
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs: [kInputs.right, kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await multiselectPrompt.listen();
+
+    assert.deepEqual(input, ["foo"]);
+    assert.deepStrictEqual(logs, [
+      "? Pick some (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit)",
+      "  ○ foo",
+      "  ○ bar",
+      // <right>: select foo
+      "  ● foo",
+      "  ○ bar",
+      // t=0: first render
+      "? Pick some (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit) [validating.]",
+      "  ● foo",
+      "  ○ bar",
+      // t=300ms
+      "? Pick some (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit) [validating..]",
+      "  ● foo",
+      "  ○ bar",
+      // t=600ms
+      "? Pick some (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit) [validating...]",
+      "  ● foo",
+      "  ○ bar",
+      // t=900ms: cycle restarts
+      "? Pick some (Press <Ctrl+A> to toggle all, <Left/Right> to toggle, <Return> to submit) [validating.]",
+      "  ● foo",
+      "  ○ bar",
+      "✔ Pick some › foo"
     ]);
   });
 

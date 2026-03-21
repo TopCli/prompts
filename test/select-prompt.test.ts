@@ -2,6 +2,7 @@
 import assert from "node:assert";
 import { after, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers/promises";
+import readline from "node:readline";
 
 // Import Internal Dependencies
 import { SelectPrompt } from "../src/prompts/index.ts";
@@ -662,6 +663,119 @@ describe("SelectPrompt", () => {
       "✔ Choose between foo, bar or baz › foo"
     ]);
     assert.equal(input, "foo");
+  });
+
+  it("async validator should not pass.", async() => {
+    const logs: string[] = [];
+    mock.method(readline, "createInterface", () => {
+      return { close: () => true };
+    });
+    const { stdin, stdout, sendInput } = mockProcess([kInputs.return], (log) => logs.push(log));
+
+    const selectPrompt = new SelectPrompt({
+      message: "Choose between foo, bar or baz",
+      choices: ["foo", "bar", "baz"],
+      validators: [{
+        validate: async(input) => {
+          if (input === "foo") {
+            return {
+              isValid: false,
+              error: "foo is not allowed"
+            };
+          }
+
+          return null;
+        }
+      }],
+      stdin,
+      stdout
+    });
+
+    const resultPromise = selectPrompt.listen();
+
+    // Wait for async validation to complete and error to be rendered
+    await setTimeout(0);
+
+    // Navigation and re-submit after async validation done
+    sendInput(kInputs.down);
+    sendInput(kInputs.return);
+
+    const input = await resultPromise;
+
+    assert.equal(input, "bar");
+    assert.deepStrictEqual(logs, [
+      "? Choose between foo, bar or baz",
+      " › foo",
+      "   bar",
+      "   baz",
+      // async validator starts
+      "? Choose between foo, bar or baz [validating.]",
+      " › foo",
+      "   bar",
+      "   baz",
+      // async validator resolves: 'foo' is invalid
+      "? Choose between foo, bar or baz [foo is not allowed]",
+      " › foo",
+      "   bar",
+      "   baz",
+      // user navigates down (question not re-rendered)
+      "   foo",
+      " › bar",
+      "   baz",
+      // user re-submits: async validator starts again
+      "? Choose between foo, bar or baz [validating.]",
+      "   foo",
+      " › bar",
+      "   baz",
+      // 'bar' is valid
+      "✔ Choose between foo, bar or baz › bar"
+    ]);
+  });
+
+  it("async validator should animate all validating ticks.", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Pick one",
+      choices: ["foo", "bar"],
+      validators: [{
+        validate: async() => {
+          await setTimeout(1_000);
+
+          return null;
+        }
+      }]
+    };
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs: [kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await selectPrompt.listen();
+
+    assert.equal(input, "foo");
+    assert.deepStrictEqual(logs, [
+      "? Pick one",
+      " › foo",
+      "   bar",
+      // t=0: first render
+      "? Pick one [validating.]",
+      " › foo",
+      "   bar",
+      // t=300ms
+      "? Pick one [validating..]",
+      " › foo",
+      "   bar",
+      // t=600ms
+      "? Pick one [validating...]",
+      " › foo",
+      "   bar",
+      // t=900ms: cycle restarts
+      "? Pick one [validating.]",
+      " › foo",
+      "   bar",
+      "✔ Pick one › foo"
+    ]);
   });
 
   it("should return first choice when skipping prompt", async() => {
