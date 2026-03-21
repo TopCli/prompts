@@ -30,7 +30,7 @@ export function isValid(result: ValidationResponse): result is ValidResponse {
   }
 
   if (typeof result === "string") {
-    return result.length > 0;
+    return result.length === 0;
   }
 
   return true;

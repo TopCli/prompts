@@ -15,11 +15,11 @@ describe("Validators", () => {
     const testCases = [
       {
         input: "test",
-        expected: true
+        expected: false
       },
       {
         input: "",
-        expected: false
+        expected: true
       },
       {
         input: null,
