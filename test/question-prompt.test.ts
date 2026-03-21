@@ -90,6 +90,70 @@ describe("QuestionPrompt", () => {
     ]);
   });
 
+  it("async validator should not pass", async() => {
+    const logs: string[] = [];
+    const questionPrompt = await TestingPrompt.QuestionPrompt({
+      message: "What's your name?",
+      inputs: ["test1", "test2"],
+      validators: [{
+        validate: async(input) => {
+          const valid = input === "test2";
+          if (!valid) {
+            return { isValid: false, error: "Value cannot be 'test1'" };
+          }
+
+          return void 0;
+        }
+      }],
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await questionPrompt.listen();
+
+    assert.equal(input, "test2");
+    assert.deepStrictEqual(logs, [
+      "? What's your name?",
+      // async validator runs for 'test1': show validating hint
+      "? What's your name? [validating.]",
+      "? What's your name? [Value cannot be 'test1']",
+      // async validator runs for 'test2': show validating hint
+      "? What's your name? [validating.]",
+      "✔ What's your name? › test2"
+    ]);
+  });
+
+  it("async validator should animate all validating ticks", async() => {
+    const logs: string[] = [];
+    const questionPrompt = await TestingPrompt.QuestionPrompt({
+      message: "What's your name?",
+      inputs: ["Joe"],
+      validators: [{
+        validate: async() => {
+          await setTimeout(1_000);
+
+          return void 0;
+        }
+      }],
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await questionPrompt.listen();
+
+    assert.equal(input, "Joe");
+    assert.deepStrictEqual(logs, [
+      "? What's your name?",
+      // t=0: first render
+      "? What's your name? [validating.]",
+      // t=300ms
+      "? What's your name? [validating..]",
+      // t=600ms
+      "? What's your name? [validating...]",
+      // t=900ms: cycle restarts
+      "? What's your name? [validating.]",
+      "✔ What's your name? › Joe"
+    ]);
+  });
+
   it("input should be required", async() => {
     const logs: string[] = [];
     const questionPrompt = await TestingPrompt.QuestionPrompt({

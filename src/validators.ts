@@ -11,7 +11,7 @@ export type InvalidResponse = string | InvalidResponseObject;
 export type ValidResponse = null | undefined | true | ValidResponseObject;
 
 export interface PromptValidator<T extends string | string[]> {
-  validate: (input: T) => ValidationResponse;
+  validate: (input: T) => ValidationResponse | Promise<ValidationResponse>;
 }
 
 export function required(): PromptValidator<any> {

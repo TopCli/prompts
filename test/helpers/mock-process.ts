@@ -5,7 +5,14 @@ import { stripVTControlCharacters } from "node:util";
 // Import Internal Dependencies
 import type { AbstractPromptOptions } from "../../src/prompts/abstract.ts";
 
-export function mockProcess(inputs: string[] = [], writeCb: (value: string) => void = () => void 0) {
+type KeypressInput = {
+  name: string;
+  ctrl?: boolean;
+};
+
+export function mockProcess(inputs: any[] = [], writeCb: (value: string) => void = () => void 0) {
+  let keypressCb: ((err: Error | null, data: KeypressInput) => void) | null = null;
+
   const stdout = {
     write: (msg: string | Buffer) => {
       if (typeof msg === "object") {
@@ -22,7 +29,8 @@ export function mockProcess(inputs: string[] = [], writeCb: (value: string) => v
     clearLine: () => true
   };
   const stdin = {
-    on: (_: any, cb: (err: Error | null, data: string) => void) => {
+    on: (_: any, cb: (err: Error | null, data: KeypressInput) => void) => {
+      keypressCb = cb;
       for (const input of inputs) {
         cb(null, input);
       }
@@ -35,8 +43,13 @@ export function mockProcess(inputs: string[] = [], writeCb: (value: string) => v
     listenerCount: () => true
   };
 
+  function sendInput(input: KeypressInput) {
+    keypressCb?.(null, input);
+  }
+
   return {
     stdout: stdout as unknown as AbstractPromptOptions["stdout"],
-    stdin: stdin as unknown as AbstractPromptOptions["stdin"]
+    stdin: stdin as unknown as AbstractPromptOptions["stdin"],
+    sendInput
   };
 }
