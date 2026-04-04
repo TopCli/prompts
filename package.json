@@ -4,7 +4,7 @@
   "description": "Node.js user input library for command-line interfaces.",
   "type": "module",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "build": "tsdown src/index.ts --format cjs,esm --dts --clean",
     "prepublishOnly": "npm run build",
     "test-only": "node --test ./test/**/*.test.ts",
     "test-types": "npm run build && tsd && attw --pack .",
@@ -17,12 +17,18 @@
     "access": "public",
     "provenance": true
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "keywords": [
@@ -42,7 +48,7 @@
     "@types/node": "^25.0.3",
     "c8": "^11.0.0",
     "tsd": "^0.33.0",
-    "tsup": "^8.5.1",
+    "tsdown": "0.21.7",
     "typescript": "^5.9.3"
   },
   "engines": {
