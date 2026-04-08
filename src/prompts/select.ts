@@ -4,17 +4,17 @@ import { styleText } from "node:util";
 
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
-import { stringLength } from "../utils.ts";
+import { stringLength, nextSelectableIndex, isSeparator } from "../utils.ts";
 import { SYMBOLS, VALIDATION_SPINNER_INTERVAL } from "../constants.ts";
 import { isValid, type PromptValidator, resultError } from "../validators.ts";
 import { type ValidationResponse } from "./../validators.ts";
-import { type Choice } from "../types.ts";
+import { type Choice, type Separator } from "../types.ts";
 
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
 
 export interface SelectOptions<T extends string> extends AbstractPromptOptions {
-  choices: (Choice<T> | T)[];
+  choices: (Choice<T> | T | Separator)[];
   maxVisible?: number;
   ignoreValues?: (T | number | boolean)[];
   validators?: PromptValidator<string>[];
@@ -53,7 +53,9 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     const isCaseSensitive = this.options.caseSensitive;
     const autocompleteValue = isCaseSensitive ? this.autocompleteValue : this.autocompleteValue.toLowerCase();
 
-    return this.choices.filter((choice) => this.#filterChoice(choice, autocompleteValue, isCaseSensitive));
+    return this.choices.filter(
+      (choice) => !isSeparator(choice) && this.#filterChoice(choice, autocompleteValue, isCaseSensitive)
+    );
   }
 
   #filterChoice(
@@ -82,7 +84,14 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
   }
 
   get longestChoice() {
-    return Math.max(...this.filteredChoices.map((choice) => {
+    const selectableChoices = this.filteredChoices.filter(
+      (choice): choice is Choice<T> | T => !isSeparator(choice)
+    );
+    if (selectableChoices.length === 0) {
+      return 0;
+    }
+
+    return Math.max(...selectableChoices.map((choice) => {
       if (typeof choice === "string") {
         return choice.length;
       }
@@ -110,7 +119,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     this.#validators = validators;
 
     for (const choice of choices) {
-      if (typeof choice === "string") {
+      if (typeof choice === "string" || isSeparator(choice)) {
         continue;
       }
 
@@ -121,10 +130,17 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
         }
       }
     }
+
+    const firstSelectableIndex = choices.findIndex((choice) => !isSeparator(choice));
+    if (firstSelectableIndex === -1) {
+      this.destroy();
+      throw new TypeError("choices must contain at least one non-separator item");
+    }
+    this.activeIndex = firstSelectableIndex;
   }
 
   #getFormattedChoice(choiceIndex: number) {
-    const choice = this.filteredChoices[choiceIndex];
+    const choice = this.filteredChoices[choiceIndex] as Choice<T> | T;
 
     if (typeof choice === "string") {
       return { value: choice, label: choice };
@@ -153,7 +169,16 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       this.write(`${SYMBOLS.Pointer} ${this.autocompleteValue}${EOL}`);
     }
     for (let choiceIndex = startIndex; choiceIndex < endIndex; choiceIndex++) {
-      const choice = this.#getFormattedChoice(choiceIndex);
+      const choice = this.filteredChoices[choiceIndex];
+
+      if (isSeparator(choice)) {
+        const separatorLabel = choice.label ? `  ${choice.label}  ` : "";
+        // eslint-disable-next-line @stylistic/max-len
+        this.write(`  ${styleText("gray", `${SYMBOLS.SeparatorLine}${SYMBOLS.SeparatorLine}${separatorLabel}${SYMBOLS.SeparatorLine}${SYMBOLS.SeparatorLine}`)}${EOL}`);
+        continue;
+      }
+
+      const formattedChoice = this.#getFormattedChoice(choiceIndex);
       const isChoiceSelected = choiceIndex === this.activeIndex;
       const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
       const showNextChoicesArrow = endIndex < this.filteredChoices.length && choiceIndex === endIndex - 1;
@@ -167,10 +192,10 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       }
 
       const prefix = `${prefixArrow}${isChoiceSelected ? `${SYMBOLS.Pointer} ` : "  "}`;
-      const formattedLabel = choice.label.padEnd(
+      const formattedLabel = formattedChoice.label.padEnd(
         this.longestChoice < 10 ? this.longestChoice : 0
       );
-      const formattedDescription = choice.description ? ` - ${choice.description}` : "";
+      const formattedDescription = formattedChoice.description ? ` - ${formattedChoice.description}` : "";
       const styles = isChoiceSelected ? ["white" as const, "bold" as const] : ["gray" as const];
       const str = `${prefix}${styleText(styles, `${formattedLabel}${formattedDescription}`)}${EOL}`;
 
@@ -182,14 +207,18 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     this.#isValidating = true;
 
     try {
-      const choice = this.filteredChoices[this.activeIndex] || ("" as T);
-
+      const rawChoice = this.filteredChoices[this.activeIndex];
+      if (isSeparator(rawChoice)) {
+        return;
+      }
+      // When autocomplete produces no results, rawChoice is undefined — fall back to empty string
+      const choice = rawChoice ?? ("" as T);
       const label = typeof choice === "string" ? choice : choice.label;
       const value = typeof choice === "string" ? choice : choice.value;
 
       for (const validator of this.#validators) {
         let validationResult: ValidationResponse;
-        const result = validator.validate(value);
+        const result = validator.validate(value as string);
 
         if (result instanceof Promise) {
           let dotCount = 1;
@@ -221,7 +250,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
       render({ clearRender: true });
 
-      if (!this.options.ignoreValues?.includes(value)) {
+      if (!this.options.ignoreValues?.includes(value as T)) {
         this.#showAnsweredQuestion(label);
       }
 
@@ -231,7 +260,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       this.#onProcessExit();
       process.off("exit", this.#boundExitEvent);
 
-      resolve(value);
+      resolve(value as T);
     }
     finally {
       this.#isValidating = false;
@@ -259,11 +288,11 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       return;
     }
     if (key.name === "up") {
-      this.activeIndex = this.activeIndex === 0 ? this.filteredChoices.length - 1 : this.activeIndex - 1;
+      this.activeIndex = nextSelectableIndex(this.filteredChoices, this.activeIndex, "up");
       render();
     }
     else if (key.name === "down") {
-      this.activeIndex = this.activeIndex === this.filteredChoices.length - 1 ? 0 : this.activeIndex + 1;
+      this.activeIndex = nextSelectableIndex(this.filteredChoices, this.activeIndex, "down");
       render();
     }
     else if (key.name === "return") {
@@ -287,9 +316,9 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
   async listen(): Promise<T> {
     if (this.skip) {
       this.destroy();
-      const answer = this.options.choices[0];
+      const firstSelectable = this.filteredChoices.find((choice) => !isSeparator(choice)) as Choice<T> | T | undefined;
 
-      return typeof answer === "string" ? answer : answer.value;
+      return (typeof firstSelectable === "string" ? firstSelectable : firstSelectable?.value ?? "") as T;
     }
 
     const answer = this.agent.nextAnswers.shift();

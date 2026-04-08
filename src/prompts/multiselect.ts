@@ -4,16 +4,16 @@ import { styleText } from "node:util";
 
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
-import { stringLength } from "../utils.ts";
+import { stringLength, nextSelectableIndex, isSeparator } from "../utils.ts";
 import { SYMBOLS, VALIDATION_SPINNER_INTERVAL } from "../constants.ts";
 import { isValid, type PromptValidator, resultError, type ValidationResponse } from "../validators.ts";
-import { type Choice } from "../types.ts";
+import { type Choice, type Separator } from "../types.ts";
 
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
 
 export interface MultiselectOptions<T extends string> extends AbstractPromptOptions {
-  choices: (Choice<T> | T)[];
+  choices: (Choice<T> | T | Separator)[];
   maxVisible?: number;
   preSelectedChoices?: (Choice<T> | T)[];
   validators?: PromptValidator<string[]>[];
@@ -56,7 +56,9 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     const isCaseSensitive = this.options.caseSensitive;
     const autocompleteValue = isCaseSensitive ? this.autocompleteValue : this.autocompleteValue.toLowerCase();
 
-    return this.choices.filter((choice) => this.#filterChoice(choice, autocompleteValue, isCaseSensitive));
+    return this.choices.filter(
+      (choice) => !isSeparator(choice) && this.#filterChoice(choice, autocompleteValue, isCaseSensitive)
+    );
   }
 
   #filterChoice(
@@ -85,12 +87,19 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
   }
 
   get longestChoice() {
-    return Math.max(...this.filteredChoices.map((choice) => {
+    const selectableChoices = this.filteredChoices.filter(
+      (choice): choice is Choice<T> | T => !isSeparator(choice)
+    );
+    if (selectableChoices.length === 0) {
+      return 0;
+    }
+
+    return Math.max(...selectableChoices.map((choice) => {
       if (typeof choice === "string") {
         return choice.length;
       }
 
-      return (choice as Choice<T>).label.length;
+      return choice.label.length;
     }));
   }
 
@@ -116,7 +125,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     this.#showHint = showHint;
 
     for (const choice of choices) {
-      if (typeof choice === "string") {
+      if (typeof choice === "string" || isSeparator(choice)) {
         continue;
       }
 
@@ -128,13 +137,23 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       }
     }
 
+    const firstSelectableIndex = choices.findIndex((choice) => !isSeparator(choice));
+    if (firstSelectableIndex === -1) {
+      this.destroy();
+      throw new TypeError("choices must contain at least one non-separator item");
+    }
+    this.activeIndex = firstSelectableIndex;
+
     for (const choice of preSelectedChoices) {
       const choiceIndex = this.filteredChoices.findIndex((item) => {
         if (typeof item === "string") {
           return item === choice;
         }
+        if (isSeparator(item)) {
+          return false;
+        }
 
-        return item.value === choice;
+        return item.value === (typeof choice === "string" ? choice : choice.value);
       });
 
       if (choiceIndex === -1) {
@@ -147,7 +166,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
   }
 
   #getFormattedChoice(choiceIndex: number) {
-    const choice = this.filteredChoices[choiceIndex];
+    const choice = this.filteredChoices[choiceIndex] as Choice<T> | T;
 
     if (typeof choice === "string") {
       return { value: choice, label: choice };
@@ -176,7 +195,16 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       this.write(`${SYMBOLS.Pointer} ${this.autocompleteValue}${EOL}`);
     }
     for (let choiceIndex = startIndex; choiceIndex < endIndex; choiceIndex++) {
-      const choice = this.#getFormattedChoice(choiceIndex);
+      const choice = this.filteredChoices[choiceIndex];
+
+      if (isSeparator(choice)) {
+        const separatorLabel = choice.label ? `  ${choice.label}  ` : "";
+        // eslint-disable-next-line @stylistic/max-len
+        this.write(`  ${styleText("gray", `${SYMBOLS.SeparatorLine}${SYMBOLS.SeparatorLine}${separatorLabel}${SYMBOLS.SeparatorLine}${SYMBOLS.SeparatorLine}`)}${EOL}`);
+        continue;
+      }
+
+      const formattedChoice = this.#getFormattedChoice(choiceIndex);
       const isChoiceActive = choiceIndex === this.activeIndex;
       const isChoiceSelected = this.selectedIndexes.has(choiceIndex);
       const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
@@ -191,10 +219,10 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       }
 
       const prefix = `${prefixArrow}${isChoiceSelected ? SYMBOLS.Active : SYMBOLS.Inactive}`;
-      const formattedLabel = choice.label.padEnd(
+      const formattedLabel = formattedChoice.label.padEnd(
         this.longestChoice < 10 ? this.longestChoice : 0
       );
-      const formattedDescription = choice.description ? ` - ${choice.description}` : "";
+      const formattedDescription = formattedChoice.description ? ` - ${formattedChoice.description}` : "";
       const styles = isChoiceActive ? ["white" as const, "bold" as const] : ["gray" as const];
       const str = `${prefix} ${styleText(styles, `${formattedLabel}${formattedDescription}`)}${EOL}`;
 
@@ -274,7 +302,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
           acc.values.push(choice);
           acc.labels.push(choice);
         }
-        else {
+        else if (!isSeparator(choice)) {
           acc.values.push(choice.value);
           acc.labels.push(choice.label as T);
         }
@@ -301,21 +329,25 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       return;
     }
     if (key.name === "up") {
-      this.activeIndex = this.activeIndex === 0 ? this.filteredChoices.length - 1 : this.activeIndex - 1;
+      this.activeIndex = nextSelectableIndex(this.filteredChoices, this.activeIndex, "up");
       render();
     }
     else if (key.name === "down") {
-      this.activeIndex = this.activeIndex === this.filteredChoices.length - 1 ? 0 : this.activeIndex + 1;
+      this.activeIndex = nextSelectableIndex(this.filteredChoices, this.activeIndex, "down");
       render();
     }
     else if (key.ctrl && key.name === "a") {
-      this.selectedIndexes = this.selectedIndexes.size === this.filteredChoices.length ?
+      const selectableIndexes = this.filteredChoices
+        .flatMap((choice, index) => (isSeparator(choice) ? [] : [index]));
+      this.selectedIndexes = this.selectedIndexes.size === selectableIndexes.length ?
         new Set() :
-        new Set(this.filteredChoices.map((_, index) => index));
+        new Set(selectableIndexes);
       render();
     }
     else if (key.name === "right") {
-      this.selectedIndexes.add(this.activeIndex);
+      if (!isSeparator(this.filteredChoices[this.activeIndex])) {
+        this.selectedIndexes.add(this.activeIndex);
+      }
       render();
     }
     else if (key.name === "left") {

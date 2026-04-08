@@ -999,4 +999,109 @@ describe("MultiselectPrompt", () => {
 
     assert.deepEqual(input, []);
   });
+
+  it("should throw when all choices are separators", () => {
+    assert.throws(() => new MultiselectPrompt({
+      message: "Choose",
+      choices: [{ type: "separator", label: "Group" }]
+    }), {
+      name: "TypeError",
+      message: "choices must contain at least one non-separator item"
+    });
+  });
+
+  it("separator should be rendered and right should toggle current active choice", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose",
+      showHint: false,
+      choices: [
+        { type: "separator" as const, label: "Group" },
+        "foo",
+        "bar"
+      ]
+    };
+    const inputs = [kInputs.right, kInputs.return];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await multiselectPrompt.listen();
+
+    assert.deepEqual(input, ["foo"]);
+    assert.deepStrictEqual(logs, [
+      "? Choose",
+      "  ──  Group  ──",
+      "  ○ foo",
+      "  ○ bar",
+      // right: foo is selected
+      "  ──  Group  ──",
+      "  ● foo",
+      "  ○ bar",
+      "✔ Choose › foo"
+    ]);
+  });
+
+  it("ctrl+a twice should select then deselect all, excluding separator", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose",
+      showHint: false,
+      choices: [
+        { type: "separator" as const, label: "Group" },
+        "foo",
+        "bar"
+      ]
+    };
+    const inputs = [kInputs.toggleAll, kInputs.toggleAll, kInputs.return];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await multiselectPrompt.listen();
+
+    assert.deepEqual(input, []);
+  });
+
+  it("navigation should skip separator", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose",
+      showHint: false,
+      choices: [
+        "foo",
+        { type: "separator" as const },
+        "bar"
+      ]
+    };
+    const inputs = [kInputs.down, kInputs.right, kInputs.return];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await multiselectPrompt.listen();
+
+    assert.deepEqual(input, ["bar"]);
+    assert.deepStrictEqual(logs, [
+      "? Choose",
+      "  ○ foo",
+      "  ────",
+      "  ○ bar",
+      // down: separator skipped, bar becomes active
+      "  ○ foo",
+      "  ────",
+      "  ○ bar",
+      // right: bar is selected
+      "  ○ foo",
+      "  ────",
+      "  ● bar",
+      "✔ Choose › bar"
+    ]);
+  });
 });
