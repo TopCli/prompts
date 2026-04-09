@@ -189,6 +189,18 @@ const framework = await select("Choose a framework", {
 });
 ```
 
+Use `choice.disabled` to mark a choice as non-selectable.
+
+```js
+const runner = await select("Choose a runner", {
+  choices: [
+    { value: "node", label: "Node.js" },
+    { value: "bun", label: "Bun", disabled: "not available" },
+    { value: "deno", label: "Deno", disabled: true }
+  ]
+});
+```
+
 ### `multiselect()`
 
 ```ts
@@ -211,6 +223,8 @@ Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)
 Use `options.skip` to skip prompt. It will return `options.preSelectedChoices` if given, `[]` otherwise.
 
 Use `Separator` items in `choices` to visually group options. Separators are not selectable and are skipped during keyboard navigation. When `autocomplete` is active and the user has typed a filter, separators are hidden.
+
+Use `choice.disabled` to mark a choice as non-selectable.
 
 ### `confirm()`
 
@@ -306,6 +320,7 @@ export interface Choice<T = any> {
   value: T;
   label: string;
   description?: string;
+  disabled?: boolean | string;
 }
 
 export interface Separator {

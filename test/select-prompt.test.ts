@@ -880,4 +880,91 @@ describe("SelectPrompt", () => {
 
     assert.equal(input, "foo");
   });
+
+  it("disabled choices should be rendered dimmed and skipped by navigation", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose option",
+      choices: [
+        { value: "foo", label: "foo", disabled: true },
+        { value: "bar", label: "bar" },
+        { value: "baz", label: "baz" }
+      ]
+    };
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs: [kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await selectPrompt.listen();
+
+    assert.equal(input, "bar");
+    assert.deepStrictEqual(logs, [
+      "? Choose option",
+      "   foo",
+      " › bar",
+      "   baz",
+      "✔ Choose option › bar"
+    ]);
+  });
+
+  it("disabled choice with message should display the message", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose option",
+      choices: [
+        { value: "foo", label: "foo", disabled: "not available" },
+        { value: "bar", label: "bar" }
+      ]
+    };
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs: [kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await selectPrompt.listen();
+
+    assert.equal(input, "bar");
+    assert.deepStrictEqual(logs, [
+      "? Choose option",
+      "   foo [not available]",
+      " › bar",
+      "✔ Choose option › bar"
+    ]);
+  });
+
+  it("up/down navigation should skip disabled choices", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose option",
+      choices: [
+        { value: "foo", label: "foo" },
+        { value: "bar", label: "bar", disabled: true },
+        { value: "baz", label: "baz" }
+      ]
+    };
+    const inputs = [kInputs.down, kInputs.return];
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await selectPrompt.listen();
+
+    assert.equal(input, "baz");
+    assert.deepStrictEqual(logs, [
+      "? Choose option",
+      " › foo",
+      "   bar",
+      "   baz",
+      // we press <down>, bar is skipped
+      "   foo",
+      "   bar",
+      " › baz",
+      "✔ Choose option › baz"
+    ]);
+  });
 });

@@ -1,10 +1,10 @@
 // Import Node.js Dependencies
 import { EOL } from "node:os";
-import { styleText } from "node:util";
+import { styleText, type InspectColor } from "node:util";
 
 // Import Internal Dependencies
 import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
-import { stringLength, nextSelectableIndex, isSeparator } from "../utils.ts";
+import { stringLength, isSeparator } from "../utils.ts";
 import { SYMBOLS, VALIDATION_SPINNER_INTERVAL } from "../constants.ts";
 import { isValid, type PromptValidator, resultError, type ValidationResponse } from "../validators.ts";
 import { type Choice, type Separator } from "../types.ts";
@@ -86,6 +86,37 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     });
   }
 
+  #isChoiceDisabled(choice: Choice<T> | T): boolean {
+    return typeof choice !== "string" && Boolean(choice.disabled);
+  }
+
+  #findNextEnabledIndex(from: number, direction: 1 | -1): number {
+    const total = this.filteredChoices.length;
+    if (total === 0) {
+      return from;
+    }
+
+    let index = (from + direction + total) % total;
+
+    while (index !== from) {
+      const choice = this.filteredChoices[index];
+      if (!isSeparator(choice) && !this.#isChoiceDisabled(choice)) {
+        return index;
+      }
+      index = (index + direction + total) % total;
+    }
+
+    return from;
+  }
+
+  #findFirstEnabledIndex(): number {
+    const index = this.filteredChoices.findIndex(
+      (choice) => !isSeparator(choice) && !this.#isChoiceDisabled(choice as Choice<T> | T)
+    );
+
+    return index === -1 ? 0 : index;
+  }
+
   get longestChoice() {
     const selectableChoices = this.filteredChoices.filter(
       (choice): choice is Choice<T> | T => !isSeparator(choice)
@@ -142,7 +173,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       this.destroy();
       throw new TypeError("choices must contain at least one non-separator item");
     }
-    this.activeIndex = firstSelectableIndex;
+    this.activeIndex = this.#findFirstEnabledIndex();
 
     for (const choice of preSelectedChoices) {
       const choiceIndex = this.filteredChoices.findIndex((item) => {
@@ -159,6 +190,11 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       if (choiceIndex === -1) {
         this.destroy();
         throw new Error(`Invalid pre-selected choice: ${typeof choice === "string" ? choice : choice.value}`);
+      }
+
+      if (this.#isChoiceDisabled(this.filteredChoices[choiceIndex] as Choice<T> | T)) {
+        this.destroy();
+        throw new Error(`Cannot pre-select a disabled choice: ${typeof choice === "string" ? choice : choice.value}`);
       }
 
       this.selectedIndexes.add(choiceIndex);
@@ -195,10 +231,10 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       this.write(`${SYMBOLS.Pointer} ${this.autocompleteValue}${EOL}`);
     }
     for (let choiceIndex = startIndex; choiceIndex < endIndex; choiceIndex++) {
-      const choice = this.filteredChoices[choiceIndex];
+      const rawChoice = this.filteredChoices[choiceIndex];
 
-      if (isSeparator(choice)) {
-        const separatorLabel = choice.label ? `  ${choice.label}  ` : "";
+      if (isSeparator(rawChoice)) {
+        const separatorLabel = rawChoice.label ? `  ${rawChoice.label}  ` : "";
         // eslint-disable-next-line @stylistic/max-len
         this.write(`  ${styleText("gray", `${SYMBOLS.SeparatorLine}${SYMBOLS.SeparatorLine}${separatorLabel}${SYMBOLS.SeparatorLine}${SYMBOLS.SeparatorLine}`)}${EOL}`);
         continue;
@@ -207,6 +243,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       const formattedChoice = this.#getFormattedChoice(choiceIndex);
       const isChoiceActive = choiceIndex === this.activeIndex;
       const isChoiceSelected = this.selectedIndexes.has(choiceIndex);
+      const isChoiceDisabled = this.#isChoiceDisabled(rawChoice);
       const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
       const showNextChoicesArrow = endIndex < this.filteredChoices.length && choiceIndex === endIndex - 1;
 
@@ -223,8 +260,22 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
         this.longestChoice < 10 ? this.longestChoice : 0
       );
       const formattedDescription = formattedChoice.description ? ` - ${formattedChoice.description}` : "";
-      const styles = isChoiceActive ? ["white" as const, "bold" as const] : ["gray" as const];
-      const str = `${prefix} ${styleText(styles, `${formattedLabel}${formattedDescription}`)}${EOL}`;
+      const disabledMessage = isChoiceDisabled && typeof rawChoice !== "string" && typeof rawChoice.disabled === "string"
+        ? ` [${rawChoice.disabled}]`
+        : "";
+
+      let textStyles: InspectColor[];
+      if (isChoiceDisabled) {
+        textStyles = ["gray", "dim"];
+      }
+      else if (isChoiceActive) {
+        textStyles = ["white", "bold"];
+      }
+      else {
+        textStyles = ["gray"];
+      }
+
+      const str = `${prefix} ${styleText(textStyles, `${formattedLabel}${formattedDescription}${disabledMessage}`)}${EOL}`;
 
       this.write(str);
     }
@@ -329,30 +380,40 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       return;
     }
     if (key.name === "up") {
-      this.activeIndex = nextSelectableIndex(this.filteredChoices, this.activeIndex, "up");
+      this.activeIndex = this.#findNextEnabledIndex(this.activeIndex, -1);
       render();
     }
     else if (key.name === "down") {
-      this.activeIndex = nextSelectableIndex(this.filteredChoices, this.activeIndex, "down");
+      this.activeIndex = this.#findNextEnabledIndex(this.activeIndex, 1);
       render();
     }
     else if (key.ctrl && key.name === "a") {
-      const selectableIndexes = this.filteredChoices
-        .flatMap((choice, index) => (isSeparator(choice) ? [] : [index]));
-      this.selectedIndexes = this.selectedIndexes.size === selectableIndexes.length ?
+      const enabledIndexes = this.filteredChoices
+        .flatMap((choice, index) => {
+          if (isSeparator(choice)) {
+            return [];
+          }
+
+          return this.#isChoiceDisabled(choice) ? [] : [index];
+        });
+      this.selectedIndexes = this.selectedIndexes.size === enabledIndexes.length ?
         new Set() :
-        new Set(selectableIndexes);
+        new Set(enabledIndexes);
       render();
     }
     else if (key.name === "right") {
-      if (!isSeparator(this.filteredChoices[this.activeIndex])) {
+      const activeChoice = this.filteredChoices[this.activeIndex];
+      if (!isSeparator(activeChoice) && !this.#isChoiceDisabled(activeChoice)) {
         this.selectedIndexes.add(this.activeIndex);
+        render();
       }
-      render();
     }
     else if (key.name === "left") {
-      this.selectedIndexes = new Set([...this.selectedIndexes].filter((index) => index !== this.activeIndex));
-      render();
+      const activeChoice = this.filteredChoices[this.activeIndex];
+      if (!isSeparator(activeChoice) && !this.#isChoiceDisabled(activeChoice)) {
+        this.selectedIndexes = new Set([...this.selectedIndexes].filter((index) => index !== this.activeIndex));
+        render();
+      }
     }
     else if (key.name === "return") {
       void this.#handleReturn(resolve, render);
@@ -361,7 +422,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       if (!key.ctrl && this.options.autocomplete) {
         // reset selected choices when user type
         this.selectedIndexes.clear();
-        this.activeIndex = 0;
+        this.activeIndex = this.#findFirstEnabledIndex();
         if (key.name === "backspace" && this.autocompleteValue.length > 0) {
           this.autocompleteValue = this.autocompleteValue.slice(0, -1);
         }

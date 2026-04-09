@@ -1104,4 +1104,121 @@ describe("MultiselectPrompt", () => {
       "✔ Choose › bar"
     ]);
   });
+
+  it("should throw when pre-selecting a disabled choice", () => {
+    assert.throws(
+      () => new MultiselectPrompt({
+        message: "Choose option",
+        choices: [
+          { value: "foo", label: "foo", disabled: true },
+          { value: "bar", label: "bar" }
+        ],
+        preSelectedChoices: ["foo"]
+      }),
+      {
+        name: "Error",
+        message: "Cannot pre-select a disabled choice: foo"
+      }
+    );
+  });
+
+  it("disabled choice with message should display the message", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose option",
+      choices: [
+        { value: "foo", label: "foo", disabled: "not available" },
+        { value: "bar", label: "bar" }
+      ],
+      showHint: false
+    };
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs: [kInputs.right, kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await multiselectPrompt.listen();
+
+    assert.deepEqual(input, ["bar"]);
+    assert.deepStrictEqual(logs, [
+      "? Choose option",
+      "  ○ foo [not available]",
+      "  ○ bar",
+      "  ○ foo [not available]",
+      "  ● bar",
+      "✔ Choose option › bar"
+    ]);
+  });
+
+  it("up/down navigation should skip disabled choices", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose option",
+      choices: [
+        { value: "foo", label: "foo" },
+        { value: "bar", label: "bar", disabled: true },
+        { value: "baz", label: "baz" }
+      ],
+      showHint: false
+    };
+    const inputs = [kInputs.down, kInputs.right, kInputs.return];
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await multiselectPrompt.listen();
+
+    assert.deepEqual(input, ["baz"]);
+    assert.deepStrictEqual(logs, [
+      "? Choose option",
+      "  ○ foo",
+      "  ○ bar",
+      "  ○ baz",
+      // we press <down>, bar is skipped
+      "  ○ foo",
+      "  ○ bar",
+      "  ○ baz",
+      // we press <right>, baz is selected
+      "  ○ foo",
+      "  ○ bar",
+      "  ● baz",
+      "✔ Choose option › baz"
+    ]);
+  });
+
+  it("ctrl+A should only toggle non-disabled choices", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose option",
+      choices: [
+        { value: "foo", label: "foo" },
+        { value: "bar", label: "bar", disabled: true },
+        { value: "baz", label: "baz" }
+      ],
+      showHint: false
+    };
+    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+      ...options,
+      inputs: [kInputs.toggleAll, kInputs.return],
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await multiselectPrompt.listen();
+
+    assert.deepEqual(input, ["foo", "baz"]);
+    assert.deepStrictEqual(logs, [
+      "? Choose option",
+      "  ○ foo",
+      "  ○ bar",
+      "  ○ baz",
+      // we press <ctrl+A>
+      "  ● foo",
+      "  ○ bar",
+      "  ● baz",
+      "✔ Choose option › foo, baz"
+    ]);
+  });
 });

@@ -132,5 +132,8 @@ dist
 # IntelliJ IDEA config directory
 .idea
 
+# VSCode config directory
+.vscode
+
 # Docs
 docs
