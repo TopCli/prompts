@@ -3,3 +3,9 @@ export interface Choice<T extends string> {
   label: string;
   description?: string;
 }
+
+export interface Separator {
+  type: "separator";
+  label?: string;
+}
+

@@ -170,7 +170,24 @@ Use `options.caseSensitive` to make autocomplete filters case sensitive. Default
 
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 
-Use `options.skip` to skip prompt. It will return the first choice.
+Use `options.skip` to skip prompt. It will return the first non-separator choice.
+
+Use `Separator` items in `choices` to visually group options. Separators are not selectable and are skipped during keyboard navigation. When `autocomplete` is active and the user has typed a filter, separators are hidden.
+
+```js
+import { select } from "@topcli/prompts";
+
+const framework = await select("Choose a framework", {
+  choices: [
+    { type: "separator", label: "Frontend" },
+    { value: "react", label: "React" },
+    { value: "vue", label: "Vue" },
+    { type: "separator", label: "Backend" },
+    { value: "express", label: "Express" },
+    { value: "fastify", label: "Fastify" },
+  ]
+});
+```
 
 ### `multiselect()`
 
@@ -192,6 +209,8 @@ Use `options.caseSensitive` to make autocomplete filters case sensitive. Default
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
 
 Use `options.skip` to skip prompt. It will return `options.preSelectedChoices` if given, `[]` otherwise.
+
+Use `Separator` items in `choices` to visually group options. Separators are not selectable and are skipped during keyboard navigation. When `autocomplete` is active and the user has typed a filter, separators are hidden.
 
 ### `confirm()`
 
@@ -289,8 +308,13 @@ export interface Choice<T = any> {
   description?: string;
 }
 
+export interface Separator {
+  type: "separator";
+  label?: string;
+}
+
 export interface SelectOptions<T extends string> extends AbstractPromptOptions {
-  choices: (Choice<T> | T)[];
+  choices: (Choice<T> | T | Separator)[];
   maxVisible?: number;
   ignoreValues?: (T | number | boolean)[];
   validators?: PromptValidator<string>[];
@@ -299,7 +323,7 @@ export interface SelectOptions<T extends string> extends AbstractPromptOptions {
 }
 
 export interface MultiselectOptions<T extends string> extends AbstractPromptOptions {
-  choices: (Choice<T> | T)[];
+  choices: (Choice<T> | T | Separator)[];
   maxVisible?: number;
   preSelectedChoices?: (Choice<T> | T)[];
   validators?: PromptValidator<string[]>[];

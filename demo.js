@@ -1,4 +1,4 @@
-import { question, confirm, select, multiselect, PromptAgent } from "./dist/index.js";
+import { question, confirm, select, multiselect, PromptAgent } from "./dist/index.mjs";
 
 const stringSelect = ["node", "tap", "tape", "vitest", "mocha", "ava"];
 

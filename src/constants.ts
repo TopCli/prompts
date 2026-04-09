@@ -11,7 +11,8 @@ const kMainSymbols = {
   previous: "⭡",
   next: "⭣",
   active: "●",
-  inactive: "○"
+  inactive: "○",
+  separator: "─"
 };
 const kFallbackSymbols = {
   tick: "√",
@@ -20,7 +21,8 @@ const kFallbackSymbols = {
   previous: "↑",
   next: "↓",
   active: "(+)",
-  inactive: "(-)"
+  inactive: "(-)",
+  separator: "-"
 };
 const kSymbols = isUnicodeSupported() || process.env.CI ? kMainSymbols : kFallbackSymbols;
 const kPointer = styleText("gray", kSymbols.pointer);
@@ -35,7 +37,8 @@ export const SYMBOLS = {
   ShowCursor: "\x1B[?25h",
   HideCursor: "\x1B[?25l",
   Active: styleText("cyan", kSymbols.active),
-  Inactive: styleText("gray", kSymbols.inactive)
+  Inactive: styleText("gray", kSymbols.inactive),
+  SeparatorLine: kSymbols.separator
 };
 
 export const VALIDATION_SPINNER_INTERVAL = 300;

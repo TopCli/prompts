@@ -17,7 +17,7 @@ import {
 } from "./validators.ts";
 import { PromptAgent } from "./prompt-agent.ts";
 import { number, integer, url } from "./transformers.ts";
-import type { Choice } from "./types.ts";
+import type { Choice, Separator } from "./types.ts";
 
 import {
   QuestionPrompt,
@@ -150,6 +150,7 @@ export type {
   QuestionOptions,
   ConfirmOptions,
   Choice,
+  Separator,
   MultiselectOptions,
   SelectOptions,
   ValidResponseObject,

@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+
 // Import Node.js Dependencies
 import assert from "node:assert";
 import { after, describe, it, mock } from "node:test";
@@ -785,6 +787,96 @@ describe("SelectPrompt", () => {
       skip: true
     };
     const input = await select(message, options);
+
+    assert.equal(input, "foo");
+  });
+
+  it("should throw when all choices are separators", () => {
+    assert.throws(() => new SelectPrompt({
+      message: "Choose",
+      choices: [{ type: "separator", label: "Group" }]
+    }), {
+      name: "TypeError",
+      message: "choices must contain at least one non-separator item"
+    });
+  });
+
+  it("down should skip separator between two choices", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose",
+      choices: [
+        "foo",
+        { type: "separator" as const, label: "Group" },
+        "bar"
+      ]
+    };
+    const inputs = [kInputs.down, kInputs.return];
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await selectPrompt.listen();
+
+    assert.equal(input, "bar");
+    assert.deepStrictEqual(logs, [
+      "? Choose",
+      " › foo",
+      "  ──  Group  ──",
+      "   bar",
+      // down: separator at index 1 is in the direct path — must be skipped
+      "   foo",
+      "  ──  Group  ──",
+      " › bar",
+      "✔ Choose › bar"
+    ]);
+  });
+
+  it("up should wrap and skip trailing separator", async() => {
+    const logs: string[] = [];
+    const options = {
+      message: "Choose",
+      choices: [
+        "foo",
+        "bar",
+        { type: "separator" as const }
+      ]
+    };
+    const inputs = [{ name: "up" }, kInputs.return];
+    const selectPrompt = await TestingPrompt.SelectPrompt({
+      ...options,
+      inputs,
+      onStdoutWrite: (log) => logs.push(log)
+    });
+
+    const input = await selectPrompt.listen();
+
+    // without skip logic, up from index 0 would wrap to index 2 (separator) — invalid
+    assert.equal(input, "bar");
+    assert.deepStrictEqual(logs, [
+      "? Choose",
+      " › foo",
+      "   bar",
+      "  ────",
+      // up from first: wraps past the trailing separator, lands on bar
+      "   foo",
+      " › bar",
+      "  ────",
+      "✔ Choose › bar"
+    ]);
+  });
+
+  it("skip should return first non-separator choice", async() => {
+    const input = await select("Choose", {
+      choices: [
+        { type: "separator" as const, label: "Group" },
+        "foo",
+        "bar"
+      ],
+      skip: true
+    });
 
     assert.equal(input, "foo");
   });
