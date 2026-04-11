@@ -299,4 +299,21 @@ describe("QuestionPrompt", () => {
       "✔ Enter a number › 123"
     ]);
   });
+
+  it("should display hint in the question query", async() => {
+    const logs: string[] = [];
+    const questionPrompt = await TestingPrompt.QuestionPrompt({
+      message: "What port?",
+      hint: "between 8000 and 8099",
+      inputs: ["8080"],
+      onStdoutWrite: (log) => logs.push(log)
+    });
+    const input = await questionPrompt.listen();
+
+    assert.equal(input, "8080");
+    assert.deepStrictEqual(logs, [
+      "? What port? between 8000 and 8099",
+      "✔ What port? › 8080"
+    ]);
+  });
 });

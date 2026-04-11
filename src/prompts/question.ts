@@ -18,6 +18,7 @@ import {
 
 export interface QuestionOptions<T = string> extends AbstractPromptOptions {
   defaultValue?: string;
+  hint?: string;
   validators?: PromptValidator<string>[];
   transformer?: PromptTransformer<T>;
   secure?: boolean | {
@@ -27,6 +28,7 @@ export interface QuestionOptions<T = string> extends AbstractPromptOptions {
 
 export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
   defaultValue?: string;
+  hint?: string;
   tip: string;
   questionSuffixError: string;
   answer?: string;
@@ -40,6 +42,7 @@ export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
   constructor(options: QuestionOptions<T>) {
     const {
       defaultValue,
+      hint,
       validators = [],
       transformer,
       secure = false,
@@ -57,6 +60,7 @@ export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
     }
 
     this.defaultValue = defaultValue;
+    this.hint = hint;
     this.tip = this.defaultValue ? ` (${this.defaultValue})` : "";
     this.#validators = validators;
     this.#transformer = transformer;
@@ -69,6 +73,10 @@ export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
       this.#secure = Boolean(secure);
     }
     this.questionSuffixError = "";
+  }
+
+  get formattedHint(): string {
+    return this.hint ? styleText("gray", this.hint) : "";
   }
 
   #question(): Promise<string> {
@@ -92,7 +100,9 @@ export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
   }
 
   #getQuestionQuery() {
-    return `${styleText("bold", `${SYMBOLS.QuestionMark} ${this.message}${this.tip}`)} ${this.questionSuffixError}`;
+    const hintPart = this.formattedHint ? ` ${this.formattedHint}` : "";
+
+    return `${styleText("bold", `${SYMBOLS.QuestionMark} ${this.message}${this.tip}`)}${hintPart} ${this.questionSuffixError}`;
   }
 
   #setQuestionSuffixError(error: string) {
@@ -117,9 +127,10 @@ export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
 
   #getValidatingQuery(dotCount: number) {
     const question = styleText("bold", `${SYMBOLS.QuestionMark} ${this.message}${this.tip}`);
-    const hint = styleText("yellow", `[validating${".".repeat(dotCount)}]`);
+    const hintPart = this.formattedHint ? ` ${this.formattedHint}` : "";
+    const validating = styleText("yellow", `[validating${".".repeat(dotCount)}]`);
 
-    return `${question} ${hint}${EOL}`;
+    return `${question}${hintPart} ${validating}${EOL}`;
   }
 
   async #runTransformer(): Promise<TransformationResponse<T>> {

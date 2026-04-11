@@ -55,6 +55,8 @@ Simple prompt, similar to `rl.question()` with an improved UI.
 
 Use `options.defaultValue` to set a default value.
 
+Use `options.hint` to display a hint alongside the question.
+
 Use `options.secure` if you need to hide both input and answer. You can provide either a **boolean** or an **object** which allows to configure a `placeholder` such as `*`.
 
 Use `options.signal` to set an `AbortSignal` (throws a [AbortError](#aborterror)).
@@ -311,6 +313,7 @@ export type TransformationResponse<T> = InvalidResponse | ValidTransformationRes
 
 export interface QuestionOptions<T = string> extends AbstractPromptOptions {
   defaultValue?: string;
+  hint?: string;
   validators?: PromptValidator<string>[];
   transformer?: PromptTransformer<T>;
   secure?: boolean | { placeholder: string };
