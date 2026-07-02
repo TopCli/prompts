@@ -45,7 +45,7 @@
     "@arethetypeswrong/cli": "^0.18.2",
     "@openally/config.eslint": "^2.2.0",
     "@openally/config.typescript": "^1.2.1",
-    "@types/node": "^25.0.3",
+    "@types/node": "^26.0.1",
     "c8": "^11.0.0",
     "tsd": "^0.33.0",
     "tsdown": "0.22.3",
