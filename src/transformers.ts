@@ -38,23 +38,23 @@ export function integer(): PromptTransformer<number> {
 export function url(): PromptTransformer<URL> {
   return {
     transform(input) {
-      try {
+      const isValid = URL.canParse(input);
+      if (isValid) {
         return { isValid: true, transformed: new URL(input) };
       }
-      catch {
-        try {
-          const parsed = new URL(`https://${input}`);
-          // new URL() accepts any string as hostname (e.g. "https://foo" is valid).
-          // For this use case, the user must explicitly type the protocol.
-          if (!parsed.hostname.includes(".") && parsed.hostname !== "localhost") {
-            return { isValid: false, error: "invalid URL" };
-          }
 
-          return { isValid: true, transformed: parsed };
-        }
-        catch {
+      try {
+        const parsed = new URL(`https://${input}`);
+        // new URL() accepts any string as hostname (e.g. "https://foo" is valid).
+        // For this use case, the user must explicitly type the protocol.
+        if (!parsed.hostname.includes(".") && parsed.hostname !== "localhost") {
           return { isValid: false, error: "invalid URL" };
         }
+
+        return { isValid: true, transformed: parsed };
+      }
+      catch {
+        return { isValid: false, error: "invalid URL" };
       }
     }
   };
