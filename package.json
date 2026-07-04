@@ -4,7 +4,7 @@
   "description": "Node.js user input library for command-line interfaces.",
   "type": "module",
   "scripts": {
-    "build": "tsdown src/index.ts --format cjs,esm --dts --clean",
+    "build": "tsdown src/index.ts --dts --clean --unbundle",
     "prepublishOnly": "npm run build",
     "test-only": "node --test ./test/**/*.test.ts",
     "test-types": "npm run build && tsd && attw --pack .",
