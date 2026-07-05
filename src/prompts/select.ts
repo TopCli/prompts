@@ -307,7 +307,6 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       }
 
       this.write(SYMBOLS.ShowCursor);
-      this.destroy();
 
       this.#onProcessExit();
       process.off("exit", this.#boundExitEvent);
@@ -367,7 +366,6 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
   async listen(): Promise<T> {
     if (this.skip) {
-      this.destroy();
       const firstSelectable = this.filteredChoices.find((choice) => !isSeparator(choice)) as Choice<T> | T | undefined;
 
       return (typeof firstSelectable === "string" ? firstSelectable : firstSelectable?.value ?? "") as T;
@@ -376,7 +374,6 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     const answer = this.agent.nextAnswers.shift();
     if (answer !== undefined) {
       this.#showAnsweredQuestion(answer);
-      this.destroy();
 
       return answer;
     }

@@ -53,7 +53,7 @@ describe("ConfirmPrompt", () => {
 
   it("should return initial, which is equal to false by default", async() => {
     const logs: string[] = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+    using confirmPrompt = await TestingPrompt.ConfirmPrompt({
       message: "Foo",
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -69,7 +69,7 @@ describe("ConfirmPrompt", () => {
 
   it("should return true when instant return with initial 'true'", async() => {
     const logs: string[] = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+    using confirmPrompt = await TestingPrompt.ConfirmPrompt({
       message: "Foo",
       inputs: [kInputs.return],
       initial: true,
@@ -91,7 +91,7 @@ describe("ConfirmPrompt", () => {
 
     it(`should switch value when pressing "${key}"`, async() => {
       const logs: string[] = [];
-      const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+      using confirmPrompt = await TestingPrompt.ConfirmPrompt({
         message: "Foo",
         inputs: [kInputs[key], kInputs.return],
         onStdoutWrite: (log) => logs.push(log)
@@ -108,7 +108,7 @@ describe("ConfirmPrompt", () => {
 
     it(`should switch value multiple time when pressing "${key}"`, async() => {
       const logs: string[] = [];
-      const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+      using confirmPrompt = await TestingPrompt.ConfirmPrompt({
         message: "Foo",
         inputs: [kInputs[key], kInputs[key], kInputs.return],
         onStdoutWrite: (log) => logs.push(log)
@@ -155,7 +155,7 @@ describe("ConfirmPrompt", () => {
 
   it("should return true when pressing 'y'", async() => {
     const logs: string[] = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+    using confirmPrompt = await TestingPrompt.ConfirmPrompt({
       message: "Foo",
       inputs: [kInputs.y],
       onStdoutWrite: (log) => {
@@ -173,7 +173,7 @@ describe("ConfirmPrompt", () => {
 
   it("should return false when pressing 'n'", async() => {
     const logs: string[] = [];
-    const confirmPrompt = await TestingPrompt.ConfirmPrompt({
+    using confirmPrompt = await TestingPrompt.ConfirmPrompt({
       message: "Foo",
       inputs: [kInputs.n],
       onStdoutWrite: (log) => {

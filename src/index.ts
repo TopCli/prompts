@@ -37,7 +37,7 @@ export async function question<T = string>(
   message: string,
   options: Omit<QuestionOptions<T>, "message"> = {}
 ): Promise<T> {
-  const prompt = new QuestionPrompt<T>(
+  using prompt = new QuestionPrompt<T>(
     { ...options, message }
   );
 
@@ -50,8 +50,6 @@ export async function question<T = string>(
     onError
   ]);
   if (isAbortError(result)) {
-    prompt.destroy();
-
     throw result[0];
   }
   onErrorSignal.abort();
@@ -63,7 +61,7 @@ export async function select<T extends string>(
   message: string,
   options: Omit<SelectOptions<T>, "message">
 ): Promise<T> {
-  const prompt = new SelectPrompt<T>(
+  using prompt = new SelectPrompt<T>(
     { ...options, message }
   );
 
@@ -76,8 +74,6 @@ export async function select<T extends string>(
     onError
   ]);
   if (isAbortError(result)) {
-    prompt.destroy();
-
     throw result[0];
   }
   onErrorSignal.abort();
@@ -89,7 +85,7 @@ export async function confirm(
   message: string,
   options: Omit<ConfirmOptions, "message"> = {}
 ): Promise<boolean> {
-  const prompt = new ConfirmPrompt(
+  using prompt = new ConfirmPrompt(
     { ...options, message }
   );
 
@@ -102,8 +98,6 @@ export async function confirm(
     onError
   ]);
   if (isAbortError(result)) {
-    prompt.destroy();
-
     throw result[0];
   }
   onErrorSignal.abort();
@@ -115,7 +109,7 @@ export async function multiselect<T extends string>(
   message: string,
   options: Omit<MultiselectOptions<T>, "message">
 ): Promise<T[]> {
-  const prompt = new MultiselectPrompt<T>(
+  using prompt = new MultiselectPrompt<T>(
     { ...options, message }
   );
 
@@ -128,8 +122,6 @@ export async function multiselect<T extends string>(
     onError
   ]);
   if (isAbortError(result)) {
-    prompt.destroy();
-
     throw result[0];
   }
   onErrorSignal.abort();

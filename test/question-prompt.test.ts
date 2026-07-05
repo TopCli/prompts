@@ -66,7 +66,7 @@ describe("QuestionPrompt", () => {
 
   it("validator should not pass", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt({
+    using questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "What's your name?",
       inputs: ["test1", "test10", "test2"],
       validators: [{
@@ -93,7 +93,7 @@ describe("QuestionPrompt", () => {
 
   it("async validator should not pass", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt({
+    using questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "What's your name?",
       inputs: ["test1", "test2"],
       validators: [{
@@ -125,7 +125,7 @@ describe("QuestionPrompt", () => {
 
   it("async validator should animate all validating ticks", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt({
+    using questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "What's your name?",
       inputs: ["Joe"],
       validators: [{
@@ -157,7 +157,7 @@ describe("QuestionPrompt", () => {
 
   it("input should be required", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt({
+    using questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "What's your name?",
       inputs: ["", "toto"],
       validators: [validators.required()],
@@ -175,7 +175,7 @@ describe("QuestionPrompt", () => {
 
   it("should return the default value", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt({
+    using questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "What's your name?",
       inputs: [""],
       defaultValue: "John Doe",
@@ -205,7 +205,7 @@ describe("QuestionPrompt", () => {
 
   it("should not display answer when prompt is secure", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt({
+    using questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "What's your name?",
       inputs: ["John Deeoe"],
       secure: true,
@@ -225,7 +225,7 @@ describe("QuestionPrompt", () => {
     const placeholder = "*";
     const expectedInput = "John Deeoe";
 
-    const questionPrompt = await TestingPrompt.QuestionPrompt({
+    using questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "What's your name?",
       inputs: [expectedInput],
       secure: {
@@ -286,7 +286,7 @@ describe("QuestionPrompt", () => {
 
   it("transformer should transform valid input", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt({
+    using questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "Enter a number",
       inputs: ["123"],
       transformer: number(),
@@ -303,7 +303,7 @@ describe("QuestionPrompt", () => {
 
   it("should display hint in the question query", async() => {
     const logs: string[] = [];
-    const questionPrompt = await TestingPrompt.QuestionPrompt({
+    using questionPrompt = await TestingPrompt.QuestionPrompt({
       message: "What port?",
       hint: "between 8000 and 8099",
       inputs: ["8080"],

@@ -224,8 +224,6 @@ export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
 
   async listen(): Promise<T> {
     if (this.skip) {
-      this.destroy();
-
       if (this.#transformer) {
         const rawValue = this.defaultValue ?? "";
         const result = await this.#transformer.transform(rawValue);
@@ -243,7 +241,6 @@ export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
     if (agentAnswer !== undefined) {
       this.answer = agentAnswer;
       this.#writeAnswer();
-      this.destroy();
 
       if (this.#transformer) {
         const result = await this.#transformer.transform(agentAnswer);
@@ -269,8 +266,6 @@ export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
       this.answer = await this.answerBuffer;
       await this.#onQuestionAnswer();
     }
-
-    this.destroy();
 
     return (this.#transformedAnswer ?? this.answer) as T;
   }

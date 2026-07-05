@@ -31,7 +31,9 @@ export interface AbstractPromptOptions {
   agent?: PromptAgent<string | boolean>;
 }
 
-export class AbstractPrompt<T extends string | boolean> extends EventEmitter {
+export class AbstractPrompt<
+  T extends string | boolean
+> extends EventEmitter implements Disposable {
   stdin: Stdin;
   stdout: Stdout;
   message: string;
@@ -66,7 +68,7 @@ export class AbstractPrompt<T extends string | boolean> extends EventEmitter {
     }
 
     if (!output.isTTY) {
-      // when process.stdout is not TTY (i.e within IDEs) theses methods does not exists and make the lib crashing
+      // when process.stdout is not TTY (i.e within IDEs) these methods do not exist and make the lib crash
       Object.assign(output, {
         moveCursor: () => void 0,
         clearScreenDown: () => void 0
@@ -150,5 +152,9 @@ export class AbstractPrompt<T extends string | boolean> extends EventEmitter {
     if (this.signal) {
       this.signal.removeEventListener("abort", this.#signalHandler);
     }
+  }
+
+  [Symbol.dispose](): void {
+    this.destroy();
   }
 }

@@ -111,8 +111,6 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
 
   async listen(): Promise<boolean> {
     if (this.skip) {
-      this.destroy();
-
       return this.initial;
     }
 
@@ -120,7 +118,6 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     if (answer !== undefined) {
       this.selectedValue = answer;
       this.#onQuestionAnswer();
-      this.destroy();
 
       return answer;
     }
@@ -148,8 +145,6 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
 
       this.#onProcessExit();
       process.off("exit", this.#boundExitEvent);
-
-      this.destroy();
     }
 
     return this.selectedValue;

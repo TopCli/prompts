@@ -324,7 +324,6 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
       this.#showAnsweredQuestion(labels.join(", "));
 
       this.write(SYMBOLS.ShowCursor);
-      this.destroy();
 
       this.#onProcessExit();
       process.off("exit", this.#boundExitEvent);
@@ -436,7 +435,6 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
 
   async listen(): Promise<T[]> {
     if (this.skip) {
-      this.destroy();
       const { values } = this.#selectedChoices();
 
       return values;
@@ -446,7 +444,6 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     if (answer !== undefined) {
       const formatedAnser = Array.isArray(answer) ? answer.join(", ") : answer;
       this.#showAnsweredQuestion(formatedAnser, true);
-      this.destroy();
 
       return Array.isArray(answer) ? answer : [answer];
     }
