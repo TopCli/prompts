@@ -12,11 +12,11 @@ import { TestingPrompt } from "./helpers/testing-prompt.ts";
 import { mockProcess } from "./helpers/mock-process.ts";
 import { select, validators, PromptAgent } from "../src/index.ts";
 
+// CONSTANTS
 const kInputs = {
   down: { name: "down" },
   return: { name: "return" }
 };
-const kPromptAgent = PromptAgent.agent();
 
 describe("SelectPrompt", () => {
   after(() => {
@@ -377,7 +377,8 @@ describe("SelectPrompt", () => {
   it("should return the answer set via PromptAgent", async() => {
     const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
-    kPromptAgent.nextAnswer("option1");
+    const agent = new PromptAgent<string>();
+    agent.nextAnswer("option1");
 
     const options = {
       choices: [
@@ -387,7 +388,7 @@ describe("SelectPrompt", () => {
       ],
       maxVisible: 5
     };
-    const input = await select("Choose option", { ...options, stdin, stdout });
+    const input = await select("Choose option", { ...options, agent, stdin, stdout });
 
     assert.equal(input, "option1");
     assert.deepStrictEqual(logs, [
@@ -398,7 +399,8 @@ describe("SelectPrompt", () => {
   it("should return the answer set via PromptAgent with autocomplete", async() => {
     const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
-    kPromptAgent.nextAnswer("option1");
+    const agent = new PromptAgent<string>();
+    agent.nextAnswer("option1");
 
     const options = {
       choices: [
@@ -409,7 +411,7 @@ describe("SelectPrompt", () => {
       maxVisible: 5,
       autocomplete: true
     };
-    const input = await select("Choose option", { ...options, stdin, stdout });
+    const input = await select("Choose option", { ...options, agent, stdin, stdout });
 
     assert.equal(input, "option1");
     assert.deepStrictEqual(logs, [

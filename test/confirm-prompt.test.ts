@@ -26,8 +26,6 @@ const kInputs = {
   space: { name: "space" },
   return: { name: "return" }
 };
-const kPromptAgent = PromptAgent.agent();
-
 describe("ConfirmPrompt", () => {
   after(() => {
     mock.reset();
@@ -130,9 +128,10 @@ describe("ConfirmPrompt", () => {
   it("should return the answer (true) set via PromptAgent", async() => {
     const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
-    kPromptAgent.nextAnswer(true);
+    const agent = new PromptAgent<boolean>();
+    agent.nextAnswer(true);
 
-    const input = await confirm("Foo", { stdin, stdout });
+    const input = await confirm("Foo", { agent, stdin, stdout });
 
     assert.equal(input, true);
     assert.deepStrictEqual(logs, [
@@ -143,9 +142,10 @@ describe("ConfirmPrompt", () => {
   it("should return the answer (false) set via PromptAgent", async() => {
     const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
-    kPromptAgent.nextAnswer(false);
+    const agent = new PromptAgent<boolean>();
+    agent.nextAnswer(false);
 
-    const input = await confirm("Foo", { stdin, stdout });
+    const input = await confirm("Foo", { agent, stdin, stdout });
 
     assert.equal(input, false);
     assert.deepStrictEqual(logs, [

@@ -12,6 +12,7 @@ import { multiselect, validators, PromptAgent } from "../src/index.ts";
 import { TestingPrompt } from "./helpers/testing-prompt.ts";
 import { mockProcess } from "./helpers/mock-process.ts";
 
+// CONSTANTS
 const kInputs = {
   toggleAll: { name: "a", ctrl: true },
   down: { name: "down" },
@@ -19,7 +20,6 @@ const kInputs = {
   left: { name: "left" },
   right: { name: "right" }
 };
-const kPromptAgent = PromptAgent.agent();
 
 describe("MultiselectPrompt", () => {
   after(() => {
@@ -471,7 +471,8 @@ describe("MultiselectPrompt", () => {
   it("should return the answer set via PromptAgent", async() => {
     const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
-    kPromptAgent.nextAnswer("option1");
+    const agent = new PromptAgent<string>();
+    agent.nextAnswer("option1");
 
     const options = {
       choices: [
@@ -481,7 +482,7 @@ describe("MultiselectPrompt", () => {
       ],
       maxVisible: 5
     };
-    const input = await multiselect("Choose option", { ...options, stdin, stdout });
+    const input = await multiselect("Choose option", { ...options, agent, stdin, stdout });
 
     assert.equal(input, "option1");
     assert.deepStrictEqual(logs, [
