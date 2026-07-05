@@ -7,7 +7,7 @@
     "build": "tsdown src/index.ts --dts --clean",
     "prepublishOnly": "npm run build",
     "test-only": "node --test ./test/**/*.test.ts",
-    "test-types": "npm run build && tsd && attw --pack .",
+    "test-types": "npm run build && tsd && attw --pack . --profile esm-only",
     "test": "c8 -r html npm run test-only && npm run test-types",
     "lint": "eslint src test",
     "lint:fix": "eslint . --fix"
