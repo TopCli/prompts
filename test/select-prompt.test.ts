@@ -83,7 +83,7 @@ describe("SelectPrompt", () => {
     };
     const inputs = [kInputs.return];
     const logs: string[] = [];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -110,7 +110,7 @@ describe("SelectPrompt", () => {
       kInputs.down,
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -138,7 +138,7 @@ describe("SelectPrompt", () => {
         { value: "bar", label: "bar" }
       ]
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -168,7 +168,7 @@ describe("SelectPrompt", () => {
       kInputs.down,
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -201,7 +201,7 @@ describe("SelectPrompt", () => {
       kInputs.down,
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -232,7 +232,7 @@ describe("SelectPrompt", () => {
       ],
       ignoreValues: ["foo"]
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -273,7 +273,7 @@ describe("SelectPrompt", () => {
       kInputs.down,
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -328,7 +328,7 @@ describe("SelectPrompt", () => {
       ],
       maxVisible: 5
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -356,7 +356,7 @@ describe("SelectPrompt", () => {
       ],
       maxVisible: 5
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -431,7 +431,7 @@ describe("SelectPrompt", () => {
       { sequence: "a" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -473,7 +473,7 @@ describe("SelectPrompt", () => {
       { name: "backspace" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -521,7 +521,7 @@ describe("SelectPrompt", () => {
       { sequence: "B" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -559,7 +559,7 @@ describe("SelectPrompt", () => {
       { sequence: "b" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -602,7 +602,7 @@ describe("SelectPrompt", () => {
       { sequence: "B" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -638,7 +638,7 @@ describe("SelectPrompt", () => {
       { name: "backspace" },
       kInputs.return
     ];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -676,7 +676,7 @@ describe("SelectPrompt", () => {
     });
     const { stdin, stdout, sendInput } = mockProcess([kInputs.return], (log) => logs.push(log));
 
-    const selectPrompt = new SelectPrompt({
+    using selectPrompt = new SelectPrompt({
       message: "Choose between foo, bar or baz",
       choices: ["foo", "bar", "baz"],
       validators: [{
@@ -749,7 +749,7 @@ describe("SelectPrompt", () => {
         }
       }]
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -814,7 +814,7 @@ describe("SelectPrompt", () => {
       ]
     };
     const inputs = [kInputs.down, kInputs.return];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -847,7 +847,7 @@ describe("SelectPrompt", () => {
       ]
     };
     const inputs = [{ name: "up" }, kInputs.return];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -893,7 +893,7 @@ describe("SelectPrompt", () => {
         { value: "baz", label: "baz" }
       ]
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -920,7 +920,7 @@ describe("SelectPrompt", () => {
         { value: "bar", label: "bar" }
       ]
     };
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -948,7 +948,7 @@ describe("SelectPrompt", () => {
       ]
     };
     const inputs = [kInputs.down, kInputs.return];
-    const selectPrompt = await TestingPrompt.SelectPrompt({
+    using selectPrompt = await TestingPrompt.SelectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)

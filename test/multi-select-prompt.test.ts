@@ -85,7 +85,7 @@ describe("MultiselectPrompt", () => {
       choices: ["foo", "bar"]
     };
     const logs: string[] = [];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs: [kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -109,7 +109,7 @@ describe("MultiselectPrompt", () => {
     };
     const inputs = [kInputs.right, kInputs.return];
     const logs: string[] = [];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -141,7 +141,7 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -177,7 +177,7 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -215,7 +215,7 @@ describe("MultiselectPrompt", () => {
       kInputs.left,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -250,7 +250,7 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -290,7 +290,7 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -325,7 +325,7 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -374,7 +374,7 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -449,7 +449,7 @@ describe("MultiselectPrompt", () => {
     const inputs = [
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -497,7 +497,7 @@ describe("MultiselectPrompt", () => {
     });
     const { stdin, stdout, sendInput } = mockProcess([kInputs.return], (log) => logs.push(log));
 
-    const multiselectPrompt = new MultiselectPrompt({
+    using multiselectPrompt = new MultiselectPrompt({
       message: "Choose between foo & bar",
       choices: ["foo", "bar"],
       validators: [{
@@ -565,7 +565,7 @@ describe("MultiselectPrompt", () => {
         }
       }]
     };
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs: [kInputs.right, kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -613,7 +613,7 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -651,7 +651,7 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -698,7 +698,7 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -755,7 +755,7 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -804,7 +804,7 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -845,7 +845,7 @@ describe("MultiselectPrompt", () => {
       kInputs.toggleAll,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -879,7 +879,7 @@ describe("MultiselectPrompt", () => {
     const inputs = [
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -910,7 +910,7 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -950,7 +950,7 @@ describe("MultiselectPrompt", () => {
       kInputs.right,
       kInputs.return
     ];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -1023,7 +1023,7 @@ describe("MultiselectPrompt", () => {
       ]
     };
     const inputs = [kInputs.right, kInputs.return];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -1057,7 +1057,7 @@ describe("MultiselectPrompt", () => {
       ]
     };
     const inputs = [kInputs.toggleAll, kInputs.toggleAll, kInputs.return];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -1080,7 +1080,7 @@ describe("MultiselectPrompt", () => {
       ]
     };
     const inputs = [kInputs.down, kInputs.right, kInputs.return];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -1133,7 +1133,7 @@ describe("MultiselectPrompt", () => {
       ],
       showHint: false
     };
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs: [kInputs.right, kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
@@ -1164,7 +1164,7 @@ describe("MultiselectPrompt", () => {
       showHint: false
     };
     const inputs = [kInputs.down, kInputs.right, kInputs.return];
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs,
       onStdoutWrite: (log) => logs.push(log)
@@ -1201,7 +1201,7 @@ describe("MultiselectPrompt", () => {
       ],
       showHint: false
     };
-    const multiselectPrompt = await TestingPrompt.MultiselectPrompt({
+    using multiselectPrompt = await TestingPrompt.MultiselectPrompt({
       ...options,
       inputs: [kInputs.toggleAll, kInputs.return],
       onStdoutWrite: (log) => logs.push(log)
