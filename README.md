@@ -247,11 +247,27 @@ Use `options.skip` to skip prompt. It will return `options.initial` (`false` by 
 
 The `PromptAgent` class allows to programmatically set the next answers for any prompt function, this can be useful for testing.
 
+#### Shared instance
+
+`PromptAgent.shared()` returns a singleton shared across all prompt calls that do not receive an explicit `agent` option. Suitable for simple test setups, but beware of state leaking between tests.
+
 ```ts
-const agent = PromptAgent.agent();
+const agent = PromptAgent.shared();
 agent.nextAnswer("John");
 
 const input = await question("What's your name?");
+assert.equal(input, "John");
+```
+
+#### Individual instance
+
+For better isolation (e.g. in unit tests), create a dedicated `PromptAgent` and pass it via the `agent` option. This avoids any state leaking from the shared instance.
+
+```ts
+const agent = new PromptAgent();
+agent.nextAnswer("John");
+
+const input = await question("What's your name?", { agent });
 assert.equal(input, "John");
 ```
 

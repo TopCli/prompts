@@ -1,6 +1,3 @@
-// CONSTANTS
-const kPrivateInstancier = Symbol("instancier");
-
 export class PromptAgent<T = string> {
   /**
    * The prompts answers queue.
@@ -8,20 +5,11 @@ export class PromptAgent<T = string> {
    */
   nextAnswers: T[] = [];
 
-  /**
-   * The shared PromptAgent.
-   */
-  static #this: PromptAgent;
+  static #sharedInstance: PromptAgent<any>;
+  static shared<T>() {
+    this.#sharedInstance ??= new PromptAgent<T>();
 
-  static agent<T>() {
-    // eslint-disable-next-line no-return-assign
-    return (this.#this as PromptAgent<T>) ??= new PromptAgent<T>(kPrivateInstancier);
-  }
-
-  constructor(instancier: symbol) {
-    if (instancier !== kPrivateInstancier) {
-      throw new Error("Cannot instanciate PromptAgent, use PromptAgent.agent() instead");
-    }
+    return this.#sharedInstance;
   }
 
   /**
@@ -31,20 +19,25 @@ export class PromptAgent<T = string> {
    *
    * @example
    * ```js
-   * const promptAgent = PromptAgent.agent();
+   * const promptAgent = PromptAgent.shared();
    * promptAgent.nextAnswer("toto");
    *
    * const input = await question("what is your name?");
    * assert.equal(input, "toto");
    * ```
    */
-  nextAnswer(value: T) {
+  nextAnswer(
+    value: T | T[]
+  ) {
     if (Array.isArray(value)) {
       this.nextAnswers.push(...value);
-
-      return;
     }
+    else {
+      this.nextAnswers.push(value);
+    }
+  }
 
-    this.nextAnswers.push(value);
+  clear() {
+    this.nextAnswers = [];
   }
 }

@@ -11,8 +11,6 @@ import { mockProcess } from "./helpers/mock-process.ts";
 import { number } from "../src/transformers.ts";
 
 // CONSTANTS
-const kPromptAgent = PromptAgent.agent();
-
 describe("QuestionPrompt", () => {
   after(() => {
     mock.reset();
@@ -41,9 +39,10 @@ describe("QuestionPrompt", () => {
   it("should render with tick on valid input", async() => {
     const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
-    kPromptAgent.nextAnswer("Joe");
+    const agent = new PromptAgent<string>();
+    agent.nextAnswer("Joe");
 
-    const input = await question("What's your name?", { stdin, stdout });
+    const input = await question("What's your name?", { agent, stdin, stdout });
 
     assert.equal(input, "Joe");
     assert.deepStrictEqual(logs, [
@@ -54,9 +53,10 @@ describe("QuestionPrompt", () => {
   it("should render cross on invalid input", async() => {
     const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
-    kPromptAgent.nextAnswer("");
+    const agent = new PromptAgent<string>();
+    agent.nextAnswer("");
 
-    const input = await question("What's your name?", { stdin, stdout });
+    const input = await question("What's your name?", { agent, stdin, stdout });
 
     assert.strictEqual(input, "");
     assert.deepStrictEqual(logs, [
@@ -245,9 +245,10 @@ describe("QuestionPrompt", () => {
   it("should not display answer when prompt is secure and using PromptAgent", async() => {
     const logs: string[] = [];
     const { stdin, stdout } = mockProcess([], (text) => logs.push(text));
-    kPromptAgent.nextAnswer("John Doe");
+    const agent = new PromptAgent<string>();
+    agent.nextAnswer("John Doe");
 
-    const input = await question("What's your name?", { secure: true, stdin, stdout });
+    const input = await question("What's your name?", { agent, secure: true, stdin, stdout });
 
     assert.equal(input, "John Doe");
     assert.deepStrictEqual(logs, [

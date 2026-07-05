@@ -28,6 +28,7 @@ export interface AbstractPromptOptions {
   message: string;
   skip?: boolean;
   signal?: AbortSignal;
+  agent?: PromptAgent<string | boolean>;
 }
 
 export class AbstractPrompt<T extends string | boolean> extends EventEmitter {
@@ -42,7 +43,9 @@ export class AbstractPrompt<T extends string | boolean> extends EventEmitter {
   rl: readline.Interface;
   #signalHandler: () => void;
 
-  constructor(options: AbstractPromptOptions) {
+  constructor(
+    options: AbstractPromptOptions
+  ) {
     super();
 
     if (this.constructor === AbstractPrompt) {
@@ -54,7 +57,8 @@ export class AbstractPrompt<T extends string | boolean> extends EventEmitter {
       stdout: output = process.stdout,
       message,
       signal,
-      skip = false
+      skip = false,
+      agent = PromptAgent.shared<T>()
     } = options;
 
     if (typeof message !== "string") {
@@ -75,7 +79,7 @@ export class AbstractPrompt<T extends string | boolean> extends EventEmitter {
     this.signal = signal;
     this.skip = skip;
     this.history = [];
-    this.agent = PromptAgent.agent<T>();
+    this.agent = agent;
 
     if (this.stdout.isTTY) {
       this.stdin.setRawMode(true);
