@@ -39,7 +39,9 @@ export class QuestionPrompt<T = string> extends AbstractPrompt<string> {
   #secure: boolean;
   #securePlaceholder: string | null = null;
 
-  constructor(options: QuestionOptions<T>) {
+  constructor(
+    options: QuestionOptions<T>
+  ) {
     const {
       defaultValue,
       hint,

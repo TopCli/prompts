@@ -5,14 +5,14 @@ import { describe, it } from "node:test";
 // Import Internal Dependencies
 import {
   type InvalidResponseObject,
-  type ValidationResponseObject,
+  type ValidationResponse,
   isValid,
   resultError
 } from "../src/validators.ts";
 
 describe("Validators", () => {
   describe("isValid", () => {
-    const testCases = [
+    const testCases: { input: ValidationResponse; expected: boolean; }[] = [
       {
         input: "test",
         expected: false
@@ -30,11 +30,11 @@ describe("Validators", () => {
         expected: true
       },
       {
-        input: { isValid: true } as ValidationResponseObject,
+        input: { isValid: true },
         expected: true
       },
       {
-        input: { isValid: false, error: "boo" } as ValidationResponseObject,
+        input: { isValid: false, error: "boo" },
         expected: false
       }
     ];

@@ -31,7 +31,14 @@ import {
   type ConfirmOptions,
   type MultiselectOptions
 } from "./prompts/index.ts";
-import type { AbortError } from "./errors/abort.ts";
+import { AbortError } from "./errors/abort.ts";
+
+function onceError(
+  emitter: NodeJS.EventEmitter,
+  signal: AbortSignal
+): Promise<AbortError> {
+  return once(emitter, "error", { signal }).then(([error]) => error);
+}
 
 export async function question<T = string>(
   message: string,
@@ -42,19 +49,17 @@ export async function question<T = string>(
   );
 
   const onErrorSignal = new AbortController();
-  const onError = once(
-    prompt, "error", { signal: onErrorSignal.signal }
-  ) as Promise<[AbortError]>;
+  const onError = onceError(prompt, onErrorSignal.signal);
   const result = await Promise.race([
     prompt.listen(),
     onError
   ]);
-  if (isAbortError(result)) {
-    throw result[0];
+  if (result instanceof AbortError) {
+    throw result;
   }
   onErrorSignal.abort();
 
-  return result as T;
+  return result;
 }
 
 export async function select<T extends string>(
@@ -66,15 +71,13 @@ export async function select<T extends string>(
   );
 
   const onErrorSignal = new AbortController();
-  const onError = once(
-    prompt, "error", { signal: onErrorSignal.signal }
-  ) as Promise<[AbortError]>;
+  const onError = onceError(prompt, onErrorSignal.signal);
   const result = await Promise.race([
     prompt.listen(),
     onError
   ]);
-  if (isAbortError(result)) {
-    throw result[0];
+  if (result instanceof AbortError) {
+    throw result;
   }
   onErrorSignal.abort();
 
@@ -90,15 +93,13 @@ export async function confirm(
   );
 
   const onErrorSignal = new AbortController();
-  const onError = once(
-    prompt, "error", { signal: onErrorSignal.signal }
-  ) as Promise<[AbortError]>;
+  const onError = onceError(prompt, onErrorSignal.signal);
   const result = await Promise.race([
     prompt.listen(),
     onError
   ]);
-  if (isAbortError(result)) {
-    throw result[0];
+  if (result instanceof AbortError) {
+    throw result;
   }
   onErrorSignal.abort();
 
@@ -114,25 +115,17 @@ export async function multiselect<T extends string>(
   );
 
   const onErrorSignal = new AbortController();
-  const onError = once(
-    prompt, "error", { signal: onErrorSignal.signal }
-  ) as Promise<[AbortError]>;
+  const onError = onceError(prompt, onErrorSignal.signal);
   const result = await Promise.race([
     prompt.listen(),
     onError
   ]);
-  if (isAbortError(result)) {
-    throw result[0];
+  if (result instanceof AbortError) {
+    throw result;
   }
   onErrorSignal.abort();
 
   return result;
-}
-
-function isAbortError(
-  error: unknown
-): error is [AbortError] {
-  return Array.isArray(error) && error.length > 0 && error[0] instanceof Error;
 }
 
 export type {

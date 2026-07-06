@@ -4,7 +4,20 @@ import { describe, it } from "node:test";
 
 // Import Internal Dependencies
 import { transformers } from "../src/index.ts";
-import { type ValidTransformationResponse } from "./../src/validators.ts";
+import {
+  isValidTransformation,
+  type TransformationResponse,
+  type ValidTransformationResponse
+} from "./../src/validators.ts";
+
+function assertValidTransformation<T>(
+  result: TransformationResponse<T> | Promise<TransformationResponse<T>>
+): asserts result is ValidTransformationResponse<T> {
+  assert.ok(
+    !(result instanceof Promise) && isValidTransformation(result),
+    "expected a valid synchronous transformation"
+  );
+}
 
 describe("transformers.number()", () => {
   it("should return an error for a non-numeric string", () => {
@@ -77,23 +90,23 @@ describe("transformers.url()", () => {
   });
 
   it("should transform a valid http URL", () => {
-    const result = transformers.url().transform("https://example.com") as ValidTransformationResponse<URL>;
-    assert.ok(result.isValid);
+    const result = transformers.url().transform("https://example.com");
+    assertValidTransformation(result);
     assert.ok(result.transformed instanceof URL);
     assert.strictEqual(result.transformed.href, "https://example.com/");
   });
 
   it("should transform a URL with path and query", () => {
-    const result = transformers.url().transform("https://example.com/path?foo=bar") as ValidTransformationResponse<URL>;
-    assert.ok(result.isValid);
+    const result = transformers.url().transform("https://example.com/path?foo=bar");
+    assertValidTransformation(result);
     assert.ok(result.transformed instanceof URL);
     assert.strictEqual(result.transformed.pathname, "/path");
     assert.strictEqual(result.transformed.searchParams.get("foo"), "bar");
   });
 
   it("should prepend https:// when protocol is missing", () => {
-    const result = transformers.url().transform("example.com") as ValidTransformationResponse<URL>;
-    assert.ok(result.isValid);
+    const result = transformers.url().transform("example.com");
+    assertValidTransformation(result);
     assert.ok(result.transformed instanceof URL);
     assert.strictEqual(result.transformed.href, "https://example.com/");
   });

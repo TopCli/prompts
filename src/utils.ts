@@ -6,7 +6,10 @@ import { stripVTControlCharacters } from "node:util";
 import type { Separator } from "./types.ts";
 
 export function isSeparator(choice: unknown): choice is Separator {
-  return typeof choice === "object" && choice !== null && (choice as Separator).type === "separator";
+  return typeof choice === "object" &&
+    choice !== null &&
+    "type" in choice &&
+    choice.type === "separator";
 }
 
 // CONSTANTS
