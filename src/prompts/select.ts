@@ -9,9 +9,8 @@ import { SYMBOLS, VALIDATION_SPINNER_INTERVAL } from "../constants.ts";
 import { isValid, type PromptValidator, resultError } from "../validators.ts";
 import { type ValidationResponse } from "./../validators.ts";
 import { type Choice, type Separator } from "../types.ts";
-
-// CONSTANTS
-const kRequiredChoiceProperties = ["label", "value"];
+import { ChoiceVO } from "../choice-vo.ts";
+import { ChoiceList } from "../choice-list.ts";
 
 export interface SelectOptions<T extends string> extends AbstractPromptOptions {
   choices: (Choice<T> | T | Separator)[];
@@ -35,100 +34,19 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
   #boundKeyPressEvent: VoidFn = () => void 0;
   #validators: PromptValidator<string>[];
   #isValidating = false;
+  #choiceList: ChoiceList<T>;
   activeIndex = 0;
   questionMessage: string;
   autocompleteValue = "";
   options: SelectOptions<T>;
   lastRender: { startIndex: number; endIndex: number; };
 
-  get choices() {
-    return this.options.choices;
-  }
-
-  get filteredChoices() {
+  get #currentChoiceList(): ChoiceList<T> {
     if (!(this.options.autocomplete && this.autocompleteValue.length > 0)) {
-      return this.choices;
+      return this.#choiceList;
     }
 
-    const isCaseSensitive = this.options.caseSensitive;
-    const autocompleteValue = isCaseSensitive ? this.autocompleteValue : this.autocompleteValue.toLowerCase();
-
-    return this.choices.filter(
-      (choice) => !isSeparator(choice) && this.#filterChoice(choice, autocompleteValue, isCaseSensitive)
-    );
-  }
-
-  #filterChoice(
-    choice: Choice<T> | string,
-    autocompleteValue: string,
-    isCaseSensitive = false
-  ) {
-    // eslint-disable-next-line no-nested-ternary
-    const choiceValue = typeof choice === "string" ?
-      (isCaseSensitive ? choice : choice.toLowerCase()) :
-      (isCaseSensitive ? choice.label : choice.label.toLowerCase());
-
-    if (autocompleteValue.includes(" ")) {
-      return this.#filterMultipleWords(choiceValue, autocompleteValue, isCaseSensitive);
-    }
-
-    return choiceValue.includes(autocompleteValue);
-  }
-
-  #filterMultipleWords(choiceValue: string, autocompleteValue: string, isCaseSensitive: boolean) {
-    return autocompleteValue.split(" ").every((word) => {
-      const wordValue = isCaseSensitive ? word : word.toLowerCase();
-
-      return choiceValue.includes(wordValue) || choiceValue.includes(autocompleteValue);
-    });
-  }
-
-  #isChoiceDisabled(choice: Choice<T> | T): boolean {
-    return typeof choice !== "string" && Boolean(choice.disabled);
-  }
-
-  #findNextEnabledIndex(from: number, direction: 1 | -1): number {
-    const total = this.filteredChoices.length;
-    if (total === 0) {
-      return from;
-    }
-
-    let index = (from + direction + total) % total;
-
-    while (index !== from) {
-      const choice = this.filteredChoices[index];
-      if (!isSeparator(choice) && !this.#isChoiceDisabled(choice)) {
-        return index;
-      }
-      index = (index + direction + total) % total;
-    }
-
-    return from;
-  }
-
-  #findFirstEnabledIndex(): number {
-    const index = this.filteredChoices.findIndex(
-      (choice) => !isSeparator(choice) && !this.#isChoiceDisabled(choice)
-    );
-
-    return index === -1 ? 0 : index;
-  }
-
-  get longestChoice() {
-    const selectableChoices = this.filteredChoices.filter(
-      (choice): choice is Choice<T> | T => !isSeparator(choice)
-    );
-    if (selectableChoices.length === 0) {
-      return 0;
-    }
-
-    return Math.max(...selectableChoices.map((choice) => {
-      if (typeof choice === "string") {
-        return choice.length;
-      }
-
-      return choice.label.length;
-    }));
+    return this.#choiceList.filtered(this.autocompleteValue, this.options.caseSensitive);
   }
 
   constructor(options: SelectOptions<T>) {
@@ -149,69 +67,41 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
     this.#validators = validators;
 
-    for (const choice of choices) {
-      if (typeof choice === "string" || isSeparator(choice)) {
-        continue;
-      }
-
-      for (const prop of kRequiredChoiceProperties) {
-        if (!choice[prop]) {
-          this.destroy();
-          throw new TypeError(`Missing ${prop} for choice ${JSON.stringify(choice)}`);
-        }
-      }
+    try {
+      this.#choiceList = ChoiceList.from(choices);
     }
-
-    const firstSelectableIndex = choices.findIndex((choice) => !isSeparator(choice));
-    if (firstSelectableIndex === -1) {
+    catch (error) {
       this.destroy();
-      throw new TypeError("choices must contain at least one non-separator item");
-    }
-    this.activeIndex = this.#findFirstEnabledIndex();
-  }
-
-  #getFormattedChoice(choice: Choice<T> | T) {
-    if (typeof choice === "string") {
-      return { value: choice, label: choice };
+      throw error;
     }
 
-    return choice;
-  }
-
-  #getVisibleChoices() {
-    const maxVisible = this.options.maxVisible || 8;
-    let startIndex = Math.min(this.filteredChoices.length - maxVisible, this.activeIndex - Math.floor(maxVisible / 2));
-    if (startIndex < 0) {
-      startIndex = 0;
-    }
-
-    const endIndex = Math.min(startIndex + maxVisible, this.filteredChoices.length);
-
-    return { startIndex, endIndex };
+    this.activeIndex = this.#choiceList.firstEnabledIndex();
   }
 
   #showChoices() {
-    const { startIndex, endIndex } = this.#getVisibleChoices();
+    const currentChoiceList = this.#currentChoiceList;
+    const { startIndex, endIndex } = currentChoiceList.visibleRange(
+      this.activeIndex,
+      this.options.maxVisible || 8
+    );
     this.lastRender = { startIndex, endIndex };
 
     if (this.options.autocomplete) {
       this.write(`${SYMBOLS.Pointer} ${this.autocompleteValue}${EOL}`);
     }
     for (let choiceIndex = startIndex; choiceIndex < endIndex; choiceIndex++) {
-      const rawChoice = this.filteredChoices[choiceIndex];
+      const item = currentChoiceList.at(choiceIndex)!;
 
-      if (isSeparator(rawChoice)) {
-        const separatorLabel = rawChoice.label ? `  ${rawChoice.label}  ` : "";
+      if (isSeparator(item)) {
+        const separatorLabel = item.label ? `  ${item.label}  ` : "";
         // eslint-disable-next-line @stylistic/max-len
         this.write(`  ${styleText("gray", `${SYMBOLS.SeparatorLine}${SYMBOLS.SeparatorLine}${separatorLabel}${SYMBOLS.SeparatorLine}${SYMBOLS.SeparatorLine}`)}${EOL}`);
         continue;
       }
 
-      const formattedChoice = this.#getFormattedChoice(rawChoice);
       const isChoiceSelected = choiceIndex === this.activeIndex;
-      const isChoiceDisabled = this.#isChoiceDisabled(rawChoice);
       const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
-      const showNextChoicesArrow = endIndex < this.filteredChoices.length && choiceIndex === endIndex - 1;
+      const showNextChoicesArrow = endIndex < currentChoiceList.length && choiceIndex === endIndex - 1;
 
       let prefixArrow = " ";
       if (showPreviousChoicesArrow) {
@@ -221,19 +111,15 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
         prefixArrow = SYMBOLS.Next;
       }
 
-      const prefix = isChoiceDisabled
+      const prefix = item.disabled
         ? `${prefixArrow}  `
         : `${prefixArrow}${isChoiceSelected ? `${SYMBOLS.Pointer} ` : "  "}`;
-      const formattedLabel = formattedChoice.label.padEnd(
-        this.longestChoice < 10 ? this.longestChoice : 0
+      const formattedLabel = item.label.padEnd(
+        currentChoiceList.longestLabelLength < 10 ? currentChoiceList.longestLabelLength : 0
       );
-      const formattedDescription = formattedChoice.description ? ` - ${formattedChoice.description}` : "";
-      const disabledMessage = isChoiceDisabled && typeof rawChoice !== "string" && typeof rawChoice.disabled === "string"
-        ? ` [${rawChoice.disabled}]`
-        : "";
 
       let textStyles: InspectColor[];
-      if (isChoiceDisabled) {
+      if (item.disabled) {
         textStyles = ["gray", "dim"];
       }
       else if (isChoiceSelected) {
@@ -243,7 +129,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
         textStyles = ["gray"];
       }
 
-      const str = `${prefix}${styleText(textStyles, `${formattedLabel}${formattedDescription}${disabledMessage}`)}${EOL}`;
+      const str = `${prefix}${styleText(textStyles, `${formattedLabel}${item.descriptionSuffix}${item.disabledHint}`)}${EOL}`;
 
       this.write(str);
     }
@@ -253,11 +139,11 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     resolve: (value: T) => void,
     render: (options: RenderOptions) => void
   ) {
-    const activeChoice: Choice<T> | T | Separator | undefined = this.filteredChoices[this.activeIndex];
+    const activeChoice = this.#currentChoiceList.at(this.activeIndex);
     if (isSeparator(activeChoice)) {
       return;
     }
-    if (activeChoice !== void 0 && this.#isChoiceDisabled(activeChoice)) {
+    if (activeChoice !== undefined && activeChoice.disabled) {
       return;
     }
 
@@ -265,9 +151,8 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
     try {
       // When autocomplete produces no results, activeChoice is undefined — fall back to empty string
-      const choice = activeChoice ?? ("" as T);
-      const label = typeof choice === "string" ? choice : choice.label;
-      const value = typeof choice === "string" ? choice : choice.value;
+      const choice = activeChoice ?? new ChoiceVO<T>("" as T);
+      const { label, value } = choice;
 
       for (const validator of this.#validators) {
         let validationResult: ValidationResponse;
@@ -342,11 +227,11 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       return;
     }
     if (key.name === "up") {
-      this.activeIndex = this.#findNextEnabledIndex(this.activeIndex, -1);
+      this.activeIndex = this.#currentChoiceList.nextEnabledIndex(this.activeIndex, -1);
       render();
     }
     else if (key.name === "down") {
-      this.activeIndex = this.#findNextEnabledIndex(this.activeIndex, 1);
+      this.activeIndex = this.#currentChoiceList.nextEnabledIndex(this.activeIndex, 1);
       render();
     }
     else if (key.name === "return") {
@@ -355,7 +240,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     else {
       if (!key.ctrl && this.options.autocomplete) {
         // reset selected choices when user type
-        this.activeIndex = this.#findFirstEnabledIndex();
+        this.activeIndex = this.#currentChoiceList.firstEnabledIndex();
         if (key.name === "backspace" && this.autocompleteValue.length > 0) {
           this.autocompleteValue = this.autocompleteValue.slice(0, -1);
         }
@@ -371,11 +256,11 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     if (this.skip) {
       // constructor guarantees at least one non-separator choice, and autocomplete
       // can't have filtered anything out yet since no keypress has been handled
-      const firstSelectable = this.filteredChoices.find(
-        (choice): choice is Choice<T> | T => !isSeparator(choice)
+      const firstSelectable = [...this.#choiceList].find(
+        (item): item is ChoiceVO<T> => !isSeparator(item)
       )!;
 
-      return typeof firstSelectable === "string" ? firstSelectable : firstSelectable.value;
+      return firstSelectable.value;
     }
 
     const answer = this.agent.nextAnswers.shift();
@@ -442,7 +327,10 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     return promise;
   }
 
-  #showQuestion(error: string | null = null, validating: string | null = null) {
+  #showQuestion(
+    error: string | null = null,
+    validating: string | null = null
+  ) {
     let hint = "";
     if (validating) {
       hint = styleText("yellow", `[${validating}]`);
