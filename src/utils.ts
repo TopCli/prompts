@@ -37,31 +37,6 @@ export function isUnicodeSupported() {
     || process.env.TERMINAL_EMULATOR === "JetBrains-JediTerm";
 }
 
-export function nextSelectableIndex(
-  choices: unknown[],
-  currentIndex: number,
-  direction: "up" | "down"
-): number {
-  const length = choices.length;
-  let index = currentIndex;
-  for (let step = 0; step < length; step++) {
-    if (direction === "up") {
-      index = index === 0 ? length - 1 : index - 1;
-    }
-    else {
-      index = index === length - 1 ? 0 : index + 1;
-    }
-
-    if (isSeparator(choices[index])) {
-      continue;
-    }
-
-    return index;
-  }
-
-  return currentIndex;
-}
-
 export function stringLength(
   string: string
 ): number {
