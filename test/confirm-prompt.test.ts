@@ -33,7 +33,8 @@ describe("ConfirmPrompt", () => {
 
   it("message should be required", () => {
     assert.throws(
-      () => new ConfirmPrompt({ message: 12 as any }),
+      // @ts-expect-error
+      () => new ConfirmPrompt({ message: 12 }),
       { name: "TypeError", message: "message must be string, number given." }
     );
   });

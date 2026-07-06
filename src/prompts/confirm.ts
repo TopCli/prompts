@@ -34,7 +34,9 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
   #boundKeyPressEvent: (...args: any) => void;
   #boundExitEvent: (...args: any) => void;
 
-  constructor(options: ConfirmOptions) {
+  constructor(
+    options: ConfirmOptions
+  ) {
     const {
       initial = false,
       ...baseOptions
@@ -56,7 +58,11 @@ export class ConfirmPrompt extends AbstractPrompt<boolean> {
     this.write(this.#getQuestionQuery());
   }
 
-  #onKeypress(resolve: (value: boolean) => void, _value: any, key: Key) {
+  #onKeypress(
+    resolve: (value: boolean) => void,
+    _value: any,
+    key: Key
+  ) {
     this.stdout.moveCursor(
       -this.stdout.columns,
       -Math.floor(stringLength(this.#getQuestionQuery()) / this.stdout.columns)

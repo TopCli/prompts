@@ -7,12 +7,14 @@ import { AbstractPrompt, type AbstractPromptOptions } from "./abstract.ts";
 import { stringLength, isSeparator } from "../utils.ts";
 import { SYMBOLS, VALIDATION_SPINNER_INTERVAL } from "../constants.ts";
 import { isValid, type PromptValidator, resultError, type ValidationResponse } from "../validators.ts";
-import { type Choice, type Separator } from "../types.ts";
+import type { Choice, Separator } from "../types.ts";
 
 // CONSTANTS
 const kRequiredChoiceProperties = ["label", "value"];
 
-export interface MultiselectOptions<T extends string> extends AbstractPromptOptions {
+export interface MultiselectOptions<
+  T extends string
+> extends AbstractPromptOptions {
   choices: (Choice<T> | T | Separator)[];
   maxVisible?: number;
   preSelectedChoices?: (Choice<T> | T)[];
@@ -30,7 +32,9 @@ type RenderOptions = {
   validating?: string;
 };
 
-export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
+export class MultiselectPrompt<
+  T extends string
+> extends AbstractPrompt<T> {
   #boundExitEvent: VoidFn = () => void 0;
   #boundKeyPressEvent: VoidFn = () => void 0;
   #validators: PromptValidator<string[]>[];
@@ -78,7 +82,11 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     return choiceValue.includes(autocompleteValue);
   }
 
-  #filterMultipleWords(choiceValue: string, autocompleteValue: string, isCaseSensitive: boolean) {
+  #filterMultipleWords(
+    choiceValue: string,
+    autocompleteValue: string,
+    isCaseSensitive: boolean
+  ) {
     return autocompleteValue.split(" ").every((word) => {
       const wordValue = isCaseSensitive ? word : word.toLowerCase();
 
@@ -111,7 +119,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
 
   #findFirstEnabledIndex(): number {
     const index = this.filteredChoices.findIndex(
-      (choice) => !isSeparator(choice) && !this.#isChoiceDisabled(choice as Choice<T> | T)
+      (choice) => !isSeparator(choice) && !this.#isChoiceDisabled(choice)
     );
 
     return index === -1 ? 0 : index;
@@ -134,7 +142,9 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     }));
   }
 
-  constructor(options: MultiselectOptions<T>) {
+  constructor(
+    options: MultiselectOptions<T>
+  ) {
     const {
       choices,
       preSelectedChoices = [],
@@ -192,7 +202,8 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
         throw new Error(`Invalid pre-selected choice: ${typeof choice === "string" ? choice : choice.value}`);
       }
 
-      if (this.#isChoiceDisabled(this.filteredChoices[choiceIndex] as Choice<T> | T)) {
+      const preSelectedChoice = this.filteredChoices[choiceIndex];
+      if (!isSeparator(preSelectedChoice) && this.#isChoiceDisabled(preSelectedChoice)) {
         this.destroy();
         throw new Error(`Cannot pre-select a disabled choice: ${typeof choice === "string" ? choice : choice.value}`);
       }
@@ -201,9 +212,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     }
   }
 
-  #getFormattedChoice(choiceIndex: number) {
-    const choice = this.filteredChoices[choiceIndex] as Choice<T> | T;
-
+  #getFormattedChoice(choice: Choice<T> | T) {
     if (typeof choice === "string") {
       return { value: choice, label: choice };
     }
@@ -240,7 +249,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
         continue;
       }
 
-      const formattedChoice = this.#getFormattedChoice(choiceIndex);
+      const formattedChoice = this.#getFormattedChoice(rawChoice);
       const isChoiceActive = choiceIndex === this.activeIndex;
       const isChoiceSelected = this.selectedIndexes.has(choiceIndex);
       const isChoiceDisabled = this.#isChoiceDisabled(rawChoice);
@@ -281,7 +290,10 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     }
   }
 
-  async #handleReturn(resolve: (values: T[]) => void, render: (options?: RenderOptions) => void) {
+  async #handleReturn(
+    resolve: (values: T[]) => void,
+    render: (options?: RenderOptions) => void
+  ) {
     this.#isValidating = true;
 
     try {
@@ -335,7 +347,10 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     }
   }
 
-  #showAnsweredQuestion(choices: string, isAgentAnswer = false) {
+  #showAnsweredQuestion(
+    choices: string,
+    isAgentAnswer = false
+  ) {
     const prefixSymbol = this.selectedIndexes.size === 0 && !isAgentAnswer ? SYMBOLS.Cross : SYMBOLS.Tick;
     const prefix = `${prefixSymbol} ${styleText("bold", this.message)} ${SYMBOLS.Pointer}`;
     const formattedChoice = styleText("yellow", choices);
@@ -344,7 +359,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
   }
 
   #selectedChoices() {
-    return [...this.selectedIndexes].reduce(
+    return [...this.selectedIndexes].reduce<{ values: T[]; labels: string[]; }>(
       (acc, index) => {
         const choice = this.filteredChoices[index];
 
@@ -354,14 +369,14 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
         }
         else if (!isSeparator(choice)) {
           acc.values.push(choice.value);
-          acc.labels.push(choice.label as T);
+          acc.labels.push(choice.label);
         }
 
         return acc;
       },
       {
-        values: [] as T[],
-        labels: [] as T[]
+        values: [],
+        labels: []
       }
     );
   }
@@ -373,7 +388,7 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     this.write(SYMBOLS.ShowCursor);
   }
 
-  #onKeypress(...args) {
+  #onKeypress(...args: any[]) {
     const [resolve, render, , key] = args;
     if (this.#isValidating) {
       return;
@@ -505,7 +520,10 @@ export class MultiselectPrompt<T extends string> extends AbstractPrompt<T> {
     return promise;
   }
 
-  #showQuestion(error: string | null = null, validating: string | null = null) {
+  #showQuestion(
+    error: string | null = null,
+    validating: string | null = null
+  ) {
     let hint = this.#showHint ? styleText("gray",
       // eslint-disable-next-line @stylistic/max-len
       `(Press ${styleText("bold", "<Ctrl+A>")} to toggle all, ${styleText("bold", "<Left/Right>")} to toggle, ${styleText("bold", "<Return>")} to submit)`

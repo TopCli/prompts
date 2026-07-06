@@ -108,7 +108,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
   #findFirstEnabledIndex(): number {
     const index = this.filteredChoices.findIndex(
-      (choice) => !isSeparator(choice) && !this.#isChoiceDisabled(choice as Choice<T> | T)
+      (choice) => !isSeparator(choice) && !this.#isChoiceDisabled(choice)
     );
 
     return index === -1 ? 0 : index;
@@ -170,9 +170,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     this.activeIndex = this.#findFirstEnabledIndex();
   }
 
-  #getFormattedChoice(choiceIndex: number) {
-    const choice = this.filteredChoices[choiceIndex] as Choice<T> | T;
-
+  #getFormattedChoice(choice: Choice<T> | T) {
     if (typeof choice === "string") {
       return { value: choice, label: choice };
     }
@@ -209,7 +207,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
         continue;
       }
 
-      const formattedChoice = this.#getFormattedChoice(choiceIndex);
+      const formattedChoice = this.#getFormattedChoice(rawChoice);
       const isChoiceSelected = choiceIndex === this.activeIndex;
       const isChoiceDisabled = this.#isChoiceDisabled(rawChoice);
       const showPreviousChoicesArrow = startIndex > 0 && choiceIndex === startIndex;
@@ -251,7 +249,10 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     }
   }
 
-  async #handleReturn(resolve: (value: T) => void, render: (options: RenderOptions) => void) {
+  async #handleReturn(
+    resolve: (value: T) => void,
+    render: (options: RenderOptions) => void
+  ) {
     const activeChoice: Choice<T> | T | Separator | undefined = this.filteredChoices[this.activeIndex];
     if (isSeparator(activeChoice)) {
       return;
@@ -270,7 +271,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
       for (const validator of this.#validators) {
         let validationResult: ValidationResponse;
-        const result = validator.validate(value as string);
+        const result = validator.validate(value);
 
         if (result instanceof Promise) {
           let dotCount = 1;
@@ -302,7 +303,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
       render({ clearRender: true });
 
-      if (!this.options.ignoreValues?.includes(value as T)) {
+      if (!this.options.ignoreValues?.includes(value)) {
         this.#showAnsweredQuestion(label);
       }
 
@@ -311,7 +312,7 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
       this.#onProcessExit();
       process.off("exit", this.#boundExitEvent);
 
-      resolve(value as T);
+      resolve(value);
     }
     finally {
       this.#isValidating = false;
@@ -333,7 +334,9 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
     this.write(SYMBOLS.ShowCursor);
   }
 
-  #onKeypress(...args) {
+  #onKeypress(
+    ...args
+  ) {
     const [resolve, render, , key] = args;
     if (this.#isValidating) {
       return;
@@ -366,9 +369,13 @@ export class SelectPrompt<T extends string> extends AbstractPrompt<T> {
 
   async listen(): Promise<T> {
     if (this.skip) {
-      const firstSelectable = this.filteredChoices.find((choice) => !isSeparator(choice)) as Choice<T> | T | undefined;
+      // constructor guarantees at least one non-separator choice, and autocomplete
+      // can't have filtered anything out yet since no keypress has been handled
+      const firstSelectable = this.filteredChoices.find(
+        (choice): choice is Choice<T> | T => !isSeparator(choice)
+      )!;
 
-      return (typeof firstSelectable === "string" ? firstSelectable : firstSelectable?.value ?? "") as T;
+      return typeof firstSelectable === "string" ? firstSelectable : firstSelectable.value;
     }
 
     const answer = this.agent.nextAnswers.shift();

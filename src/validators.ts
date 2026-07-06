@@ -34,7 +34,9 @@ export function required(): PromptValidator<any> {
   };
 }
 
-export function isValid(result: ValidationResponse): result is ValidResponse {
+export function isValid(
+  result: ValidationResponse
+): result is ValidResponse {
   if (typeof result === "object") {
     return result?.isValid !== false;
   }
@@ -46,7 +48,9 @@ export function isValid(result: ValidationResponse): result is ValidResponse {
   return true;
 }
 
-export function isValidTransformation<T>(result: TransformationResponse<T>): result is ValidTransformationResponse<T> {
+export function isValidTransformation<T>(
+  result: TransformationResponse<T>
+): result is ValidTransformationResponse<T> {
   return typeof result === "object" && result.isValid === true;
 }
 

@@ -18,7 +18,8 @@ describe("QuestionPrompt", () => {
 
   it("message should be string", () => {
     assert.throws(
-      () => new QuestionPrompt({ message: 12 as any } as any),
+      // @ts-expect-error
+      () => new QuestionPrompt({ message: 12 }),
       { name: "TypeError", message: "message must be string, number given." }
     );
   });
@@ -71,7 +72,7 @@ describe("QuestionPrompt", () => {
       inputs: ["test1", "test10", "test2"],
       validators: [{
         validate: (input) => {
-          const isValid = !(input as string).startsWith("test1");
+          const isValid = !input.startsWith("test1");
           if (!isValid) {
             return { isValid, error: `Value cannot start with 'test1', given ${input}.` };
           }
@@ -195,8 +196,9 @@ describe("QuestionPrompt", () => {
       await TestingPrompt.QuestionPrompt({
         message: "What's your name?",
         input: [""],
+        // @ts-expect-error
         defaultValue: { foo: "bar" }
-      } as any);
+      });
     }, {
       name: "TypeError",
       message: "defaultValue must be a string"

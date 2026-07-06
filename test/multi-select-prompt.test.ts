@@ -27,17 +27,19 @@ describe("MultiselectPrompt", () => {
   });
 
   it("message should be required", () => {
-    assert.throws(() => new MultiselectPrompt({ message: 12 as any } as any), {
-      name: "TypeError",
-      message: "message must be string, number given."
-    });
+    assert.throws(
+      // @ts-expect-error
+      () => new MultiselectPrompt({ message: 12 }),
+      { name: "TypeError", message: "message must be string, number given." }
+    );
   });
 
   it("choices should be required", () => {
-    assert.throws(() => new MultiselectPrompt({ message: "foo" } as any), {
-      name: "TypeError",
-      message: "Missing required param: choices"
-    });
+    assert.throws(
+      // @ts-expect-error
+      () => new MultiselectPrompt({ message: "foo" }),
+      { name: "TypeError", message: "Missing required param: choices" }
+    );
   });
 
   it("choice.label should be required", () => {
@@ -45,8 +47,9 @@ describe("MultiselectPrompt", () => {
       message: "foo",
       choices: [{
         description: "foo",
+        // @ts-expect-error
         value: true
-      } as any]
+      }]
     }), {
       name: "TypeError",
       message: "Missing label for choice {\"description\":\"foo\",\"value\":true}"
@@ -56,10 +59,13 @@ describe("MultiselectPrompt", () => {
   it("choice.value should be required", () => {
     assert.throws(() => new MultiselectPrompt({
       message: "foo",
-      choices: [{
-        label: "foo",
-        description: "bar"
-      } as any]
+      choices: [
+        // @ts-expect-error
+        {
+          label: "foo",
+          description: "bar"
+        }
+      ]
     }), {
       name: "TypeError",
       message: "Missing value for choice {\"label\":\"foo\",\"description\":\"bar\"}"
